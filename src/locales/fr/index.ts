@@ -98,7 +98,7 @@ export default {
     greeting: 'Bonjour, je suis',
     name: 'Damien Battistella',
     tagline: 'Je construis des applications, des objets, des équipes.',
-    subtitle: 'Team Leader R&D chez Dedalus',
+    subtitle: 'Technical Lead Manager chez Dedalus',
     cta: 'Découvrir mon parcours',
     pressStart: 'Appuyez sur Entrée pour commencer'
   },
@@ -137,31 +137,48 @@ export default {
     current: 'Poste actuel',
     years: 'ans',
     achievements: 'Réalisations clés',
-    dedalus: {
-      title: 'Team Leader R&D ERP-PAS',
+    'dedalus-lead': {
+      title: 'Technical Lead Manager',
       company: 'Dedalus',
-      period: '2020 - Présent',
-      description: 'Direction technique d\'une équipe de développeurs, architecture microservices, modernisation des applications legacy.',
+      period: '2022 - Présent',
+      description: 'Direction technique d\'une équipe pluridisciplinaire, plateforme d\'interopérabilité santé, modernisation legacy.',
       achievements: [
-        'Migration vers Clean Architecture',
-        'Mise en place des monorepos',
-        'Recrutement et formation de l\'équipe',
-        'Migration AWS',
-        'Implémentation IA (Agents, MCP, LLM)'
+        'Direction d\'une équipe pluridisciplinaire de 6 développeurs',
+        'Plateforme d\'interopérabilité santé (HL7, IHE PAM, HPRIM XML)',
+        'Stratégie technique full-stack (Vue.js 3, Node.js, PostgreSQL)',
+        'Modernisation système legacy (logiciel de 30 ans)',
+        'Pratiques DevOps (GitLab CI/CD, Playwright, Vitest, Docker)',
+        'Initiatives de recherche IA pour la productivité'
+      ]
+    },
+    'dedalus-dev': {
+      title: 'Développeur Full Stack R&D',
+      company: 'Dedalus',
+      period: '2016 - 2022',
+      description: 'Développement full-stack, création de librairies, mentorat d\'équipe, applications de santé.',
+      achievements: [
+        'Librairie SQL query builder en TypeScript (Oracle & PostgreSQL)',
+        'Migration legacy vers application web',
+        'Serveurs web Clean Architecture en Node.js',
+        'Tests unitaires et intégration continue',
+        'Mentorat et formation d\'équipes (JS, Vue.js, Node.js)',
+        'Librairie de composants Vue.js 2',
+        'Application kiosque tactile pour hôpitaux',
+        'Interface admin d\'interopérabilité santé'
       ]
     }
   },
   leadership: {
     title: 'Leadership',
-    subtitle: 'Multiplicateur de connaissances',
-    presentations: 'Présentations',
+    subtitle: 'Développer les talents & partager les savoirs',
+    presentations: 'Rituels d\'équipe',
     conferences: 'Conférences',
-    mentoring: 'Mentorat',
+    mentoring: 'Construction d\'équipe',
     recruited: 'Développeurs recrutés',
     interns: 'Stagiaires encadrés',
     apprentices: 'Alternant encadré',
-    monthlyPresentations: '1 présentation mensuelle développeur',
-    architectureMeetings: '1 réunion d\'architecture'
+    monthlyPresentations: 'Présentation tech mensuelle',
+    architectureMeetings: 'Réunion d\'architecture'
   },
   skills: {
     title: 'Compétences',

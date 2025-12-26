@@ -2,7 +2,7 @@ import type { ResumeData } from '../types/resume'
 
 export const resumeData: ResumeData = {
   name: 'Damien Battistella',
-  title: 'Team Leader R&D ERP-PAS',
+  title: 'Technical Lead Manager',
   company: 'Dedalus',
   location: 'France',
   bio: 'Passionate JavaScript developer, Tech Geek, Raspberry Pi & ESP lover. I build code, I build things, I share knowledge.',
@@ -21,19 +21,37 @@ export const resumeData: ResumeData = {
 
   experiences: [
     {
-      id: 'dedalus',
+      id: 'dedalus-lead',
       company: 'Dedalus',
-      title: 'Team Leader R&D ERP-PAS',
-      period: '2020 - Present',
+      title: 'Technical Lead Manager',
+      period: '2022 - Present',
+      duration: '3 years',
       current: true,
       achievements: [
-        'Clean Architecture migration',
-        'Monorepo implementation',
-        'Team recruitment',
-        'AWS cloud migration',
-        'AI implementation (Agents, MCP, LLM)',
-        'Rust rewrite of desktop application',
-        'Microservices architecture'
+        'Led cross-functional team of 6 developers',
+        'Healthcare interoperability platform (HL7, IHE PAM, HPRIM XML)',
+        'Full-stack tech strategy (Vue.js 3, Node.js, PostgreSQL)',
+        'Legacy system modernization (30 years old software)',
+        'DevOps practices (GitLab CI/CD, Playwright, Vitest, Docker)',
+        'AI research initiatives for team productivity'
+      ]
+    },
+    {
+      id: 'dedalus-dev',
+      company: 'Dedalus',
+      title: 'R&D Full Stack Developer',
+      period: '2016 - 2022',
+      duration: '6 years',
+      current: false,
+      achievements: [
+        'SQL query builder library in TypeScript (Oracle & PostgreSQL)',
+        'Legacy to web application migration',
+        'Clean Architecture web servers in Node.js',
+        'Unit tests and CI implementation',
+        'Team mentoring and training (JS, Vue.js, Node.js)',
+        'Vue.js 2 components library',
+        'Hospital kiosk touch screen application',
+        'Healthcare interoperability admin interface'
       ]
     }
   ],

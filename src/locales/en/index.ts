@@ -137,31 +137,48 @@ export default {
     current: 'Current position',
     years: 'years',
     achievements: 'Key achievements',
-    dedalus: {
-      title: 'R&D Team Leader ERP-PAS',
+    'dedalus-lead': {
+      title: 'Technical Lead Manager',
       company: 'Dedalus',
-      period: '2020 - Present',
-      description: 'Technical leadership of a development team, microservices architecture, legacy application modernization.',
+      period: '2022 - Present',
+      description: 'Technical leadership of a cross-functional development team, healthcare interoperability platform, legacy modernization.',
       achievements: [
-        'Migration to Clean Architecture',
-        'Monorepo implementation',
-        'Team recruitment and training',
-        'AWS migration',
-        'AI implementation (Agents, MCP, LLM)'
+        'Led cross-functional team of 6 developers',
+        'Healthcare interoperability platform (HL7, IHE PAM, HPRIM XML)',
+        'Full-stack tech strategy (Vue.js 3, Node.js, PostgreSQL)',
+        'Legacy system modernization (30 years old software)',
+        'DevOps practices (GitLab CI/CD, Playwright, Vitest, Docker)',
+        'AI research initiatives for team productivity'
+      ]
+    },
+    'dedalus-dev': {
+      title: 'R&D Full Stack Developer',
+      company: 'Dedalus',
+      period: '2016 - 2022',
+      description: 'Full-stack development, library creation, team mentoring, healthcare applications.',
+      achievements: [
+        'SQL query builder library in TypeScript (Oracle & PostgreSQL)',
+        'Legacy to web application migration',
+        'Clean Architecture web servers in Node.js',
+        'Unit tests and CI implementation',
+        'Team mentoring and training (JS, Vue.js, Node.js)',
+        'Vue.js 2 components library',
+        'Hospital kiosk touch screen application',
+        'Healthcare interoperability admin interface'
       ]
     }
   },
   leadership: {
     title: 'Leadership',
-    subtitle: 'Knowledge Multiplier',
-    presentations: 'Presentations',
+    subtitle: 'Growing Teams & Sharing Knowledge',
+    presentations: 'Team Rituals',
     conferences: 'Conferences',
-    mentoring: 'Mentoring',
+    mentoring: 'Team Building',
     recruited: 'Developers recruited',
     interns: 'Interns mentored',
     apprentices: 'Apprentice mentored',
-    monthlyPresentations: '1 monthly developer presentation',
-    architectureMeetings: '1 architecture meeting'
+    monthlyPresentations: 'Monthly tech presentation',
+    architectureMeetings: 'Architecture meeting'
   },
   skills: {
     title: 'Skills',

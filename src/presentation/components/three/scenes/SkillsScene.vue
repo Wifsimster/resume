@@ -20,7 +20,7 @@ const tools = [
 
 // Reactive tool states for animations
 const toolStates = reactive(
-  tools.map((_, i) => ({
+  tools.map(() => ({
     y: 0.6,
     rotationY: 0,
     scale: 1,

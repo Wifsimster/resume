@@ -318,7 +318,7 @@ const segmentCount = computed(() => props.quality === 'high' ? 32 : 16)
     
     <!-- Energy orbs traveling to team members -->
     <TresMesh 
-      v-for="(orb, index) in energyOrbs" 
+      v-for="(_orb, index) in energyOrbs" 
       :key="'orb-' + index"
       :ref="(el) => setEnergyOrbRef(el, index)"
       :position="[0, 1.5, 0]"

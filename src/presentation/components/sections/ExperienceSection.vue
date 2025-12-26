@@ -46,7 +46,10 @@ const { quality } = useQuality()
                 <span class="font-(--font-code) text-sm text-(--color-vue-green)">{{ exp.company }}</span>
                 <span v-if="exp.current" class="text-[0.7rem] py-0.5 px-2 bg-(--color-terminal-green) text-(--color-wood-dark) rounded uppercase font-semibold">{{ t('experience.current') }}</span>
               </div>
-              <span class="font-(--font-code) text-sm text-white/50">{{ exp.period }}</span>
+              <div class="flex items-center gap-2">
+                <span class="font-(--font-code) text-sm text-white/50">{{ exp.period }}</span>
+                <span class="font-(--font-code) text-xs text-(--color-terminal-green)/70">· {{ exp.duration }}</span>
+              </div>
             </div>
             
             <h3 class="font-(--font-display) text-[1.75rem] sm:text-[1.4rem] text-(--color-paper-cream) mb-2">{{ t(`experience.${exp.id}.title`) }}</h3>

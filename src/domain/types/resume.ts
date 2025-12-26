@@ -9,6 +9,7 @@ export interface Experience {
   company: string
   title: string
   period: string
+  duration: string
   current: boolean
   achievements: string[]
 }
