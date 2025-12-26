@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, reactive } from 'vue'
 import type { QualityLevel } from '@application/composables/useQuality'
+import { resumeData } from '@domain/data/resume'
 
 const props = defineProps<{
   quality: QualityLevel
@@ -8,40 +9,90 @@ const props = defineProps<{
 
 // Main refs
 const sceneRef = ref()
+const bookshelfRef = ref()
+const floatingBooksRef = ref<any[]>([])
 const openBookRef = ref()
 const leftPageRef = ref()
 const rightPageRef = ref()
-const orbitingBooksRef = ref<any[]>([])
-const knowledgeParticlesRef = ref<any[]>([])
-const quillRef = ref()
+const pageTurnRefs = ref<any[]>([])
+const readingLightRef = ref()
+const bookGlowRefs = ref<any[]>([])
 
-// Orbiting books configuration
-const orbitingBooks = [
-  { radius: 2.8, speed: 0.25, yOffset: 0, color: '#1E3A5F', emissive: '#0D47A1', tilt: 0.3 },
-  { radius: 3.2, speed: -0.18, yOffset: 0.5, color: '#4A1942', emissive: '#6A1B9A', tilt: -0.2 },
-  { radius: 2.5, speed: 0.32, yOffset: -0.3, color: '#2E4A32', emissive: '#1B5E20', tilt: 0.15 },
-  { radius: 3.5, speed: -0.15, yOffset: 0.8, color: '#5D3A1A', emissive: '#8B4513', tilt: -0.4 },
-  { radius: 2.2, speed: 0.4, yOffset: -0.6, color: '#8B0000', emissive: '#C62828', tilt: 0.25 },
-  { radius: 3.8, speed: 0.12, yOffset: 1.1, color: '#1A3A4A', emissive: '#006064', tilt: -0.1 },
-]
+// Book colors based on status and theme
+const getBookColor = (status: string, index: number) => {
+  const readColors = [
+    { cover: '#2C3E50', spine: '#34495E', emissive: '#3498DB' }, // Clean Architecture - Blue
+    { cover: '#8B4513', spine: '#A0522D', emissive: '#D2691E' }, // Pragmatic Programmer - Brown
+    { cover: '#1A237E', spine: '#283593', emissive: '#3949AB' }, // Philosophy - Indigo
+  ]
+  const toReadColors = [
+    { cover: '#4A148C', spine: '#6A1B9A', emissive: '#7B1FA2' }, // $100M Leads - Purple
+    { cover: '#1B5E20', spine: '#2E7D32', emissive: '#388E3C' }, // Data Intensive - Green
+    { cover: '#B71C1C', spine: '#C62828', emissive: '#D32F2F' }, // Company of One - Red
+  ]
+  
+  if (status === 'read') {
+    return readColors[index % readColors.length]
+  }
+  return toReadColors[index % toReadColors.length]
+}
 
-// Knowledge particles that rise from open book
-const particleCount = computed(() => props.quality === 'high' ? 80 : 20)
-const knowledgeParticles = reactive<Array<{ x: number, y: number, z: number, speed: number, char: string, opacity: number }>>([])
+// Create floating books from actual resume data
+const floatingBooks = resumeData.books.map((book, index) => {
+  const colors = getBookColor(book.status, index)
+  const angle = (index / resumeData.books.length) * Math.PI * 2
+  const radius = 2.5 + (index % 3) * 0.8
+  const yOffset = -0.5 + (index % 4) * 0.4
+  
+  return {
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    status: book.status,
+    angle,
+    radius,
+    yOffset,
+    speed: 0.15 + (index % 3) * 0.05,
+    direction: index % 2 === 0 ? 1 : -1,
+    colors,
+    thickness: 0.12 + (index % 3) * 0.03,
+    width: 0.4,
+    height: 0.6
+  }
+})
 
-// Characters that represent "knowledge" - mix of letters, symbols, code
-const knowledgeChars = ['α', 'β', 'γ', 'δ', 'λ', 'π', 'Σ', '∞', '→', '≡', '∂', '∫', '{', '}', '<', '>', '/', '*', '=', '+']
+// Page turning animation for open book
+const pageCount = 20
+// Initialize page refs array immediately
+pageTurnRefs.value = Array.from({ length: pageCount }, () => null)
+
+// Knowledge particles - words and letters floating from books
+const particleCount = computed(() => props.quality === 'high' ? 60 : 20)
+const knowledgeParticles = reactive<Array<{ 
+  x: number, 
+  y: number, 
+  z: number, 
+  speed: number, 
+  rotation: number,
+  rotationSpeed: number,
+  opacity: number,
+  scale: number
+}>>([])
 
 const initParticles = () => {
   knowledgeParticles.length = 0
   for (let i = 0; i < particleCount.value; i++) {
+    const angle = Math.random() * Math.PI * 2
+    const radius = 1.5 + Math.random() * 2
     knowledgeParticles.push({
-      x: (Math.random() - 0.5) * 1.2,
-      y: Math.random() * 4,
-      z: (Math.random() - 0.5) * 0.8,
-      speed: 0.3 + Math.random() * 0.5,
-      char: knowledgeChars[Math.floor(Math.random() * knowledgeChars.length)],
-      opacity: Math.random()
+      x: Math.cos(angle) * radius,
+      y: -1 + Math.random() * 3,
+      z: Math.sin(angle) * radius,
+      speed: 0.2 + Math.random() * 0.3,
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.1,
+      opacity: 0.3 + Math.random() * 0.5,
+      scale: 0.8 + Math.random() * 0.4
     })
   }
 }
@@ -52,81 +103,128 @@ let startTime = 0
 const animate = () => {
   const elapsed = (Date.now() - startTime) / 1000
 
-  // Scene gentle rotation
+  // Gentle scene rotation - like viewing a library
   if (sceneRef.value) {
-    sceneRef.value.rotation.y = Math.sin(elapsed * 0.1) * 0.15
+    sceneRef.value.rotation.y = Math.sin(elapsed * 0.08) * 0.1
   }
 
-  // Open book hover animation
-  if (openBookRef.value) {
-    openBookRef.value.position.y = Math.sin(elapsed * 0.8) * 0.08
-    openBookRef.value.rotation.z = Math.sin(elapsed * 0.5) * 0.02
+  // Bookshelf subtle sway
+  if (bookshelfRef.value) {
+    bookshelfRef.value.position.y = Math.sin(elapsed * 0.3) * 0.02
   }
 
-  // Page flutter animation
-  if (leftPageRef.value && rightPageRef.value) {
-    const pageFlutter = Math.sin(elapsed * 2.5) * 0.05
-    leftPageRef.value.rotation.y = -0.4 + pageFlutter
-    rightPageRef.value.rotation.y = 0.4 - pageFlutter
-  }
-
-  // Orbiting books animation
-  orbitingBooksRef.value.forEach((bookRef, index) => {
-    if (bookRef) {
-      const book = orbitingBooks[index]
-      const angle = elapsed * book.speed
+  // Floating books - gentle orbit around center
+  floatingBooksRef.value.forEach((bookRef, index) => {
+    if (bookRef && floatingBooks[index]) {
+      const book = floatingBooks[index]
+      const angle = book.angle + elapsed * book.speed * book.direction
+      
+      // Circular orbit
       bookRef.position.x = Math.cos(angle) * book.radius
       bookRef.position.z = Math.sin(angle) * book.radius
-      bookRef.position.y = book.yOffset + Math.sin(elapsed * 0.6 + index) * 0.2
+      
+      // Vertical float
+      bookRef.position.y = book.yOffset + Math.sin(elapsed * 0.5 + index * 0.3) * 0.15
+      
+      // Book rotation - always face outward
       bookRef.rotation.y = -angle + Math.PI / 2
-      bookRef.rotation.x = Math.sin(elapsed * 0.4 + index * 0.5) * 0.1
-      bookRef.rotation.z = book.tilt + Math.sin(elapsed * 0.3 + index) * 0.05
-    }
-  })
-
-  // Knowledge particles rising animation
-  knowledgeParticlesRef.value.forEach((particleRef, index) => {
-    if (particleRef && knowledgeParticles[index]) {
-      const particle = knowledgeParticles[index]
-      particle.y += particle.speed * 0.016
-      particle.opacity = Math.sin((particle.y / 4) * Math.PI) * 0.8
-
-      // Reset particle when it goes too high
-      if (particle.y > 4) {
-        particle.y = 0
-        particle.x = (Math.random() - 0.5) * 1.2
-        particle.z = (Math.random() - 0.5) * 0.8
-        particle.speed = 0.3 + Math.random() * 0.5
-        particle.char = knowledgeChars[Math.floor(Math.random() * knowledgeChars.length)]
+      bookRef.rotation.x = Math.sin(elapsed * 0.4 + index) * 0.08
+      bookRef.rotation.z = Math.sin(elapsed * 0.3 + index * 0.5) * 0.05
+      
+      // Gentle scale pulse for read books
+      if (book.status === 'read') {
+        const pulse = 1 + Math.sin(elapsed * 1.2 + index) * 0.03
+        bookRef.scale.set(pulse, pulse, pulse)
       }
-
-      particleRef.position.y = particle.y + 0.3
-      particleRef.position.x = particle.x + Math.sin(elapsed * 2 + index * 0.3) * 0.1
-      particleRef.position.z = particle.z
     }
   })
 
-  // Quill writing animation
-  if (quillRef.value) {
-    quillRef.value.position.y = 2.5 + Math.sin(elapsed * 1.2) * 0.15
-    quillRef.value.rotation.z = Math.sin(elapsed * 0.8) * 0.2 - 0.3
-    quillRef.value.rotation.x = Math.sin(elapsed * 1.5) * 0.1
+  // Open book - centerpiece with page turning
+  if (openBookRef.value) {
+    openBookRef.value.position.y = Math.sin(elapsed * 0.6) * 0.05
+    openBookRef.value.rotation.y = Math.sin(elapsed * 0.1) * 0.05
   }
+
+  // Page flutter - realistic page movement
+  if (leftPageRef.value && rightPageRef.value) {
+    const pageFlutter = Math.sin(elapsed * 1.8) * 0.03
+    leftPageRef.value.rotation.y = -0.35 + pageFlutter
+    rightPageRef.value.rotation.y = 0.35 - pageFlutter
+  }
+
+  // Page turning animation - sequential pages turning
+  pageTurnRefs.value.forEach((pageRef, index) => {
+    if (pageRef) {
+      const pagePhase = ((elapsed * 0.3 + index * 0.1) % 1)
+      const isTurning = pagePhase < 0.3
+      
+      if (isTurning) {
+        const turnProgress = pagePhase / 0.3
+        pageRef.rotation.y = -0.35 + turnProgress * 0.7
+        pageRef.position.x = -0.05 + turnProgress * 0.1
+      } else {
+        pageRef.rotation.y = 0.35
+        pageRef.position.x = 0.05
+      }
+    }
+  })
+
+  // Reading light - warm glow that moves
+  if (readingLightRef.value) {
+    readingLightRef.value.position.y = 1.2 + Math.sin(elapsed * 0.4) * 0.1
+    readingLightRef.value.intensity = 0.8 + Math.sin(elapsed * 1.5) * 0.2
+  }
+
+  // Knowledge particles - floating words/letters from books
+  knowledgeParticles.forEach((particle, index) => {
+    particle.y += particle.speed * 0.016
+    particle.rotation += particle.rotationSpeed
+    
+    // Gentle drift
+    particle.x += Math.sin(elapsed * 0.5 + index) * 0.01
+    particle.z += Math.cos(elapsed * 0.5 + index) * 0.01
+    
+    // Fade in/out
+    const fadePhase = (particle.y / 3) % 1
+    particle.opacity = Math.sin(fadePhase * Math.PI) * 0.6
+    
+    // Reset when too high
+    if (particle.y > 3) {
+      const angle = Math.random() * Math.PI * 2
+      const radius = 1.5 + Math.random() * 2
+      particle.x = Math.cos(angle) * radius
+      particle.y = -1
+      particle.z = Math.sin(angle) * radius
+      particle.rotation = Math.random() * Math.PI * 2
+      particle.opacity = 0.3 + Math.random() * 0.5
+    }
+  })
+
+  // Book glows - subtle pulsing for read books
+  bookGlowRefs.value.forEach((glowRef, index) => {
+    if (glowRef && floatingBooks[index]?.status === 'read') {
+      const pulse = 0.15 + Math.sin(elapsed * 1.5 + index) * 0.05
+      if (glowRef.material) {
+        glowRef.material.opacity = pulse
+      }
+    }
+  })
 
   animationId = requestAnimationFrame(animate)
 }
 
-const setOrbitingBookRef = (el: any, index: number) => {
+const setFloatingBookRef = (el: any, index: number) => {
   if (el) {
-    orbitingBooksRef.value[index] = el
+    floatingBooksRef.value[index] = el
   }
 }
 
-const setParticleRef = (el: any, index: number) => {
+const setBookGlowRef = (el: any, index: number) => {
   if (el) {
-    knowledgeParticlesRef.value[index] = el
+    bookGlowRefs.value[index] = el
   }
 }
+void setBookGlowRef // Used in template
 
 onMounted(() => {
   initParticles()
@@ -142,29 +240,31 @@ const segmentCount = computed(() => props.quality === 'high' ? 48 : 16)
 </script>
 
 <template>
-  <TresPerspectiveCamera :position="[0, 2, 7]" :look-at="[0, 0.5, 0]" />
+  <TresPerspectiveCamera :position="[0, 1.5, 8]" :look-at="[0, 0, 0]" />
 
-  <!-- Ambient and accent lighting -->
-  <TresAmbientLight :intensity="0.2" />
-  <TresPointLight :position="[0, 5, 0]" :intensity="0.8" color="#FFE4B5" />
-  <TresPointLight :position="[-4, 3, 3]" :intensity="0.5" color="#A855F7" />
-  <TresPointLight :position="[4, 2, 2]" :intensity="0.4" color="#3B82F6" />
-  <TresPointLight :position="[0, 1, 4]" :intensity="0.6" color="#FBBF24" />
-  <TresSpotLight 
-    :position="[0, 6, 2]" 
-    :intensity="1.2" 
-    :angle="0.5" 
-    :penumbra="0.8" 
-    color="#FFF8DC"
-    :target-position="[0, 0, 0]"
+  <!-- Library lighting - warm and cozy -->
+  <TresAmbientLight :intensity="0.15" />
+  <!-- Reading lamp - warm golden light -->
+  <TresPointLight 
+    ref="readingLightRef"
+    :position="[0, 1.5, 2]" 
+    :intensity="0.9" 
+    color="#FFE4B5" 
+    :distance="8"
+    :decay="2"
   />
+  <!-- Accent lights from books -->
+  <TresPointLight :position="[-3, 1, 2]" :intensity="0.4" color="#3498DB" :distance="6" />
+  <TresPointLight :position="[3, 1, 2]" :intensity="0.4" color="#7B1FA2" :distance="6" />
+  <!-- Backlight for depth -->
+  <TresPointLight :position="[0, 2, -3]" :intensity="0.3" color="#FBBF24" :distance="10" />
 
   <TresGroup ref="sceneRef">
-    <!-- Central Open Book -->
-    <TresGroup ref="openBookRef" :position="[0, 0, 0]">
+    <!-- Central Open Book - main focus -->
+    <TresGroup ref="openBookRef" :position="[0, 0.5, 0]">
       <!-- Book spine -->
-      <TresMesh :position="[0, -0.02, 0]">
-        <TresBoxGeometry :args="[0.1, 0.08, 1.4]" />
+      <TresMesh :position="[0, 0, 0]">
+        <TresBoxGeometry :args="[0.12, 0.1, 1.5]" />
         <TresMeshStandardMaterial
           :color="'#8B4513'"
           :roughness="0.7"
@@ -172,196 +272,196 @@ const segmentCount = computed(() => props.quality === 'high' ? 48 : 16)
         />
       </TresMesh>
 
-      <!-- Left cover -->
-      <TresGroup ref="leftPageRef" :position="[-0.05, 0, 0]">
-        <TresMesh :position="[-0.45, 0, 0]" :rotation="[0, -0.4, 0]">
-          <TresBoxGeometry :args="[0.9, 0.04, 1.3]" />
+      <!-- Left cover and pages -->
+      <TresGroup ref="leftPageRef" :position="[-0.06, 0, 0]">
+        <!-- Cover -->
+        <TresMesh :position="[-0.5, 0, 0]" :rotation="[0, -0.35, 0]">
+          <TresBoxGeometry :args="[1, 0.05, 1.4]" />
           <TresMeshStandardMaterial
             :color="'#6B3A19'"
             :roughness="0.6"
             :metalness="0.1"
           />
         </TresMesh>
-        <!-- Left pages -->
-        <TresMesh :position="[-0.42, 0.03, 0]" :rotation="[0, -0.4, 0]">
-          <TresBoxGeometry :args="[0.82, 0.05, 1.2]" />
+        <!-- Pages stack -->
+        <TresMesh :position="[-0.48, 0.02, 0]" :rotation="[0, -0.35, 0]">
+          <TresBoxGeometry :args="[0.92, 0.08, 1.3]" />
           <TresMeshStandardMaterial
             :color="'#FFF8E7'"
             :roughness="0.95"
             :emissive="'#FBBF24'"
-            :emissive-intensity="0.05"
+            :emissive-intensity="0.08"
           />
         </TresMesh>
-        <!-- Page lines (text representation) -->
-        <TresMesh v-for="i in 6" :key="`left-line-${i}`" 
-          :position="[-0.42, 0.06, -0.4 + i * 0.13]" 
-          :rotation="[0, -0.4, 0]">
-          <TresBoxGeometry :args="[0.6, 0.005, 0.02]" />
-          <TresMeshBasicMaterial :color="'#8B7355'" :opacity="0.5" :transparent="true" />
+        <!-- Text lines -->
+        <TresMesh 
+          v-for="i in 8" 
+          :key="`left-line-${i}`" 
+          :position="[-0.48, 0.06, -0.5 + i * 0.15]" 
+          :rotation="[0, -0.35, 0]"
+        >
+          <TresBoxGeometry :args="[0.7, 0.003, 0.015]" />
+          <TresMeshBasicMaterial :color="'#8B7355'" :opacity="0.4" :transparent="true" />
         </TresMesh>
       </TresGroup>
 
-      <!-- Right cover -->
-      <TresGroup ref="rightPageRef" :position="[0.05, 0, 0]">
-        <TresMesh :position="[0.45, 0, 0]" :rotation="[0, 0.4, 0]">
-          <TresBoxGeometry :args="[0.9, 0.04, 1.3]" />
+      <!-- Right cover and pages -->
+      <TresGroup ref="rightPageRef" :position="[0.06, 0, 0]">
+        <!-- Cover -->
+        <TresMesh :position="[0.5, 0, 0]" :rotation="[0, 0.35, 0]">
+          <TresBoxGeometry :args="[1, 0.05, 1.4]" />
           <TresMeshStandardMaterial
             :color="'#6B3A19'"
             :roughness="0.6"
             :metalness="0.1"
           />
         </TresMesh>
-        <!-- Right pages -->
-        <TresMesh :position="[0.42, 0.03, 0]" :rotation="[0, 0.4, 0]">
-          <TresBoxGeometry :args="[0.82, 0.05, 1.2]" />
+        <!-- Pages stack -->
+        <TresMesh :position="[0.48, 0.02, 0]" :rotation="[0, 0.35, 0]">
+          <TresBoxGeometry :args="[0.92, 0.08, 1.3]" />
           <TresMeshStandardMaterial
             :color="'#FFF8E7'"
             :roughness="0.95"
             :emissive="'#FBBF24'"
-            :emissive-intensity="0.05"
+            :emissive-intensity="0.08"
           />
         </TresMesh>
-        <!-- Page lines (text representation) -->
-        <TresMesh v-for="i in 6" :key="`right-line-${i}`" 
-          :position="[0.42, 0.06, -0.4 + i * 0.13]" 
-          :rotation="[0, 0.4, 0]">
-          <TresBoxGeometry :args="[0.6, 0.005, 0.02]" />
-          <TresMeshBasicMaterial :color="'#8B7355'" :opacity="0.5" :transparent="true" />
+        <!-- Text lines -->
+        <TresMesh 
+          v-for="i in 8" 
+          :key="`right-line-${i}`" 
+          :position="[0.48, 0.06, -0.5 + i * 0.15]" 
+          :rotation="[0, 0.35, 0]"
+        >
+          <TresBoxGeometry :args="[0.7, 0.003, 0.015]" />
+          <TresMeshBasicMaterial :color="'#8B7355'" :opacity="0.4" :transparent="true" />
         </TresMesh>
       </TresGroup>
 
-      <!-- Magical glow from book -->
+      <!-- Individual pages turning -->
+      <TresGroup v-for="(_, index) in pageCount" :key="`page-${index}`">
+        <TresMesh 
+          :ref="(el) => { if (el && pageTurnRefs.value) pageTurnRefs.value[index] = el }"
+          :position="[0.05 - ((index + 1) / pageCount) * 0.1, 0.02 + ((index + 1) / pageCount) * 0.001, 0]" 
+          :rotation="[0, 0.35, 0]"
+        >
+          <TresPlaneGeometry :args="[0.9, 1.3]" />
+          <TresMeshBasicMaterial 
+            :color="'#FFF8E7'" 
+            :opacity="0.9 - ((index + 1) / pageCount) * 0.3" 
+            :transparent="true" 
+            :side="2"
+          />
+        </TresMesh>
+      </TresGroup>
+
+      <!-- Warm glow from open book -->
       <TresMesh :position="[0, 0.3, 0]">
-        <TresSphereGeometry :args="[0.8, segmentCount, segmentCount]" />
-        <TresMeshBasicMaterial :color="'#FBBF24'" :opacity="0.08" :transparent="true" />
-      </TresMesh>
-      <TresMesh :position="[0, 0.5, 0]">
-        <TresSphereGeometry :args="[1.2, segmentCount, segmentCount]" />
-        <TresMeshBasicMaterial :color="'#A855F7'" :opacity="0.04" :transparent="true" />
+        <TresSphereGeometry :args="[0.9, segmentCount, segmentCount]" />
+        <TresMeshBasicMaterial :color="'#FBBF24'" :opacity="0.12" :transparent="true" />
       </TresMesh>
     </TresGroup>
 
-    <!-- Knowledge particles rising from the book -->
-    <TresGroup :position="[0, 0, 0]">
+    <!-- Bookshelf background -->
+    <TresGroup ref="bookshelfRef" :position="[0, -0.5, -2]">
+      <!-- Shelf structure -->
+      <TresMesh :position="[0, 0.8, 0]">
+        <TresBoxGeometry :args="[6, 0.1, 0.3]" />
+        <TresMeshStandardMaterial :color="'#3E2723'" :roughness="0.8" :metalness="0.1" />
+      </TresMesh>
+      <TresMesh :position="[0, 0.2, 0]">
+        <TresBoxGeometry :args="[6, 0.1, 0.3]" />
+        <TresMeshStandardMaterial :color="'#3E2723'" :roughness="0.8" :metalness="0.1" />
+      </TresMesh>
+      <TresMesh :position="[0, -0.4, 0]">
+        <TresBoxGeometry :args="[6, 0.1, 0.3]" />
+        <TresMeshStandardMaterial :color="'#3E2723'" :roughness="0.8" :metalness="0.1" />
+      </TresMesh>
+      <!-- Side supports -->
+      <TresMesh :position="[-3, 0.2, 0]">
+        <TresBoxGeometry :args="[0.1, 1.3, 0.3]" />
+        <TresMeshStandardMaterial :color="'#2E1B14'" :roughness="0.8" />
+      </TresMesh>
+      <TresMesh :position="[3, 0.2, 0]">
+        <TresBoxGeometry :args="[0.1, 1.3, 0.3]" />
+        <TresMeshStandardMaterial :color="'#2E1B14'" :roughness="0.8" />
+      </TresMesh>
+    </TresGroup>
+
+    <!-- Knowledge particles - floating words/letters -->
+    <TresGroup>
       <TresMesh
         v-for="(particle, index) in knowledgeParticles"
         :key="`particle-${index}`"
-        :ref="(el) => setParticleRef(el, index)"
-        :position="[particle.x, particle.y + 0.3, particle.z]"
+        :position="[particle.x, particle.y, particle.z]"
+        :rotation="[0, particle.rotation, 0]"
+        :scale="[particle.scale, particle.scale, particle.scale]"
       >
-        <TresPlaneGeometry :args="[0.12, 0.12]" />
+        <TresPlaneGeometry :args="[0.15, 0.15]" />
         <TresMeshBasicMaterial
-          :color="index % 3 === 0 ? '#FBBF24' : index % 3 === 1 ? '#A855F7' : '#3B82F6'"
-          :opacity="particle.opacity * 0.7"
+          :color="index % 4 === 0 ? '#FBBF24' : index % 4 === 1 ? '#3498DB' : index % 4 === 2 ? '#7B1FA2' : '#FFFFFF'"
+          :opacity="particle.opacity"
           :transparent="true"
           :side="2"
         />
       </TresMesh>
     </TresGroup>
 
-    <!-- Orbiting Books -->
+    <!-- Floating Books - from actual resume data -->
     <TresGroup
-      v-for="(book, index) in orbitingBooks"
-      :key="`orbit-book-${index}`"
-      :ref="(el) => setOrbitingBookRef(el, index)"
-      :position="[book.radius, book.yOffset, 0]"
+      v-for="(book, index) in floatingBooks"
+      :key="`book-${book.id}`"
+      :ref="(el) => setFloatingBookRef(el, index)"
+      :position="[Math.cos(book.angle) * book.radius, book.yOffset, Math.sin(book.angle) * book.radius]"
     >
-      <!-- Book cover -->
+      <!-- Book cover (front) -->
       <TresMesh>
-        <TresBoxGeometry :args="[0.35, 0.5, 0.08]" />
+        <TresBoxGeometry :args="[book.width, book.height, book.thickness]" />
         <TresMeshStandardMaterial
-          :color="book.color"
-          :emissive="book.emissive"
-          :emissive-intensity="0.25"
+          :color="book.colors.cover"
+          :emissive="book.colors.emissive"
+          :emissive-intensity="book.status === 'read' ? 0.3 : 0.15"
           :roughness="0.6"
           :metalness="0.2"
         />
       </TresMesh>
       <!-- Book pages (side) -->
-      <TresMesh :position="[0.01, 0, 0]">
-        <TresBoxGeometry :args="[0.32, 0.46, 0.06]" />
+      <TresMesh :position="[0, 0, book.thickness / 2 + 0.01]">
+        <TresBoxGeometry :args="[book.width * 0.95, book.height * 0.95, 0.02]" />
         <TresMeshStandardMaterial :color="'#F5F5DC'" :roughness="0.9" />
       </TresMesh>
-      <!-- Spine detail -->
-      <TresMesh :position="[-0.17, 0, 0]">
-        <TresBoxGeometry :args="[0.02, 0.52, 0.09]" />
+      <!-- Spine -->
+      <TresMesh :position="[-book.width / 2, 0, 0]">
+        <TresBoxGeometry :args="[0.03, book.height, book.thickness]" />
         <TresMeshStandardMaterial
-          :color="book.emissive"
+          :color="book.colors.spine"
           :roughness="0.5"
           :metalness="0.3"
         />
       </TresMesh>
-      <!-- Subtle glow -->
-      <TresMesh>
-        <TresSphereGeometry :args="[0.4, 8, 8]" />
-        <TresMeshBasicMaterial :color="book.emissive" :opacity="0.08" :transparent="true" />
-      </TresMesh>
-    </TresGroup>
-
-    <!-- Floating Quill -->
-    <TresGroup ref="quillRef" :position="[1.8, 2.5, 0.5]" :rotation="[0.2, -0.5, -0.3]">
-      <!-- Feather shaft -->
-      <TresMesh>
-        <TresCylinderGeometry :args="[0.015, 0.008, 0.8, 8]" />
-        <TresMeshStandardMaterial :color="'#F5F5DC'" :roughness="0.4" />
-      </TresMesh>
-      <!-- Feather tip (nib) -->
-      <TresMesh :position="[0, -0.42, 0]" :rotation="[0, 0, 0]">
-        <TresConeGeometry :args="[0.015, 0.08, 8]" />
-        <TresMeshStandardMaterial :color="'#B87333'" :metalness="0.8" :roughness="0.2" />
-      </TresMesh>
-      <!-- Feather barbs (simplified) -->
-      <TresMesh :position="[0.08, 0.2, 0]" :rotation="[0, 0, 0.3]">
-        <TresPlaneGeometry :args="[0.15, 0.5]" />
-        <TresMeshStandardMaterial 
-          :color="'#E8E4D9'" 
-          :roughness="0.8" 
-          :side="2"
-          :opacity="0.9"
-          :transparent="true"
-        />
-      </TresMesh>
-      <TresMesh :position="[-0.06, 0.2, 0]" :rotation="[0, 0, -0.25]">
-        <TresPlaneGeometry :args="[0.12, 0.45]" />
-        <TresMeshStandardMaterial 
-          :color="'#E8E4D9'" 
-          :roughness="0.8" 
-          :side="2"
-          :opacity="0.9"
-          :transparent="true"
+      <!-- Glow for read books -->
+      <TresMesh 
+        v-if="book.status === 'read'"
+        :ref="(el) => setBookGlowRef(el, index)"
+      >
+        <TresSphereGeometry :args="[book.width * 1.2, 16, 16]" />
+        <TresMeshBasicMaterial 
+          :color="book.colors.emissive" 
+          :opacity="0.15" 
+          :transparent="true" 
         />
       </TresMesh>
     </TresGroup>
 
-    <!-- Floating bookmarks -->
+    <!-- Orbit ring trails (subtle) -->
     <TresMesh 
-      v-for="i in 3" 
-      :key="`bookmark-${i}`"
-      :position="[
-        Math.cos(i * 2.1) * 2.2,
-        1.5 + i * 0.4,
-        Math.sin(i * 2.1) * 1.5
-      ]"
-      :rotation="[0.2, i * 0.7, 0.1]"
-    >
-      <TresPlaneGeometry :args="[0.08, 0.4]" />
-      <TresMeshStandardMaterial
-        :color="i === 0 ? '#DC2626' : i === 1 ? '#7C3AED' : '#059669'"
-        :emissive="i === 0 ? '#DC2626' : i === 1 ? '#7C3AED' : '#059669'"
-        :emissive-intensity="0.3"
-        :side="2"
-      />
-    </TresMesh>
-
-    <!-- Orbit ring trails (ethereal) -->
-    <TresMesh 
-      v-for="(book, i) in orbitingBooks" 
+      v-for="(book, i) in floatingBooks" 
       :key="`ring-${i}`" 
       :position="[0, book.yOffset, 0]" 
       :rotation="[-Math.PI / 2, 0, 0]"
     >
       <TresTorusGeometry :args="[book.radius, 0.008, 8, 64]" />
-      <TresMeshBasicMaterial :color="book.emissive" :opacity="0.15" :transparent="true" />
+      <TresMeshBasicMaterial :color="book.colors.emissive" :opacity="0.15" :transparent="true" />
     </TresMesh>
   </TresGroup>
 

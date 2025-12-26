@@ -49,7 +49,7 @@ const handleCanvasReady = () => {
       <div class="max-w-[800px]">
         <p class="font-(--font-code) text-base text-(--color-terminal-green) mb-2 opacity-0 animate-fadeInUp [animation-delay:0.2s] sm:text-sm">{{ t('hero.greeting') }}</p>
         <h1 class="text-[clamp(3rem,10vw,7rem)] text-(--color-text-primary) mb-4 [text-shadow:0_0_40px_rgba(124,58,237,0.3)] opacity-0 animate-fadeInUp [animation-delay:0.4s]">{{ t('hero.name') }}</h1>
-        <p class="font-(--font-display) text-[clamp(1.25rem,3vw,2rem)] text-(--color-terminal-green) mb-2 opacity-0 animate-fadeInUp [animation-delay:0.6s]">{{ t('hero.tagline') }}</p>
+        <p class="font-(--font-display) text-[clamp(1.25rem,3vw,2rem)] text-white/90 mb-2 opacity-0 animate-fadeInUp [animation-delay:0.6s]">{{ t('hero.tagline') }}</p>
         <p class="text-lg text-white/70 mb-8 opacity-0 animate-fadeInUp [animation-delay:0.8s] md:text-base">{{ t('hero.subtitle') }}</p>
         
         <button class="btn btn-primary opacity-0 animate-fadeInUp [animation-delay:1s]" @click="scrollToNext">

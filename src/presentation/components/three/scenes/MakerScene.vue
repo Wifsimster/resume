@@ -107,11 +107,12 @@ const animate = () => {
   animationId = requestAnimationFrame(animate)
 }
 
-// LED color with smooth gradient
-const getLedColor = (index: number) => {
+// LED color with smooth gradient (unused but kept for potential future use)
+const _getLedColor = (index: number) => {
   const hue = (index * (360 / ledCount.value) + anim.ledPhase) % 360
   return `hsl(${hue}, 100%, 55%)`
 }
+void _getLedColor // Suppress unused warning
 
 // Server LED state
 const getServerLedState = (serverIndex: number, ledIndex: number) => {
@@ -477,7 +478,7 @@ onUnmounted(() => {
       
       <!-- ===== SPACE ROW ===== -->
       <!-- Ctrl, Win, Alt (gray-blue) -->
-      <TresMesh v-for="(key, i) in 3" :key="`mod-left-${i}`" :position="[-0.7 + i * 0.1, 0.055, 0.27]">
+      <TresMesh v-for="(_key, i) in 3" :key="`mod-left-${i}`" :position="[-0.7 + i * 0.1, 0.055, 0.27]">
         <TresBoxGeometry :args="[0.08, 0.035, 0.07]" />
         <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
       </TresMesh>
@@ -487,7 +488,7 @@ onUnmounted(() => {
         <TresMeshStandardMaterial :color="'#2C3E50'" :roughness="0.45" />
       </TresMesh>
       <!-- Fn, Ctrl right (gray-blue) -->
-      <TresMesh v-for="(key, i) in 2" :key="`mod-right-${i}`" :position="[0.22 + i * 0.1, 0.055, 0.27]">
+      <TresMesh v-for="(_key, i) in 2" :key="`mod-right-${i}`" :position="[0.22 + i * 0.1, 0.055, 0.27]">
         <TresBoxGeometry :args="[0.08, 0.035, 0.07]" />
         <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
       </TresMesh>
