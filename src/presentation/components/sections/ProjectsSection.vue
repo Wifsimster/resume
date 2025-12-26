@@ -3,17 +3,21 @@ import { useI18n } from 'vue-i18n'
 import { TresCanvas } from '@tresjs/core'
 import ProjectsScene from '@presentation/components/three/scenes/ProjectsScene.vue'
 import { useQuality } from '@application/composables/useQuality'
+import { useAchievements } from '@application/composables/useAchievements'
 import { resumeData } from '@domain/data/resume'
 
 const { t } = useI18n()
 const { quality } = useQuality()
+const { unlock } = useAchievements()
 
 const openProject = (url: string) => {
   window.open(url, '_blank', 'noopener,noreferrer')
+  unlock('githubVisitor')
 }
 
 const openGithubProfile = () => {
   window.open(resumeData.github.url, '_blank', 'noopener,noreferrer')
+  unlock('githubVisitor')
 }
 </script>
 

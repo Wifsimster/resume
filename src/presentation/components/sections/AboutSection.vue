@@ -10,7 +10,7 @@ const { quality } = useQuality()
 </script>
 
 <template>
-  <section class="section about-section" data-section="about">
+  <section class="section bg-transparent" data-section="about">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas :clear-color="'#0A0A0A'" :alpha="true">
@@ -19,166 +19,39 @@ const { quality } = useQuality()
     </div>
 
     <!-- Content -->
-    <div class="section-content about-content">
-      <div class="about-header">
-        <h2 class="section-title">{{ t('about.title') }}</h2>
-        <p class="section-subtitle">{{ t('about.subtitle') }}</p>
+    <div class="section-content flex flex-col justify-start items-center md:items-start h-full pt-6 md:pt-8">
+      <div class="mb-4 text-center md:text-left w-full md:w-auto">
+        <h2 class="text-(--color-terminal-green) mb-2">{{ t('about.title') }}</h2>
+        <p class="font-(--font-display) text-2xl text-white/70">{{ t('about.subtitle') }}</p>
       </div>
 
-      <div class="about-compact">
+      <div class="flex flex-col gap-3 w-full md:max-w-[600px]">
         <!-- Bio -->
-        <div class="about-card glass-subtle">
-          <p class="bio">{{ t('about.intro') }}</p>
+        <div class="bg-[#0A0A0A]/60 backdrop-blur-md border border-purple-500/15 rounded-lg py-3 px-4">
+          <p class="text-sm leading-relaxed text-white/85 m-0">{{ t('about.intro') }}</p>
         </div>
 
         <!-- Passions -->
-        <div class="passions-inline">
-          <div 
-            v-for="passion in resumeData.passions" 
-            :key="passion.id"
-            class="passion-tag"
-            :style="{ '--passion-color': passion.color }"
-          >
-            <span class="passion-icon">{{ passion.icon }}</span>
-            <span class="passion-name">{{ t(`about.passions.${passion.id}`) }}</span>
+        <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+          <div v-for="passion in resumeData.passions" :key="passion.id"
+            class="inline-flex items-center gap-1.5 py-1.5 px-2.5 bg-[#0A0A0A]/50 backdrop-blur border rounded-full transition-all duration-150 hover:bg-[#0A0A0A]/70 hover:-translate-y-0.5"
+            :style="{
+              borderColor: `color-mix(in srgb, ${passion.color} 40%, transparent)`,
+              '--passion-color': passion.color
+            }" @mouseenter="($event.currentTarget as HTMLElement).style.borderColor = passion.color"
+            @mouseleave="($event.currentTarget as HTMLElement).style.borderColor = `color-mix(in srgb, ${passion.color} 40%, transparent)`">
+            <span class="text-sm">{{ passion.icon }}</span>
+            <span class="text-xs text-white/90 font-medium">{{ t(`about.passions.${passion.id}`) }}</span>
           </div>
         </div>
 
         <!-- Hobby inline -->
-        <div class="hobby-inline glass-subtle">
-          <span class="hobby-icon">🛠️</span>
-          <p>{{ t('about.gaming') }}</p>
+        <div
+          class="bg-[#0A0A0A]/60 backdrop-blur-md border border-purple-500/15 rounded-lg flex items-center gap-3 py-2.5 px-4">
+          <span class="text-2xl shrink-0">🛠️</span>
+          <p class="text-sm leading-relaxed text-white/80 m-0">{{ t('about.gaming') }}</p>
         </div>
       </div>
     </div>
   </section>
 </template>
-
-<style scoped>
-.about-section {
-  background: transparent;
-}
-
-.about-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-start;
-  height: 100%;
-  padding-bottom: 3rem;
-}
-
-.about-header {
-  margin-bottom: 1rem;
-}
-
-.section-title {
-  color: var(--color-terminal-green);
-  margin-bottom: 0.5rem;
-}
-
-.section-subtitle {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.glass-subtle {
-  background: rgba(10, 10, 10, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(168, 85, 247, 0.15);
-  border-radius: 8px;
-}
-
-.about-compact {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  max-width: 600px;
-}
-
-.about-card {
-  padding: 0.75rem 1rem;
-}
-
-.bio {
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.85);
-  margin: 0;
-}
-
-.passions-inline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.passion-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.6rem;
-  background: rgba(10, 10, 10, 0.5);
-  backdrop-filter: blur(8px);
-  border-radius: 20px;
-  border: 1px solid color-mix(in srgb, var(--passion-color) 40%, transparent);
-  transition: all var(--transition-fast);
-}
-
-.passion-tag:hover {
-  background: rgba(10, 10, 10, 0.7);
-  border-color: var(--passion-color);
-  transform: translateY(-2px);
-}
-
-.passion-icon {
-  font-size: 0.9rem;
-}
-
-.passion-name {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 500;
-}
-
-.hobby-inline {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem 1rem;
-}
-
-.hobby-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-.hobby-inline p {
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.8);
-  margin: 0;
-}
-
-@media (max-width: 768px) {
-  .about-content {
-    padding-bottom: 2rem;
-    align-items: center;
-  }
-  
-  .about-compact {
-    max-width: 100%;
-  }
-  
-  .about-header {
-    text-align: center;
-    width: 100%;
-  }
-  
-  .passions-inline {
-    justify-content: center;
-  }
-}
-</style>
-

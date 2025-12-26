@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { TresCanvas } from '@tresjs/core'
 import MakerScene from '@presentation/components/three/scenes/MakerScene.vue'
 import { useQuality } from '@application/composables/useQuality'
+import { useAchievements } from '@application/composables/useAchievements'
 
 const { t } = useI18n()
 const { quality } = useQuality()
+const { unlock } = useAchievements()
 
 const techStack = [
   { icon: '🔌', label: 'ESP8266' },
@@ -14,6 +17,26 @@ const techStack = [
   { icon: '🏠', label: 'Home Assistant' },
   { icon: '🪵', label: 'Woodworking' }
 ]
+
+// Unlock maker fan achievement when section becomes visible
+onMounted(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          unlock('makerFan')
+          observer.disconnect()
+        }
+      })
+    },
+    { threshold: 0.3 }
+  )
+  
+  const section = document.querySelector('[data-section="maker"]')
+  if (section) {
+    observer.observe(section)
+  }
+})
 </script>
 
 <template>

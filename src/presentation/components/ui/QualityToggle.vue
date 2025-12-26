@@ -2,18 +2,25 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuality } from '@application/composables/useQuality'
+import { useAchievements } from '@application/composables/useAchievements'
 
 const { quality, toggleQuality } = useQuality()
 const { t } = useI18n()
+const { unlock } = useAchievements()
 
 const qualityLabel = computed(() => quality.value === 'high' ? t('common.qualityHigh') : t('common.qualityLow'))
 const qualityTitle = computed(() => t('common.quality'))
+
+const handleToggle = () => {
+  toggleQuality()
+  unlock('qualityToggler')
+}
 </script>
 
 <template>
   <button
     class="quality-toggle"
-    @click="toggleQuality"
+    @click="handleToggle"
     :title="qualityTitle"
     :aria-label="qualityTitle"
   >

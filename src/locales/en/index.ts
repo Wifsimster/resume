@@ -44,19 +44,67 @@ export default {
     nightOwl: {
       name: 'Night Owl',
       desc: 'Visited in dark mode'
+    },
+    firstVisit: {
+      name: 'Welcome',
+      desc: 'First time visiting'
+    },
+    returnVisitor: {
+      name: 'Return Visitor',
+      desc: 'Came back for more'
+    },
+    earlyBird: {
+      name: 'Early Bird',
+      desc: 'Visited between 5AM and 8AM'
+    },
+    weekendWarrior: {
+      name: 'Weekend Warrior',
+      desc: 'Visited on a weekend'
+    },
+    timeSpent: {
+      name: 'Deep Diver',
+      desc: 'Spent 5+ minutes exploring'
+    },
+    scrollMaster: {
+      name: 'Scroll Master',
+      desc: 'Scrolled over 10,000 pixels'
+    },
+    clickHappy: {
+      name: 'Click Happy',
+      desc: 'Clicked 50 times'
+    },
+    qualityToggler: {
+      name: 'Graphics Guru',
+      desc: 'Toggled quality settings'
+    },
+    makerFan: {
+      name: 'Maker Fan',
+      desc: 'Explored the maker section'
+    },
+    patience: {
+      name: 'Patient One',
+      desc: 'Waited for all 3D to load'
+    },
+    contactAttempt: {
+      name: 'Reach Out',
+      desc: 'Opened contact section'
+    },
+    githubVisitor: {
+      name: 'Open Sourcer',
+      desc: 'Clicked on a GitHub link'
     }
   },
   hero: {
     greeting: 'Hello, I am',
     name: 'Damien Battistella',
-    tagline: 'I build applications. I build things. I build teams.',
+    tagline: 'I build software, products, and people.',
     subtitle: 'R&D Team Leader at Dedalus',
     cta: 'Discover my journey',
     pressStart: 'Press Enter to start'
   },
   about: {
     title: 'About',
-    subtitle: 'Share, Build, Play',
+    subtitle: 'Build, Share, Experience',
     philosophy: 'My philosophy',
     intro: 'Love building things, physical or digital.',
     passions: {

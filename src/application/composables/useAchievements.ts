@@ -20,7 +20,19 @@ const defaultAchievements: Achievement[] = [
   { id: 'speedRunner', name: 'Speed Runner', description: 'Scrolled through site in < 30s', icon: '⚡', unlocked: false },
   { id: 'completionist', name: 'Completionist', description: 'Unlocked all achievements', icon: '🏆', unlocked: false },
   { id: 'bilingual', name: 'Bilingual', description: 'Switched language', icon: '🌍', unlocked: false },
-  { id: 'nightOwl', name: 'Night Owl', description: 'Visited in dark mode', icon: '🦉', unlocked: false }
+  { id: 'nightOwl', name: 'Night Owl', description: 'Visited in dark mode', icon: '🦉', unlocked: false },
+  { id: 'firstVisit', name: 'Welcome', description: 'First time visiting', icon: '👋', unlocked: false },
+  { id: 'returnVisitor', name: 'Return Visitor', description: 'Came back for more', icon: '🔄', unlocked: false },
+  { id: 'earlyBird', name: 'Early Bird', description: 'Visited between 5AM and 8AM', icon: '🌅', unlocked: false },
+  { id: 'weekendWarrior', name: 'Weekend Warrior', description: 'Visited on a weekend', icon: '🎉', unlocked: false },
+  { id: 'timeSpent', name: 'Deep Diver', description: 'Spent 5+ minutes exploring', icon: '🤿', unlocked: false },
+  { id: 'scrollMaster', name: 'Scroll Master', description: 'Scrolled over 10,000 pixels', icon: '📜', unlocked: false },
+  { id: 'clickHappy', name: 'Click Happy', description: 'Clicked 50 times', icon: '🖱️', unlocked: false },
+  { id: 'qualityToggler', name: 'Graphics Guru', description: 'Toggled quality settings', icon: '🎨', unlocked: false },
+  { id: 'makerFan', name: 'Maker Fan', description: 'Explored the maker section', icon: '🔧', unlocked: false },
+  { id: 'patience', name: 'Patient One', description: 'Waited for all 3D to load', icon: '⏳', unlocked: false },
+  { id: 'contactAttempt', name: 'Reach Out', description: 'Opened contact section', icon: '✉️', unlocked: false },
+  { id: 'githubVisitor', name: 'Open Sourcer', description: 'Clicked on a GitHub link', icon: '🐙', unlocked: false }
 ]
 
 // Load from localStorage

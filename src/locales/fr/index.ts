@@ -44,6 +44,54 @@ export default {
     nightOwl: {
       name: 'Noctambule',
       desc: 'Visité en mode sombre'
+    },
+    firstVisit: {
+      name: 'Bienvenue',
+      desc: 'Première visite sur le site'
+    },
+    returnVisitor: {
+      name: 'Fidèle',
+      desc: 'Revenu pour en voir plus'
+    },
+    earlyBird: {
+      name: 'Lève-tôt',
+      desc: 'Visité entre 5h et 8h du matin'
+    },
+    weekendWarrior: {
+      name: 'Guerrier du weekend',
+      desc: 'Visité un weekend'
+    },
+    timeSpent: {
+      name: 'Plongeur',
+      desc: 'Passé plus de 5 minutes à explorer'
+    },
+    scrollMaster: {
+      name: 'Maître du scroll',
+      desc: 'Scrollé plus de 10 000 pixels'
+    },
+    clickHappy: {
+      name: 'Cliqueur fou',
+      desc: 'Cliqué 50 fois'
+    },
+    qualityToggler: {
+      name: 'Gourou graphique',
+      desc: 'Changé les paramètres de qualité'
+    },
+    makerFan: {
+      name: 'Fan de maker',
+      desc: 'Exploré la section maker'
+    },
+    patience: {
+      name: 'Patient',
+      desc: 'Attendu le chargement complet de la 3D'
+    },
+    contactAttempt: {
+      name: 'Prise de contact',
+      desc: 'Ouvert la section contact'
+    },
+    githubVisitor: {
+      name: 'Open Sourceur',
+      desc: 'Cliqué sur un lien GitHub'
     }
   },
   hero: {
@@ -56,7 +104,7 @@ export default {
   },
   about: {
     title: 'À propos',
-    subtitle: 'Partager, Construire, Jouer',
+    subtitle: 'Construire, Partager, Expérimenter',
     philosophy: 'Ma philosophie',
     intro: 'J\'aime construire des choses, physiques ou numériques.',
     passions: {

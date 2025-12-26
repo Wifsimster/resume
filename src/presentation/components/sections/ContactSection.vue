@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { TresCanvas } from '@tresjs/core'
 import ContactScene from '@presentation/components/three/scenes/ContactScene.vue'
@@ -16,6 +17,26 @@ const openLinkedIn = () => {
   window.open(linkedInUrl, '_blank', 'noopener,noreferrer')
   unlock('networker')
 }
+
+// Unlock contact achievement when section becomes visible
+onMounted(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          unlock('contactAttempt')
+          observer.disconnect()
+        }
+      })
+    },
+    { threshold: 0.3 }
+  )
+  
+  const section = document.querySelector('[data-section="contact"]')
+  if (section) {
+    observer.observe(section)
+  }
+})
 </script>
 
 <template>
