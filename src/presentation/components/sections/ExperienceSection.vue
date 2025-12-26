@@ -234,5 +234,28 @@ const { quality } = useQuality()
     background: linear-gradient(90deg, var(--color-terminal-green), transparent);
   }
 }
+
+@media (max-width: 480px) {
+  .timeline-item {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .job-title {
+    font-size: 1.4rem;
+  }
+  
+  .job-description {
+    font-size: 0.9rem;
+  }
+  
+  .achievements ul {
+    grid-template-columns: 1fr;
+  }
+  
+  .achievements li {
+    font-size: 0.85rem;
+  }
+}
 </style>
 

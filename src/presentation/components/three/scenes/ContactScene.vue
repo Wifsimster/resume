@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, shallowRef, onMounted, onBeforeUnmount, watch } from 'vue'
-import { BufferAttribute, BufferGeometry, Points, PointsMaterial } from 'three'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import type { QualityLevel } from '@application/composables/useQuality'
 
 const props = defineProps<{
@@ -8,84 +7,60 @@ const props = defineProps<{
 }>()
 
 const sceneRef = ref()
-const blocksRef = ref()
-
-// Building blocks positions
-const blockPositions = [
-  { x: -0.6, y: -0.2, z: 0, color: '#7C3AED' },   // C
-  { x: -0.2, y: -0.2, z: 0, color: '#6366F1' },   // O
-  { x: 0.2, y: -0.2, z: 0, color: '#F97316' },    // N
-  { x: 0.6, y: -0.2, z: 0, color: '#FBBF24' },    // T
-  { x: -0.4, y: 0.2, z: 0, color: '#A855F7' },    // A
-  { x: 0, y: 0.2, z: 0, color: '#8B5CF6' },       // C
-  { x: 0.4, y: 0.2, z: 0, color: '#3B82F6' },     // T
-]
-
-// Chair leg positions
-const chairLegPositions: [number, number, number][] = [
-  [-0.2, -0.25, 0.2],
-  [0.2, -0.25, 0.2],
-  [-0.2, -0.25, -0.2],
-  [0.2, -0.25, -0.2]
-]
-
-// Particle positions (50 points * 3 coordinates = 150 values)
-const particlePositions = (() => {
-  const positions = new Float32Array(50 * 3)
-  for (let i = 0; i < 50; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 8
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 8
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 8
-  }
-  return positions
-})()
-
-// Particles using shallowRef to avoid reactivity issues
-const particles = shallowRef<Points | null>(null)
-
-const createParticles = () => {
-  // Dispose existing particles first
-  if (particles.value) {
-    particles.value.geometry.dispose()
-    ;(particles.value.material as PointsMaterial).dispose()
-    particles.value = null
-  }
-  
-  if (props.quality !== 'high') return
-  
-  const geometry = new BufferGeometry()
-  geometry.setAttribute('position', new BufferAttribute(particlePositions, 3))
-  
-  const material = new PointsMaterial({
-    color: 0x00FF41,
-    size: 0.03,
-    opacity: 0.4,
-    transparent: true
-  })
-  
-  particles.value = new Points(geometry, material)
-}
-
-// Watch quality changes
-watch(() => props.quality, createParticles, { immediate: true })
+const portalRef = ref()
+const innerRingRef = ref()
+const outerRingRef = ref()
+const envelopeRef = ref()
+const particleRefs = Array.from({ length: 8 }, () => ref())
 
 let animationId: number
 let startTime = 0
 
 const animate = () => {
   const elapsed = (Date.now() - startTime) / 1000
+  
+  // Gentle scene sway
   if (sceneRef.value) {
     sceneRef.value.rotation.y = Math.sin(elapsed * 0.15) * 0.1
   }
   
-  // Subtle floating animation for blocks
-  if (blocksRef.value && blocksRef.value.children) {
-    blocksRef.value.children.forEach((block: { position: { y: number } }, i: number) => {
-      if (blockPositions[i]) {
-        block.position.y = blockPositions[i].y + Math.sin(elapsed + i * 0.5) * 0.05
-      }
-    })
+  // Portal core pulsing
+  if (portalRef.value) {
+    const pulse = 1 + Math.sin(elapsed * 1.5) * 0.08
+    portalRef.value.scale.set(pulse, pulse, pulse)
   }
+  
+  // Inner ring rotation
+  if (innerRingRef.value) {
+    innerRingRef.value.rotation.z = elapsed * 0.3
+    innerRingRef.value.rotation.x = Math.sin(elapsed * 0.5) * 0.2
+  }
+  
+  // Outer ring counter-rotation
+  if (outerRingRef.value) {
+    outerRingRef.value.rotation.z = -elapsed * 0.2
+    outerRingRef.value.rotation.y = Math.sin(elapsed * 0.3) * 0.15
+  }
+  
+  // Floating envelope
+  if (envelopeRef.value) {
+    envelopeRef.value.position.y = 0.8 + Math.sin(elapsed * 0.8) * 0.15
+    envelopeRef.value.rotation.y = elapsed * 0.4
+    envelopeRef.value.rotation.z = Math.sin(elapsed * 0.6) * 0.1
+  }
+  
+  // Orbiting particles
+  particleRefs.forEach((particleRef, i) => {
+    if (particleRef.value) {
+      const angle = elapsed * 0.4 + (i * Math.PI * 2) / 8
+      const radius = 2.2 + Math.sin(elapsed + i) * 0.3
+      const yOffset = Math.sin(elapsed * 0.7 + i * 0.5) * 0.5
+      particleRef.value.position.x = Math.cos(angle) * radius
+      particleRef.value.position.z = Math.sin(angle) * radius
+      particleRef.value.position.y = yOffset
+    }
+  })
+  
   animationId = requestAnimationFrame(animate)
 }
 
@@ -96,90 +71,141 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   cancelAnimationFrame(animationId)
-  if (particles.value) {
-    particles.value.geometry.dispose()
-    ;(particles.value.material as PointsMaterial).dispose()
-  }
 })
+
+const segmentCount = computed(() => props.quality === 'high' ? 64 : 32)
 </script>
 
 <template>
-  <TresPerspectiveCamera :position="[0, 1, 5]" :look-at="[0, 0, 0]" />
+  <TresPerspectiveCamera :position="[0, 1, 6]" :look-at="[0, 0, 0]" />
   
+  <!-- Soft ambient lighting -->
   <TresAmbientLight :intensity="0.4" />
-  <TresPointLight :position="[0, 3, 3]" :intensity="0.8" color="#FFFFFF" />
-  <TresPointLight :position="[-2, 2, 2]" :intensity="0.3" color="#7C3AED" />
-  <TresPointLight :position="[2, 2, 2]" :intensity="0.3" color="#A855F7" />
+  <TresPointLight :position="[0, 0, 2]" :intensity="1.5" color="#A855F7" />
+  <TresPointLight :position="[3, 3, 3]" :intensity="0.6" color="#00FF41" />
+  <TresPointLight :position="[-3, 2, 2]" :intensity="0.5" color="#3B82F6" />
   
   <TresGroup ref="sceneRef">
-    <!-- Letter blocks spelling "CONTACT" -->
-    <TresGroup ref="blocksRef">
-      <TresMesh 
-        v-for="(block, i) in blockPositions" 
-        :key="`block-${i}`"
-        :position="[block.x, block.y, block.z]"
-      >
-        <TresBoxGeometry :args="[0.35, 0.35, 0.35]" />
-        <TresMeshStandardMaterial
-          :color="block.color"
-          :roughness="0.7"
-          :metalness="0.2"
+    <!-- Central glowing portal/sphere -->
+    <TresGroup ref="portalRef">
+      <!-- Core glow -->
+      <TresMesh>
+        <TresSphereGeometry :args="[0.6, segmentCount, segmentCount]" />
+        <TresMeshStandardMaterial 
+          color="#FFFFFF"
+          :emissive="'#A855F7'"
+          :emissive-intensity="1"
+          :metalness="0.9"
+          :roughness="0.1"
+        />
+      </TresMesh>
+      <!-- Soft outer glow -->
+      <TresMesh>
+        <TresSphereGeometry :args="[0.85, 32, 32]" />
+        <TresMeshBasicMaterial color="#A855F7" :opacity="0.2" :transparent="true" />
+      </TresMesh>
+      <TresMesh>
+        <TresSphereGeometry :args="[1.1, 32, 32]" />
+        <TresMeshBasicMaterial color="#7C3AED" :opacity="0.1" :transparent="true" />
+      </TresMesh>
+    </TresGroup>
+    
+    <!-- Inner rotating ring -->
+    <TresGroup ref="innerRingRef">
+      <TresMesh>
+        <TresTorusGeometry :args="[1.3, 0.04, 16, 64]" />
+        <TresMeshStandardMaterial 
+          color="#00FF41"
+          :emissive="'#00FF41'"
+          :emissive-intensity="0.6"
+          :metalness="0.8"
+          :roughness="0.2"
         />
       </TresMesh>
     </TresGroup>
     
-    <!-- Empty chair (waiting for player 2) -->
-    <TresGroup :position="[1.5, -0.8, 1]">
-      <!-- Chair seat -->
-      <TresMesh :position="[0, 0, 0]">
-        <TresBoxGeometry :args="[0.6, 0.1, 0.6]" />
-        <TresMeshStandardMaterial :color="'#5D4037'" :roughness="0.85" />
-      </TresMesh>
-      <!-- Chair back -->
-      <TresMesh :position="[0, 0.35, -0.25]">
-        <TresBoxGeometry :args="[0.6, 0.6, 0.1]" />
-        <TresMeshStandardMaterial :color="'#5D4037'" :roughness="0.85" />
-      </TresMesh>
-      <!-- Chair legs -->
-      <TresMesh v-for="(pos, i) in chairLegPositions" :key="`chair-leg-${i}`" :position="pos">
-        <TresCylinderGeometry :args="[0.03, 0.03, 0.4, 8]" />
-        <TresMeshStandardMaterial :color="'#3E2723'" />
+    <!-- Outer rotating ring -->
+    <TresGroup ref="outerRingRef">
+      <TresMesh :rotation="[Math.PI / 3, 0, 0]">
+        <TresTorusGeometry :args="[1.8, 0.03, 16, 64]" />
+        <TresMeshStandardMaterial 
+          color="#3B82F6"
+          :emissive="'#3B82F6'"
+          :emissive-intensity="0.5"
+          :metalness="0.7"
+          :roughness="0.3"
+        />
       </TresMesh>
     </TresGroup>
     
-    <!-- Workbench/desk -->
-    <TresMesh :position="[0, -0.5, 0]">
-      <TresBoxGeometry :args="[3, 0.15, 1.5]" />
-      <TresMeshStandardMaterial :color="'#5D4037'" :roughness="0.9" />
+    <!-- Floating envelope (message symbol) -->
+    <TresGroup ref="envelopeRef" :position="[0, 0.8, 0]">
+      <!-- Envelope body -->
+      <TresMesh>
+        <TresBoxGeometry :args="[0.5, 0.35, 0.08]" />
+        <TresMeshStandardMaterial 
+          color="#F8F4E8"
+          :roughness="0.9"
+          :metalness="0.1"
+        />
+      </TresMesh>
+      <!-- Envelope flap (triangle) -->
+      <TresMesh :position="[0, 0.12, 0.045]" :rotation="[Math.PI, 0, 0]">
+        <TresConeGeometry :args="[0.28, 0.2, 4]" />
+        <TresMeshStandardMaterial 
+          color="#EDE8D8"
+          :roughness="0.9"
+          :metalness="0.1"
+        />
+      </TresMesh>
+      <!-- Seal -->
+      <TresMesh :position="[0, 0, 0.05]">
+        <TresCylinderGeometry :args="[0.06, 0.06, 0.02, 16]" />
+        <TresMeshStandardMaterial 
+          color="#A855F7"
+          :emissive="'#A855F7'"
+          :emissive-intensity="0.4"
+        />
+      </TresMesh>
+    </TresGroup>
+    
+    <!-- Orbiting light particles -->
+    <TresMesh 
+      v-for="(_, i) in 8" 
+      :key="`particle-${i}`"
+      :ref="el => particleRefs[i].value = el"
+      :position="[Math.cos(i * Math.PI / 4) * 2.2, 0, Math.sin(i * Math.PI / 4) * 2.2]"
+    >
+      <TresSphereGeometry :args="[0.06, 8, 8]" />
+      <TresMeshBasicMaterial 
+        :color="i % 2 === 0 ? '#00FF41' : '#A855F7'" 
+        :opacity="0.8" 
+        :transparent="true" 
+      />
     </TresMesh>
     
-    <!-- Tools laid out (ready for collaboration) -->
-    <TresGroup :position="[-1, -0.35, 0.3]">
-      <!-- Hammer -->
-      <TresMesh :rotation="[0, 0, 0.2]">
-        <TresCylinderGeometry :args="[0.03, 0.03, 0.4, 8]" />
-        <TresMeshStandardMaterial :color="'#8B5A2B'" />
-      </TresMesh>
-      <TresMesh :position="[0.15, 0, 0]">
-        <TresBoxGeometry :args="[0.15, 0.08, 0.08]" />
-        <TresMeshStandardMaterial :color="'#424242'" :metalness="0.7" />
-      </TresMesh>
-    </TresGroup>
-    
-    <!-- Keyboard (for coding together) -->
-    <TresMesh :position="[0.8, -0.38, 0.3]">
-      <TresBoxGeometry :args="[0.5, 0.03, 0.2]" />
-      <TresMeshStandardMaterial :color="'#212121'" :roughness="0.8" />
+    <!-- Decorative small stars -->
+    <TresMesh 
+      v-for="i in 20" 
+      :key="`star-${i}`"
+      :position="[
+        (Math.random() - 0.5) * 8,
+        (Math.random() - 0.5) * 5,
+        (Math.random() - 0.5) * 4 - 2
+      ]"
+    >
+      <TresSphereGeometry :args="[0.025, 4, 4]" />
+      <TresMeshBasicMaterial color="#FFFFFF" :opacity="0.4" :transparent="true" />
     </TresMesh>
   </TresGroup>
   
-  <!-- Floor -->
-  <TresMesh :position="[0, -1, 0]" :rotation="[-Math.PI / 2, 0, 0]">
-    <TresPlaneGeometry :args="[10, 10]" />
-    <TresMeshStandardMaterial :color="'#1A1410'" :roughness="0.95" />
+  <!-- Subtle floor reflection -->
+  <TresMesh :position="[0, -2.5, 0]" :rotation="[-Math.PI / 2, 0, 0]">
+    <TresPlaneGeometry :args="[15, 15]" />
+    <TresMeshStandardMaterial 
+      color="#0A0A12" 
+      :roughness="0.85"
+      :metalness="0.15"
+    />
   </TresMesh>
-  
-  <!-- Particles (connection/collaboration vibes) -->
-  <primitive v-if="particles" :object="particles" />
 </template>
-

@@ -129,9 +129,7 @@ export default {
     homeAutomation: 'Home Automation',
     projects: 'DIY Projects',
     raspberryPi: 'Raspberry Pi',
-    esp8266: 'ESP8266',
     arduino: 'Arduino',
-    led: 'WS2812 LED',
     domotics: 'Domotics (Home Assistant)',
     unify: 'Unify Network & Protect',
     selfHosting: 'Self-Hosting (Home Server)'
@@ -141,6 +139,9 @@ export default {
     subtitle: 'Open Source Gallery',
     stars: 'stars',
     viewOnGithub: 'View on GitHub',
+    viewProfile: 'View my GitHub profile',
+    repositories: 'repositories',
+    totalRepos: 'Total repositories',
     featured: 'Featured projects',
     adalight: {
       name: 'adalight_ws2812',

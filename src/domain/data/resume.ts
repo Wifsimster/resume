@@ -166,6 +166,12 @@ export const resumeData: ResumeData = {
       url: 'https://www.linkedin.com/in/damien-battistella-%F0%9F%92%BB-67964115/',
       icon: '💼'
     }
-  ]
+  ],
+
+  github: {
+    username: 'Wifsimster',
+    url: 'https://github.com/Wifsimster',
+    totalRepos: 60
+  }
 }
 

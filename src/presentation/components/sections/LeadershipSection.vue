@@ -15,6 +15,11 @@ const stats = [
   { key: 'architectureMeetings', value: '1', icon: '🏗️' }
 ]
 
+const conferences = [
+  { badge: 'Speaker', name: 'Hexagone Tour 2024', type: 'speaker' },
+  { badge: 'Attendee', name: 'BDX I/O 2023-25', type: 'attendee' },
+  { badge: 'Attendee', name: 'DevQuest 2024', type: 'attendee' }
+]
 </script>
 
 <template>
@@ -26,58 +31,38 @@ const stats = [
       </TresCanvas>
     </div>
 
-    <!-- Content -->
-    <div class="section-content">
-      <div class="leadership-header">
-        <h2 class="section-title">{{ t('leadership.title') }}</h2>
-        <p class="section-subtitle">{{ t('leadership.subtitle') }}</p>
-      </div>
+    <!-- Content - positioned to the left -->
+    <div class="section-content leadership-content">
+      <div class="leadership-panel glass">
+        <!-- Header -->
+        <div class="leadership-header">
+          <h2 class="section-title">{{ t('leadership.title') }}</h2>
+          <p class="section-subtitle">{{ t('leadership.subtitle') }}</p>
+        </div>
 
-      <div class="leadership-grid">
-        <!-- Stats -->
-        <div class="stats-card glass">
-          <div class="stats-header">
-            <h3>{{ t('leadership.presentations') }}</h3>
-          </div>
-          <div class="stats-grid">
-            <div class="stat-item" v-for="stat in stats" :key="stat.key">
-              <div class="stat-icon-wrapper">
-                <span class="stat-icon">{{ stat.icon }}</span>
-              </div>
-              <div class="stat-content">
-                <span class="stat-value">{{ stat.value }}</span>
-                <span class="stat-label">{{ t(`leadership.${stat.key}`) }}</span>
-              </div>
-            </div>
+        <!-- Stats Row -->
+        <div class="stats-row">
+          <div class="stat-chip" v-for="stat in stats" :key="stat.key">
+            <span class="stat-icon">{{ stat.icon }}</span>
+            <span class="stat-value">{{ stat.value }}</span>
+            <span class="stat-label">{{ t(`leadership.${stat.key}`) }}</span>
           </div>
         </div>
 
         <!-- Conferences -->
-        <div class="conferences-card glass">
-          <div class="conferences-header">
-            <h3>{{ t('leadership.conferences') }}</h3>
-            <p class="conferences-subtitle">{{ t('leadership.mentoring') }}</p>
+        <div class="conferences-section">
+          <h3 class="conferences-title">{{ t('leadership.conferences') }}</h3>
+          <div class="conferences-row">
+            <div 
+              v-for="conf in conferences" 
+              :key="conf.name"
+              class="conf-chip"
+              :class="conf.type"
+            >
+              <span class="conf-badge">{{ conf.badge }}</span>
+              <span class="conf-name">{{ conf.name }}</span>
+            </div>
           </div>
-          <ul class="conference-list">
-            <li class="conference-item">
-              <div class="conference-content">
-                <span class="conf-badge speaker">Speaker</span>
-                <span class="conf-name">Hexagone Tour 2024</span>
-              </div>
-            </li>
-            <li class="conference-item">
-              <div class="conference-content">
-                <span class="conf-badge attendee">Attendee</span>
-                <span class="conf-name">BDX I/O 2023, 2024, 2025</span>
-              </div>
-            </li>
-            <li class="conference-item">
-              <div class="conference-content">
-                <span class="conf-badge attendee">Attendee</span>
-                <span class="conf-name">DevQuest 2024</span>
-              </div>
-            </li>
-          </ul>
         </div>
       </div>
     </div>
@@ -89,9 +74,25 @@ const stats = [
   background: transparent;
 }
 
+.leadership-content {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 2rem;
+}
+
+.leadership-panel {
+  max-width: 420px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  border-left: 3px solid var(--color-team-orange);
+  background: rgba(10, 10, 10, 0.75);
+}
+
 .leadership-header {
-  text-align: center;
-  margin-bottom: 3rem;
+  text-align: left;
 }
 
 .section-title {
@@ -105,268 +106,154 @@ const stats = [
   color: rgba(255, 255, 255, 0.7);
 }
 
-.leadership-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.stats-card {
-  padding: 2rem;
+/* Stats Row - Compact chips */
+.stats-row {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  transition: all var(--transition-normal);
-  border-left: 3px solid var(--color-team-orange);
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-.stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 32px rgba(249, 115, 22, 0.2);
-  border-left-color: var(--color-team-orange);
-}
-
-.stats-header h3 {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: var(--color-team-orange);
-  margin: 0;
-  margin-bottom: 0.5rem;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem;
-}
-
-.stat-item {
+.stat-chip {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
-  border: 1px solid rgba(249, 115, 22, 0.1);
-  transition: all var(--transition-fast);
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 3px;
-  height: 100%;
-  background: var(--color-team-orange);
-  transform: scaleY(0);
-  transition: transform var(--transition-fast);
-}
-
-.stat-item:hover {
-  background: rgba(0, 0, 0, 0.25);
-  border-color: rgba(249, 115, 22, 0.3);
-  transform: translateX(4px);
-}
-
-.stat-item:hover::before {
-  transform: scaleY(1);
-}
-
-.stat-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
+  gap: 0.4rem;
+  padding: 0.4rem 0.65rem;
   background: rgba(249, 115, 22, 0.1);
-  border-radius: 8px;
-  border: 1px solid rgba(249, 115, 22, 0.2);
-  flex-shrink: 0;
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  border-radius: 6px;
+  transition: all var(--transition-fast);
 }
 
-.stat-icon {
-  font-size: 1.75rem;
-  filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.5));
+.stat-chip:hover {
+  background: rgba(249, 115, 22, 0.2);
+  border-color: rgba(249, 115, 22, 0.4);
+  transform: translateY(-2px);
 }
 
-.stat-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
+.stat-chip .stat-icon {
+  font-size: 1rem;
 }
 
-.stat-value {
+.stat-chip .stat-value {
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-team-orange);
-  line-height: 1;
 }
 
-.stat-label {
-  font-size: 0.8rem;
+.stat-chip .stat-label {
+  font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.7);
-  line-height: 1.2;
+  max-width: 70px;
+  line-height: 1.1;
 }
 
-.conferences-card {
-  padding: 2rem;
+/* Conferences Section */
+.conferences-section {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  transition: all var(--transition-normal);
-  border-left: 3px solid var(--color-terminal-green);
+  gap: 0.6rem;
 }
 
-.conferences-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.2);
-  border-left-color: var(--color-terminal-green);
-}
-
-.conferences-header h3 {
+.conferences-title {
   font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: var(--color-terminal-green);
-  margin: 0;
-  margin-bottom: 0.25rem;
-}
-
-.conferences-subtitle {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-terminal-green);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   margin: 0;
 }
 
-.conference-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.conferences-row {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.4rem;
 }
 
-.conference-item {
-  padding: 0;
-  margin: 0;
-}
-
-.conference-content {
+.conf-chip {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
-  border: 1px solid rgba(168, 85, 247, 0.1);
-  transition: all var(--transition-fast);
-  position: relative;
-  overflow: hidden;
-}
-
-.conference-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 3px;
-  height: 100%;
-  background: var(--color-terminal-green);
-  transform: scaleY(0);
-  transition: transform var(--transition-fast);
-}
-
-.conference-content:hover {
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
   background: rgba(0, 0, 0, 0.25);
-  border-color: rgba(168, 85, 247, 0.3);
+  border-radius: 6px;
+  border: 1px solid rgba(168, 85, 247, 0.15);
+  transition: all var(--transition-fast);
+}
+
+.conf-chip:hover {
+  background: rgba(0, 0, 0, 0.4);
   transform: translateX(4px);
 }
 
-.conference-content:hover::before {
-  transform: scaleY(1);
+.conf-chip.speaker {
+  border-left: 2px solid var(--color-team-orange);
+}
+
+.conf-chip.attendee {
+  border-left: 2px solid var(--color-terminal-green);
 }
 
 .conf-badge {
-  font-size: 0.7rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 6px;
+  font-size: 0.6rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
   text-transform: uppercase;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  flex-shrink: 0;
+  letter-spacing: 0.3px;
   font-family: var(--font-code);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.conf-badge.speaker {
-  background: linear-gradient(135deg, var(--color-team-orange), #FB923C);
+.conf-chip.speaker .conf-badge {
+  background: var(--color-team-orange);
   color: white;
 }
 
-.conf-badge.attendee {
-  background: linear-gradient(135deg, var(--color-terminal-green), #C084FC);
+.conf-chip.attendee .conf-badge {
+  background: var(--color-terminal-green);
   color: white;
 }
 
 .conf-name {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--color-paper-cream);
   font-weight: 500;
-  flex: 1;
 }
 
+/* Responsive */
 @media (max-width: 900px) {
-  .leadership-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+  .leadership-content {
+    justify-content: center;
+    padding-left: 0;
   }
   
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .stat-item {
-    justify-content: flex-start;
+  .leadership-panel {
+    max-width: 100%;
+    width: 100%;
   }
 }
 
 @media (max-width: 480px) {
-  .stats-card,
-  .conferences-card {
-    padding: 1.25rem;
+  .leadership-panel {
+    padding: 1rem;
+    gap: 1rem;
   }
   
-  .stat-item {
-    padding: 0.75rem;
+  .stat-chip {
+    padding: 0.35rem 0.5rem;
   }
   
-  .stat-value {
-    font-size: 1.5rem;
+  .stat-chip .stat-label {
+    max-width: 60px;
+    font-size: 0.65rem;
   }
   
-  .stat-icon-wrapper {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .stat-icon {
-    font-size: 1.5rem;
-  }
-  
-  .conference-content {
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  .conf-chip {
+    padding: 0.4rem 0.6rem;
   }
   
   .conf-name {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 }
 </style>

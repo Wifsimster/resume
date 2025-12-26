@@ -7,70 +7,48 @@ import { useQuality } from '@application/composables/useQuality'
 const { t } = useI18n()
 const { quality } = useQuality()
 
-const makerItems = [
-  { key: 'esp8266', icon: '📡', color: '#00979D' },
-  { key: 'led', icon: '💡', color: '#FFD700' },
-  { key: 'woodworking', icon: '🪵', color: '#8B5A2B' },
-  { key: 'renovation', icon: '🏠', color: '#B87333' },
-  { key: 'domotics', icon: '🏡', color: '#03A9F4' },
-  { key: 'unify', icon: '🌐', color: '#4CAF50' },
-  { key: 'selfHosting', icon: '🖥️', color: '#9C27B0' }
+const techStack = [
+  { icon: '🔌', label: 'ESP8266' },
+  { icon: '🍓', label: 'Raspberry Pi' },
+  { icon: '💡', label: 'LED WS2812' },
+  { icon: '🏠', label: 'Home Assistant' },
+  { icon: '🪵', label: 'Woodworking' }
 ]
 </script>
 
 <template>
   <section class="section maker-section" data-section="maker">
-    <!-- 3D Canvas -->
+    <!-- 3D Canvas - Full background -->
     <div class="section-canvas">
       <TresCanvas :clear-color="'#0A0A0A'" :alpha="true">
         <MakerScene :quality="quality" />
       </TresCanvas>
     </div>
 
-    <!-- Content -->
-    <div class="section-content">
-      <div class="maker-header">
-        <h2 class="section-title">{{ t('maker.title') }}</h2>
-        <p class="section-subtitle">{{ t('maker.subtitle') }}</p>
-      </div>
-
-      <div class="maker-grid">
-        <div class="maker-intro glass">
-          <p>{{ t('about.passions.makingDesc') }}</p>
+    <!-- Compact Content Overlay -->
+    <div class="section-content maker-content">
+      <div class="maker-panel glass">
+        <div class="panel-header">
+          <h2 class="section-title">{{ t('maker.title') }}</h2>
+          <p class="section-subtitle">{{ t('maker.subtitle') }}</p>
         </div>
         
-        <div class="maker-items">
-          <div 
-            v-for="item in makerItems" 
-            :key="item.key"
-            class="maker-item glass"
-            :style="{ '--item-color': item.color }"
+        <div class="tech-row">
+          <span 
+            v-for="tech in techStack" 
+            :key="tech.label"
+            class="tech-badge"
           >
-            <span class="item-icon">{{ item.icon }}</span>
-            <span class="item-name">{{ t(`maker.${item.key}`) }}</span>
-          </div>
+            <span class="tech-icon">{{ tech.icon }}</span>
+            <span class="tech-label">{{ tech.label }}</span>
+          </span>
         </div>
-
-        <div class="projects-showcase glass">
-          <h3>{{ t('maker.projects') }}</h3>
-          <div class="diy-projects">
-            <div class="diy-project">
-              <span class="project-icon">🚿</span>
-              <span>Italian Shower Build</span>
-            </div>
-            <div class="diy-project">
-              <span class="project-icon">🏠</span>
-              <span>Cellar & Office Renovation</span>
-            </div>
-            <div class="diy-project">
-              <span class="project-icon">💡</span>
-              <span>Ambilight LED System</span>
-            </div>
-            <div class="diy-project">
-              <span class="project-icon">🤖</span>
-              <span>Home Automation Hub</span>
-            </div>
-          </div>
+        
+        <div class="projects-row">
+          <span class="project-tag">🚿 Italian Shower</span>
+          <span class="project-tag">💡 Ambilight</span>
+          <span class="project-tag">🤖 Domotics</span>
+          <span class="project-tag">🖥️ Self-Hosting</span>
         </div>
       </div>
     </div>
@@ -80,11 +58,30 @@ const makerItems = [
 <style scoped>
 .maker-section {
   background: transparent;
+  position: relative;
 }
 
-.maker-header {
+.maker-content {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 3rem;
+  pointer-events: none;
+}
+
+.maker-panel {
+  background: rgba(10, 10, 10, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  max-width: 700px;
+  pointer-events: auto;
+}
+
+.panel-header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 1rem;
 }
 
 .section-title {
@@ -98,95 +95,58 @@ const makerItems = [
   color: rgba(255, 255, 255, 0.7);
 }
 
-.maker-grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 1.5rem;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.maker-intro {
-  grid-column: 1 / -1;
-  padding: 1.5rem;
-  text-align: center;
-}
-
-.maker-intro p {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.6;
-}
-
-.maker-items {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-
-.maker-item {
+.tech-row {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  border-left: 3px solid var(--item-color);
-  transition: all var(--transition-fast);
-}
-
-.maker-item:hover {
-  transform: translateX(4px);
-  background: rgba(0, 0, 0, 0.25);
-}
-
-.item-icon {
-  font-size: 1.5rem;
-}
-
-.item-name {
-  font-size: 0.95rem;
-  color: var(--color-paper-cream);
-}
-
-.projects-showcase {
-  padding: 1.5rem;
-}
-
-.projects-showcase h3 {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: var(--color-copper);
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
-.diy-projects {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.diy-project {
-  display: flex;
+.tech-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 6px;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.85);
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: var(--color-paper-cream);
+  transition: all 0.2s ease;
 }
 
-.project-icon {
-  font-size: 1.25rem;
+.tech-badge:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-copper);
+}
+
+.tech-icon {
+  font-size: 1rem;
+}
+
+.tech-label {
+  font-size: 0.8rem;
+}
+
+.projects-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.project-tag {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0.25rem 0.6rem;
+  background: rgba(184, 115, 51, 0.15);
+  border-radius: 4px;
+  white-space: nowrap;
 }
 
 @media (max-width: 768px) {
-  .maker-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .maker-items {
-    grid-template-columns: 1fr;
+  .maker-panel {
+    margin: 0 1rem;
+    padding: 1.25rem 1.5rem;
   }
 }
 </style>
-

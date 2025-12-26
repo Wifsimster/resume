@@ -19,42 +19,35 @@ const { quality } = useQuality()
     </div>
 
     <!-- Content -->
-    <div class="section-content">
+    <div class="section-content about-content">
       <div class="about-header">
         <h2 class="section-title">{{ t('about.title') }}</h2>
         <p class="section-subtitle">{{ t('about.subtitle') }}</p>
       </div>
 
-      <div class="about-grid">
-        <!-- Bio Card -->
-        <div class="about-card glass">
-          <h3>{{ t('about.philosophy') }}</h3>
+      <div class="about-compact">
+        <!-- Bio -->
+        <div class="about-card glass-subtle">
           <p class="bio">{{ t('about.intro') }}</p>
         </div>
 
-        <!-- Passions Grid -->
-        <div class="passions-card glass">
-          <h3>{{ t('about.passions.title') }}</h3>
-          <div class="passions-grid">
-            <div 
-              v-for="passion in resumeData.passions" 
-              :key="passion.id"
-              class="passion-item"
-              :style="{ '--passion-color': passion.color }"
-            >
-              <span class="passion-icon">{{ passion.icon }}</span>
-              <span class="passion-name">{{ t(`about.passions.${passion.id}`) }}</span>
-            </div>
+        <!-- Passions -->
+        <div class="passions-inline">
+          <div 
+            v-for="passion in resumeData.passions" 
+            :key="passion.id"
+            class="passion-tag"
+            :style="{ '--passion-color': passion.color }"
+          >
+            <span class="passion-icon">{{ passion.icon }}</span>
+            <span class="passion-name">{{ t(`about.passions.${passion.id}`) }}</span>
           </div>
         </div>
 
-        <!-- Gaming Hobby Card -->
-        <div class="hobby-card glass">
-          <h3>{{ t('about.hobby') }}</h3>
-          <div class="hobby-content">
-            <span class="hobby-icon">🛠️</span>
-            <p>{{ t('about.gaming') }}</p>
-          </div>
+        <!-- Hobby inline -->
+        <div class="hobby-inline glass-subtle">
+          <span class="hobby-icon">🛠️</span>
+          <p>{{ t('about.gaming') }}</p>
         </div>
       </div>
     </div>
@@ -66,9 +59,17 @@ const { quality } = useQuality()
   background: transparent;
 }
 
+.about-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  height: 100%;
+  padding-bottom: 3rem;
+}
+
 .about-header {
-  text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 1rem;
 }
 
 .section-title {
@@ -82,105 +83,101 @@ const { quality } = useQuality()
   color: rgba(255, 255, 255, 0.7);
 }
 
-.about-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  max-width: 1000px;
-  margin: 0 auto;
+.glass-subtle {
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(168, 85, 247, 0.15);
+  border-radius: 8px;
 }
 
-.about-card,
-.passions-card,
-.hobby-card {
-  padding: 1.5rem;
+.about-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 600px;
 }
 
 .about-card {
-  grid-column: 1 / -1;
-}
-
-.about-card h3,
-.passions-card h3,
-.hobby-card h3 {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  color: var(--color-accent-secondary);
-  margin-bottom: 1rem;
-  font-weight: 700;
+  padding: 0.75rem 1rem;
 }
 
 .bio {
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: var(--color-paper-cream);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
 }
 
-.passions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.75rem;
-}
-
-.passion-item {
+.passions-inline {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
-  border-left: 3px solid var(--passion-color);
+}
+
+.passion-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  background: rgba(10, 10, 10, 0.5);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--passion-color) 40%, transparent);
   transition: all var(--transition-fast);
 }
 
-.passion-item:hover {
-  background: rgba(0, 0, 0, 0.25);
-  transform: translateX(4px);
+.passion-tag:hover {
+  background: rgba(10, 10, 10, 0.7);
+  border-color: var(--passion-color);
+  transform: translateY(-2px);
 }
 
 .passion-icon {
-  font-size: 1.25rem;
+  font-size: 0.9rem;
 }
 
 .passion-name {
-  font-size: 0.85rem;
-  color: var(--color-paper-cream);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
 }
 
-.hobby-card {
+.hobby-inline {
   display: flex;
-  flex-direction: column;
-}
-
-.hobby-content {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
 }
 
 .hobby-icon {
-  font-size: 3.5rem;
-  animation: float 3s ease-in-out infinite;
-  filter: hue-rotate(240deg) saturate(1.2) brightness(1.1);
+  font-size: 1.5rem;
   flex-shrink: 0;
 }
 
-.hobby-content p {
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: rgba(255, 255, 255, 0.9);
+.hobby-inline p {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
   margin: 0;
-  flex: 1;
 }
 
 @media (max-width: 768px) {
-  .about-grid {
-    grid-template-columns: 1fr;
+  .about-content {
+    padding-bottom: 2rem;
+    align-items: center;
   }
   
-  .passions-card,
-  .hobby-card {
-    grid-column: 1;
+  .about-compact {
+    max-width: 100%;
+  }
+  
+  .about-header {
+    text-align: center;
+    width: 100%;
+  }
+  
+  .passions-inline {
+    justify-content: center;
   }
 }
 </style>

@@ -45,6 +45,12 @@ export interface SocialLink {
   icon: string
 }
 
+export interface GitHubProfile {
+  username: string
+  url: string
+  totalRepos: number
+}
+
 export interface ResumeData {
   name: string
   title: string
@@ -57,5 +63,6 @@ export interface ResumeData {
   projects: Project[]
   books: Book[]
   socialLinks: SocialLink[]
+  github: GitHubProfile
 }
 
