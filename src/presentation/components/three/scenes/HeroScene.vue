@@ -1,8 +1,22 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watchEffect, computed } from 'vue'
+import { BufferAttribute, BufferGeometry, Points, PointsMaterial } from 'three'
+import {
+  TresPerspectiveCamera,
+  TresAmbientLight,
+  TresDirectionalLight,
+  TresPointLight,
+  TresGroup,
+  TresMesh,
+  TresIcosahedronGeometry,
+  TresSphereGeometry,
+  TresRingGeometry,
+  TresMeshStandardMaterial,
+  TresMeshBasicMaterial
+} from '@tresjs/core'
 import type { QualityLevel } from '@application/composables/useQuality'
 
-defineProps<{
+const props = defineProps<{
   quality: QualityLevel
 }>()
 
@@ -21,26 +35,32 @@ const passionPositions = [
 // Animation
 const groupRef = ref()
 let animationId: number | null = null
+let isAnimating = false
 
 const animate = () => {
-  if (groupRef.value) {
+  if (groupRef.value && isAnimating) {
     groupRef.value.rotation.y += 0.002
+    animationId = requestAnimationFrame(animate)
   }
-  animationId = requestAnimationFrame(animate)
 }
 
-onMounted(async () => {
-  // Wait for the next tick to ensure TresJS refs are initialized
-  await nextTick()
-  // Additional small delay to ensure Three.js scene is fully set up
-  setTimeout(() => {
+// Start animation when ref becomes available
+watchEffect(() => {
+  if (groupRef.value && !isAnimating) {
+    isAnimating = true
     animate()
-  }, 0)
+  }
 })
 
 onUnmounted(() => {
+  isAnimating = false
   if (animationId !== null) {
     cancelAnimationFrame(animationId)
+  }
+  // Clean up particles resources
+  if (particles.value) {
+    particles.value.geometry.dispose()
+    particles.value.material.dispose()
   }
 })
 
@@ -54,6 +74,23 @@ const starPositions = (() => {
   }
   return positions
 })()
+
+// Create particles using primitive approach
+const particles = computed(() => {
+  if (props.quality !== 'high') return null
+  
+  const geometry = new BufferGeometry()
+  geometry.setAttribute('position', new BufferAttribute(starPositions, 3))
+  
+  const material = new PointsMaterial({
+    color: 0xFFFFFF,
+    size: 0.02,
+    opacity: 0.5,
+    transparent: true
+  })
+  
+  return new Points(geometry, material)
+})
 </script>
 
 <template>
@@ -111,21 +148,6 @@ const starPositions = (() => {
   </TresGroup>
   
   <!-- Background stars/particles -->
-  <TresPoints v-if="quality === 'high'">
-    <TresBufferGeometry>
-      <TresBufferAttribute
-        attach="attributes-position"
-        :count="200"
-        :array="starPositions"
-        :item-size="3"
-      />
-    </TresBufferGeometry>
-    <TresPointsMaterial
-      :size="0.02"
-      :color="'#FFFFFF'"
-      :opacity="0.5"
-      :transparent="true"
-    />
-  </TresPoints>
+  <primitive v-if="particles" :object="particles" />
 </template>
 

@@ -143,6 +143,10 @@ export default {
       name: 'adalight_ws2812',
       desc: 'Fork d\'Adalight pour LED WS2811/WS2812 avec FastLED'
     },
+    rtsp: {
+      name: 'node-rtsp-stream-es6',
+      desc: 'Streaming RTSP vers WebSocket pour jsmpeg'
+    },
     rtspStream: {
       name: 'node-rtsp-stream-es6',
       desc: 'Streaming RTSP vers WebSocket pour jsmpeg'
@@ -158,6 +162,10 @@ export default {
     bordeaux: {
       name: 'bordeaux',
       desc: 'Gestionnaire de séries TV avec Transmission, Trakt et Plex'
+    },
+    pir: {
+      name: 'pir-mqtt',
+      desc: 'Capteur de mouvement ESP8266 vers broker MQTT'
     },
     pirMqtt: {
       name: 'pir-mqtt',

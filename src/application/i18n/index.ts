@@ -15,6 +15,7 @@ const detectLanguage = (): 'fr' | 'en' => {
 
 export const i18n = createI18n({
   legacy: false,
+  globalInjection: true,
   locale: detectLanguage(),
   fallbackLocale: 'fr',
   messages: {
