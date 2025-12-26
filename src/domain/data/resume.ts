@@ -58,23 +58,37 @@ export const resumeData: ResumeData = {
 
   skills: [
     // Frontend
-    { id: 'vue', name: 'Vue.js Ecosystem', category: 'frontend', icon: '💚' },
     { id: 'javascript', name: 'JavaScript', category: 'frontend', icon: '⚡' },
+    { id: 'vue', name: 'Vue.js', category: 'frontend', icon: '💚' },
+    { id: 'pinia', name: 'Pinia', category: 'frontend', icon: '🍍' },
     { id: 'tailwind', name: 'TailwindCSS', category: 'frontend', icon: '🎨' },
 
     // Backend
     { id: 'nodejs', name: 'Node.js', category: 'backend', icon: '💚' },
-    { id: 'sql', name: 'SQL', category: 'backend', icon: '🗃️' },
+    { id: 'postgresql', name: 'PostgreSQL', category: 'backend', icon: '🐘' },
+    { id: 'oracle', name: 'Oracle', category: 'backend', icon: '🔶' },
+    { id: 'restapi', name: 'REST API', category: 'backend', icon: '🔌' },
+    { id: 'hl7', name: 'HL7', category: 'backend', icon: '🏥' },
 
-    // DevOps
-    { id: 'docker', name: 'Docker', category: 'devops', icon: '🐳' },
-    { id: 'gitlab', name: 'GitLab CI', category: 'devops', icon: '🦊' },
+    // DevOps & CI/CD
     { id: 'git', name: 'Git', category: 'devops', icon: '📦' },
+    { id: 'gitlab', name: 'GitLab CI', category: 'devops', icon: '🦊' },
+    { id: 'docker', name: 'Docker', category: 'devops', icon: '🐳' },
+
+    // Testing
+    { id: 'vitest', name: 'Vitest', category: 'devops', icon: '🧪' },
+    { id: 'playwright', name: 'Playwright', category: 'devops', icon: '🎭' },
+
+    // IDE & AI Tools
+    { id: 'vscode', name: 'VS Code', category: 'devops', icon: '💻' },
+    { id: 'cursor', name: 'Cursor', category: 'devops', icon: '✨' },
+    { id: 'copilot', name: 'Microsoft Copilot', category: 'devops', icon: '🤖' },
 
     // Soft Skills
     { id: 'leadership', name: 'Leadership', category: 'soft', icon: '👑' },
+    { id: 'mentoring', name: 'Mentoring', category: 'soft', icon: '🎓' },
     { id: 'craftsmanship', name: 'Craftsmanship', category: 'soft', icon: '🛠️' },
-    { id: 'mentoring', name: 'Mentoring', category: 'soft', icon: '🎓' }
+    { id: 'cleanarchitecture', name: 'Clean Architecture', category: 'soft', icon: '🏗️' }
   ],
 
   projects: [
