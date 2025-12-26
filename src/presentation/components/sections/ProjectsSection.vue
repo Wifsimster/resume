@@ -58,7 +58,7 @@ const openProject = (url: string) => {
 
 <style scoped>
 .projects-section {
-  background: linear-gradient(180deg, #050505 0%, #0A0A14 50%, #050505 100%);
+  background: transparent;
 }
 
 .projects-header {
@@ -108,7 +108,7 @@ const openProject = (url: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 12px;
 }
 

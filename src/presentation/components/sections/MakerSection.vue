@@ -79,7 +79,7 @@ const makerItems = [
 
 <style scoped>
 .maker-section {
-  background: linear-gradient(180deg, #050505 0%, var(--color-bg-primary) 50%, #050505 100%);
+  background: transparent;
 }
 
 .maker-header {
@@ -135,7 +135,7 @@ const makerItems = [
 
 .maker-item:hover {
   transform: translateX(4px);
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .item-icon {
@@ -169,7 +169,7 @@ const makerItems = [
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 6px;
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.85);

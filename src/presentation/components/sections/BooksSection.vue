@@ -90,7 +90,7 @@ const openBook = (url: string) => {
 
 <style scoped>
 .books-section {
-  background: linear-gradient(180deg, #050505 0%, var(--color-bg-primary) 50%, #050505 100%);
+  background: transparent;
 }
 
 .books-header {
@@ -149,14 +149,14 @@ const openBook = (url: string) => {
   display: flex;
   gap: 1rem;
   padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .book-item:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.25);
   transform: translateX(4px);
 }
 
@@ -167,7 +167,7 @@ const openBook = (url: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 4px;
 }
 

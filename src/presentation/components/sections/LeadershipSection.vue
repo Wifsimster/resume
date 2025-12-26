@@ -86,7 +86,7 @@ const stats = [
 
 <style scoped>
 .leadership-section {
-  background: linear-gradient(180deg, #050505 0%, var(--color-bg-primary) 50%, #050505 100%);
+  background: transparent;
 }
 
 .leadership-header {
@@ -147,7 +147,7 @@ const stats = [
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   border: 1px solid rgba(249, 115, 22, 0.1);
   transition: all var(--transition-fast);
@@ -168,7 +168,7 @@ const stats = [
 }
 
 .stat-item:hover {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.25);
   border-color: rgba(249, 115, 22, 0.3);
   transform: translateX(4px);
 }
@@ -263,7 +263,7 @@ const stats = [
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   border: 1px solid rgba(168, 85, 247, 0.1);
   transition: all var(--transition-fast);
@@ -284,7 +284,7 @@ const stats = [
 }
 
 .conference-content:hover {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.25);
   border-color: rgba(168, 85, 247, 0.3);
   transform: translateX(4px);
 }
@@ -334,6 +334,39 @@ const stats = [
   
   .stat-item {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-card,
+  .conferences-card {
+    padding: 1.25rem;
+  }
+  
+  .stat-item {
+    padding: 0.75rem;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
+  }
+  
+  .stat-icon-wrapper {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .stat-icon {
+    font-size: 1.5rem;
+  }
+  
+  .conference-content {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .conf-name {
+    font-size: 0.85rem;
   }
 }
 </style>

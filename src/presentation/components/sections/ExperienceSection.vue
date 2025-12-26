@@ -67,7 +67,7 @@ const { quality } = useQuality()
 
 <style scoped>
 .experience-section {
-  background: linear-gradient(180deg, #050505 0%, #0F0A1A 50%, #050505 100%);
+  background: transparent;
 }
 
 .experience-header {

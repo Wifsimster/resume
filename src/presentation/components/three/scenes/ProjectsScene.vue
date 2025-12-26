@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, shallowRef, onMounted, onBeforeUnmount, watch } from 'vue'
+import { BufferAttribute, BufferGeometry, Points, PointsMaterial } from 'three'
 import type { QualityLevel } from '@application/composables/useQuality'
 
-defineProps<{
+const props = defineProps<{
   quality: QualityLevel
 }>()
 
@@ -17,8 +18,45 @@ const cardPositions = [
   { x: 1.5, y: -0.8, z: 0.3, rotY: -0.1 },
 ]
 
-// Star particles
-const starPositions = new Float32Array(Array.from({ length: 300 }, () => (Math.random() - 0.5) * 15))
+// Star particles positions (100 points * 3 coordinates = 300 values)
+const starPositions = (() => {
+  const positions = new Float32Array(100 * 3)
+  for (let i = 0; i < 100; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 15
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 15
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 15
+  }
+  return positions
+})()
+
+// Particles using shallowRef to avoid reactivity issues
+const particles = shallowRef<Points | null>(null)
+
+const createParticles = () => {
+  // Dispose existing particles first
+  if (particles.value) {
+    particles.value.geometry.dispose()
+    ;(particles.value.material as PointsMaterial).dispose()
+    particles.value = null
+  }
+  
+  if (props.quality !== 'high') return
+  
+  const geometry = new BufferGeometry()
+  geometry.setAttribute('position', new BufferAttribute(starPositions, 3))
+  
+  const material = new PointsMaterial({
+    color: 0xFFD93D,
+    size: 0.03,
+    opacity: 0.6,
+    transparent: true
+  })
+  
+  particles.value = new Points(geometry, material)
+}
+
+// Watch quality changes
+watch(() => props.quality, createParticles, { immediate: true })
 
 let animationId: number
 let startTime = 0
@@ -36,8 +74,12 @@ onMounted(() => {
   animate()
 })
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   cancelAnimationFrame(animationId)
+  if (particles.value) {
+    particles.value.geometry.dispose()
+    ;(particles.value.material as PointsMaterial).dispose()
+  }
 })
 </script>
 
@@ -98,22 +140,7 @@ onUnmounted(() => {
     </TresMesh>
   </TresGroup>
   
-  <!-- Particles (stars) -->
-  <TresPoints v-if="quality === 'high'">
-    <TresBufferGeometry>
-      <TresBufferAttribute
-        attach="attributes-position"
-        :count="100"
-        :array="starPositions"
-        :item-size="3"
-      />
-    </TresBufferGeometry>
-    <TresPointsMaterial
-      :size="0.03"
-      :color="'#FFD93D'"
-      :opacity="0.6"
-      :transparent="true"
-    />
-  </TresPoints>
+  <!-- Background stars/particles -->
+  <primitive v-if="particles" :object="particles" />
 </template>
 

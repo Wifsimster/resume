@@ -52,5 +52,23 @@ const qualityTitle = computed(() => t('common.quality'))
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+/* Mobile responsive - hide label, keep icon for touch target */
+@media (max-width: 480px) {
+  .quality-toggle {
+    padding: 0.5rem;
+    min-width: 40px;
+    min-height: 40px;
+    justify-content: center;
+  }
+  
+  .quality-label {
+    display: none;
+  }
+  
+  .quality-icon {
+    font-size: 1.1rem;
+  }
+}
 </style>
 

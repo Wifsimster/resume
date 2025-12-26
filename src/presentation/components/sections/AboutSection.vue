@@ -63,7 +63,7 @@ const { quality } = useQuality()
 
 <style scoped>
 .about-section {
-  background: linear-gradient(180deg, #050505 0%, var(--color-bg-primary) 50%, #050505 100%);
+  background: transparent;
 }
 
 .about-header {
@@ -127,14 +127,14 @@ const { quality } = useQuality()
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   border-left: 3px solid var(--passion-color);
   transition: all var(--transition-fast);
 }
 
 .passion-item:hover {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.25);
   transform: translateX(4px);
 }
 

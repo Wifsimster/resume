@@ -65,5 +65,18 @@ const switchLanguage = () => {
   opacity: 1;
   background: rgba(255, 255, 255, 0.1);
 }
+
+/* Mobile responsive - ensure good touch target */
+@media (max-width: 480px) {
+  .language-switch {
+    width: 64px;
+    height: 36px;
+  }
+  
+  .flag {
+    width: 26px;
+    height: 26px;
+  }
+}
 </style>
 

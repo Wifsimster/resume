@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, shallowRef, onMounted, onBeforeUnmount, watch } from 'vue'
+import { BufferAttribute, BufferGeometry, Points, PointsMaterial } from 'three'
 import type { QualityLevel } from '@application/composables/useQuality'
 
-defineProps<{
+const props = defineProps<{
   quality: QualityLevel
 }>()
 
@@ -28,8 +29,45 @@ const chairLegPositions: [number, number, number][] = [
   [0.2, -0.25, -0.2]
 ]
 
-// Particle positions
-const particlePositions = new Float32Array(Array.from({ length: 150 }, () => (Math.random() - 0.5) * 8))
+// Particle positions (50 points * 3 coordinates = 150 values)
+const particlePositions = (() => {
+  const positions = new Float32Array(50 * 3)
+  for (let i = 0; i < 50; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 8
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 8
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 8
+  }
+  return positions
+})()
+
+// Particles using shallowRef to avoid reactivity issues
+const particles = shallowRef<Points | null>(null)
+
+const createParticles = () => {
+  // Dispose existing particles first
+  if (particles.value) {
+    particles.value.geometry.dispose()
+    ;(particles.value.material as PointsMaterial).dispose()
+    particles.value = null
+  }
+  
+  if (props.quality !== 'high') return
+  
+  const geometry = new BufferGeometry()
+  geometry.setAttribute('position', new BufferAttribute(particlePositions, 3))
+  
+  const material = new PointsMaterial({
+    color: 0x00FF41,
+    size: 0.03,
+    opacity: 0.4,
+    transparent: true
+  })
+  
+  particles.value = new Points(geometry, material)
+}
+
+// Watch quality changes
+watch(() => props.quality, createParticles, { immediate: true })
 
 let animationId: number
 let startTime = 0
@@ -56,8 +94,12 @@ onMounted(() => {
   animate()
 })
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   cancelAnimationFrame(animationId)
+  if (particles.value) {
+    particles.value.geometry.dispose()
+    ;(particles.value.material as PointsMaterial).dispose()
+  }
 })
 </script>
 
@@ -138,21 +180,6 @@ onUnmounted(() => {
   </TresMesh>
   
   <!-- Particles (connection/collaboration vibes) -->
-  <TresPoints v-if="quality === 'high'">
-    <TresBufferGeometry>
-      <TresBufferAttribute
-        attach="attributes-position"
-        :count="50"
-        :array="particlePositions"
-        :item-size="3"
-      />
-    </TresBufferGeometry>
-    <TresPointsMaterial
-      :size="0.03"
-      :color="'#00FF41'"
-      :opacity="0.4"
-      :transparent="true"
-    />
-  </TresPoints>
+  <primitive v-if="particles" :object="particles" />
 </template>
 

@@ -117,5 +117,24 @@ const { t } = useI18n()
 .achievement-close:hover {
   color: var(--color-paper-cream);
 }
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .achievement-toast {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+    max-width: none;
+    padding: 0.75rem 1rem;
+  }
+  
+  .achievement-icon {
+    font-size: 2rem;
+  }
+  
+  .achievement-name {
+    font-size: 1.25rem;
+  }
+}
 </style>
 

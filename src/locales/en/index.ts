@@ -9,6 +9,9 @@ export default {
     backToTop: 'Back to top'
   },
   achievements: {
+    title: 'Achievements',
+    viewAll: 'View achievements',
+    locked: 'Keep exploring to unlock...',
     unlocked: 'Achievement unlocked!',
     explorer: {
       name: 'Explorer',

@@ -1,19 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watchEffect, computed } from 'vue'
+import { ref, shallowRef, onMounted, onBeforeUnmount, watch } from 'vue'
 import { BufferAttribute, BufferGeometry, Points, PointsMaterial } from 'three'
-import {
-  TresPerspectiveCamera,
-  TresAmbientLight,
-  TresDirectionalLight,
-  TresPointLight,
-  TresGroup,
-  TresMesh,
-  TresIcosahedronGeometry,
-  TresSphereGeometry,
-  TresRingGeometry,
-  TresMeshStandardMaterial,
-  TresMeshBasicMaterial
-} from '@tresjs/core'
 import type { QualityLevel } from '@application/composables/useQuality'
 
 const props = defineProps<{
@@ -35,34 +22,13 @@ const passionPositions = [
 // Animation
 const groupRef = ref()
 let animationId: number | null = null
-let isAnimating = false
 
 const animate = () => {
-  if (groupRef.value && isAnimating) {
+  if (groupRef.value) {
     groupRef.value.rotation.y += 0.002
-    animationId = requestAnimationFrame(animate)
   }
+  animationId = requestAnimationFrame(animate)
 }
-
-// Start animation when ref becomes available
-watchEffect(() => {
-  if (groupRef.value && !isAnimating) {
-    isAnimating = true
-    animate()
-  }
-})
-
-onUnmounted(() => {
-  isAnimating = false
-  if (animationId !== null) {
-    cancelAnimationFrame(animationId)
-  }
-  // Clean up particles resources
-  if (particles.value) {
-    particles.value.geometry.dispose()
-    particles.value.material.dispose()
-  }
-})
 
 // Star positions for particles (200 points * 3 coordinates = 600 values)
 const starPositions = (() => {
@@ -75,9 +41,18 @@ const starPositions = (() => {
   return positions
 })()
 
-// Create particles using primitive approach
-const particles = computed(() => {
-  if (props.quality !== 'high') return null
+// Particles using shallowRef to avoid reactivity issues
+const particles = shallowRef<Points | null>(null)
+
+const createParticles = () => {
+  // Dispose existing particles first
+  if (particles.value) {
+    particles.value.geometry.dispose()
+    ;(particles.value.material as PointsMaterial).dispose()
+    particles.value = null
+  }
+  
+  if (props.quality !== 'high') return
   
   const geometry = new BufferGeometry()
   geometry.setAttribute('position', new BufferAttribute(starPositions, 3))
@@ -89,7 +64,24 @@ const particles = computed(() => {
     transparent: true
   })
   
-  return new Points(geometry, material)
+  particles.value = new Points(geometry, material)
+}
+
+// Watch quality changes
+watch(() => props.quality, createParticles, { immediate: true })
+
+onMounted(() => {
+  animate()
+})
+
+onBeforeUnmount(() => {
+  if (animationId !== null) {
+    cancelAnimationFrame(animationId)
+  }
+  if (particles.value) {
+    particles.value.geometry.dispose()
+    ;(particles.value.material as PointsMaterial).dispose()
+  }
 })
 </script>
 

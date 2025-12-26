@@ -3,6 +3,7 @@ import { RouterView } from 'vue-router'
 import LanguageSwitcher from '@presentation/components/ui/LanguageSwitcher.vue'
 import QualityToggle from '@presentation/components/ui/QualityToggle.vue'
 import AchievementToast from '@presentation/components/ui/AchievementToast.vue'
+import AchievementsIndicator from '@presentation/components/ui/AchievementsIndicator.vue'
 import { useAchievements } from '@application/composables/useAchievements'
 import { useEasterEggs } from '@application/composables/useEasterEggs'
 
@@ -16,6 +17,7 @@ useEasterEggs()
   <div class="app-container">
     <!-- Fixed UI Elements -->
     <header class="fixed-header">
+      <AchievementsIndicator />
       <LanguageSwitcher />
       <QualityToggle />
     </header>
@@ -46,6 +48,15 @@ useEasterEggs()
   display: flex;
   gap: 0.75rem;
   align-items: center;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .fixed-header {
+    top: 0.5rem;
+    right: 0.5rem;
+    gap: 0.5rem;
+  }
 }
 </style>
 

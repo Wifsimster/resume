@@ -9,6 +9,9 @@ export default {
     backToTop: 'Retour en haut'
   },
   achievements: {
+    title: 'Succès',
+    viewAll: 'Voir les succès',
+    locked: 'Continuez à explorer pour débloquer...',
     unlocked: 'Succès débloqué !',
     explorer: {
       name: 'Explorateur',
@@ -46,7 +49,7 @@ export default {
   hero: {
     greeting: 'Bonjour, je suis',
     name: 'Damien Battistella',
-    tagline: 'Je construis des applications. Je construis des objets. Je construis des équipes.',
+    tagline: 'Je construis des applications, des objets, des équipes.',
     subtitle: 'Team Leader R&D chez Dedalus',
     cta: 'Découvrir mon parcours',
     pressStart: 'Appuyez sur Entrée pour commencer'

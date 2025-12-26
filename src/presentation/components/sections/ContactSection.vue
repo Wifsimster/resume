@@ -60,7 +60,7 @@ const openLinkedIn = () => {
 
 <style scoped>
 .contact-section {
-  background: linear-gradient(180deg, #050505 0%, var(--color-bg-primary) 100%);
+  background: transparent;
   min-height: 100vh;
 }
 
@@ -170,6 +170,34 @@ const openLinkedIn = () => {
 @media (max-width: 768px) {
   .contact-card {
     margin: 0 1rem 3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-card {
+    padding: 1.5rem;
+    margin: 0 0.5rem 2rem;
+  }
+  
+  .qr-code {
+    padding: 0.75rem;
+  }
+  
+  .qr-code img {
+    width: 160px;
+    height: 160px;
+  }
+  
+  .linkedin-icon {
+    font-size: 2rem;
+  }
+  
+  .linkedin-info h3 {
+    font-size: 1.25rem;
+  }
+  
+  .site-footer {
+    padding: 1.5rem 0.5rem;
   }
 }
 </style>

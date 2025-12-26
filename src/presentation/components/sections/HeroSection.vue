@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { TresCanvas } from '@tresjs/core'
 import HeroScene from '@presentation/components/three/scenes/HeroScene.vue'
@@ -11,6 +11,11 @@ const { scrollToNext } = useScrollSection()
 const { quality } = useQuality()
 
 const isLoaded = ref(false)
+const isMounted = ref(false)
+
+onMounted(() => {
+  isMounted.value = true
+})
 
 const handleCanvasReady = () => {
   isLoaded.value = true
@@ -22,6 +27,7 @@ const handleCanvasReady = () => {
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas
+        v-if="isMounted"
         :clear-color="'#0A0A0A'"
         :alpha="true"
         @ready="handleCanvasReady"
@@ -56,7 +62,7 @@ const handleCanvasReady = () => {
 
 <style scoped>
 .hero-section {
-  background: linear-gradient(180deg, var(--color-bg-primary) 0%, #050505 100%);
+  background: transparent;
 }
 
 .hero-content {
@@ -189,6 +195,41 @@ const handleCanvasReady = () => {
   50% { 
     transform: translateY(12px);
     opacity: 0.3;
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .hero-content {
+    padding-top: 3rem;
+    padding-bottom: 4rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+  
+  .hero-hint {
+    bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-content {
+    padding: 2rem 0.5rem 5rem;
+  }
+  
+  .hero-greeting {
+    font-size: 0.9rem;
+  }
+  
+  .hero-hint {
+    bottom: 1rem;
+  }
+  
+  .scroll-indicator {
+    width: 20px;
+    height: 32px;
   }
 }
 </style>

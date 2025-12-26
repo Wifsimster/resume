@@ -62,7 +62,7 @@ const skillsByCategory = computed(() => {
 
 <style scoped>
 .skills-section {
-  background: linear-gradient(180deg, #050505 0%, var(--color-bg-primary) 50%, #050505 100%);
+  background: transparent;
 }
 
 .skills-header {
@@ -113,13 +113,13 @@ const skillsByCategory = computed(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 0.75rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 6px;
   transition: all var(--transition-fast);
 }
 
 .skill-item:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.25);
   transform: translateX(4px);
 }
 

@@ -92,6 +92,13 @@ html {
   scroll-snap-type: y mandatory;
 }
 
+/* Disable scroll-snap on mobile for better UX */
+@media (max-width: 768px) {
+  html {
+    scroll-snap-type: none;
+  }
+}
+
 body {
   margin: 0;
   font-family: var(--font-body);
@@ -277,9 +284,9 @@ code, pre {
    ============================================ */
 
 .glass {
-  background: rgba(30, 30, 30, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--color-border);
+  background: rgba(20, 20, 20, 0.45);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
 }
 
@@ -356,6 +363,28 @@ code, pre {
   .fixed-header {
     top: 0.5rem;
     right: 0.5rem;
+  }
+  
+  /* Ensure minimum touch target size for interactive elements */
+  .btn,
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .section {
+    padding: 0.75rem;
+  }
+  
+  h1 {
+    font-size: clamp(2rem, 10vw, 3rem);
+  }
+  
+  h2 {
+    font-size: clamp(1.5rem, 6vw, 2rem);
   }
 }
 
