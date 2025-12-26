@@ -11,8 +11,8 @@ const stats = [
   { key: 'recruited', value: '2', icon: '👥' },
   { key: 'interns', value: '3', icon: '🎓' },
   { key: 'apprentices', value: '1', icon: '📚' },
-  { key: 'monthlyPresentations', value: '12+', icon: '🎤' },
-  { key: 'architectureMeetings', value: '24+', icon: '🏗️' }
+  { key: 'monthlyPresentations', value: '1', icon: '🎤' },
+  { key: 'architectureMeetings', value: '1', icon: '🏗️' }
 ]
 
 </script>

@@ -52,7 +52,7 @@ const { quality } = useQuality()
         <div class="hobby-card glass">
           <h3>{{ t('about.hobby') }}</h3>
           <div class="hobby-content">
-            <span class="hobby-icon">🎮</span>
+            <span class="hobby-icon">🛠️</span>
             <p>{{ t('about.gaming') }}</p>
           </div>
         </div>

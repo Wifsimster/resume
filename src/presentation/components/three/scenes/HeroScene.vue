@@ -1,22 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import {
-  TresPerspectiveCamera,
-  TresAmbientLight,
-  TresDirectionalLight,
-  TresPointLight,
-  TresGroup,
-  TresMesh,
-  TresIcosahedronGeometry,
-  TresMeshStandardMaterial,
-  TresSphereGeometry,
-  TresRingGeometry,
-  TresMeshBasicMaterial,
-  TresPoints,
-  TresBufferGeometry,
-  TresBufferAttribute,
-  TresPointsMaterial
-} from '@tresjs/core'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import type { QualityLevel } from '@application/composables/useQuality'
 
 defineProps<{
@@ -37,7 +20,7 @@ const passionPositions = [
 
 // Animation
 const groupRef = ref()
-let animationId: number
+let animationId: number | null = null
 
 const animate = () => {
   if (groupRef.value) {
@@ -46,16 +29,31 @@ const animate = () => {
   animationId = requestAnimationFrame(animate)
 }
 
-onMounted(() => {
-  animate()
+onMounted(async () => {
+  // Wait for the next tick to ensure TresJS refs are initialized
+  await nextTick()
+  // Additional small delay to ensure Three.js scene is fully set up
+  setTimeout(() => {
+    animate()
+  }, 0)
 })
 
 onUnmounted(() => {
-  cancelAnimationFrame(animationId)
+  if (animationId !== null) {
+    cancelAnimationFrame(animationId)
+  }
 })
 
-// Star positions for particles
-const starPositions = new Float32Array(Array.from({ length: 600 }, () => (Math.random() - 0.5) * 20))
+// Star positions for particles (200 points * 3 coordinates = 600 values)
+const starPositions = (() => {
+  const positions = new Float32Array(200 * 3)
+  for (let i = 0; i < 200; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 20
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 20
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 20
+  }
+  return positions
+})()
 </script>
 
 <template>

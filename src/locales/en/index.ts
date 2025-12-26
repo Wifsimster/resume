@@ -105,8 +105,8 @@ export default {
     recruited: 'Developers recruited',
     interns: 'Interns mentored',
     apprentices: 'Apprentice mentored',
-    monthlyPresentations: 'Monthly presentations',
-    architectureMeetings: 'Architecture meetings'
+    monthlyPresentations: '1 monthly developer presentation',
+    architectureMeetings: '1 architecture meeting'
   },
   skills: {
     title: 'Skills',
