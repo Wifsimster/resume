@@ -14,7 +14,9 @@ export const resumeData: ResumeData = {
     { id: 'performance', icon: '⚡', color: '#FFD93D' },
     { id: 'frontend', icon: '🎨', color: '#42B883' },
     { id: 'teamBuilding', icon: '👥', color: '#FF6B35' },
-    { id: 'making', icon: '🔧', color: '#B87333' }
+    { id: 'ai', icon: '🤖', color: '#10B981' },
+    { id: 'devops', icon: '🐳', color: '#2496ED' },
+    { id: 'testing', icon: '🧪', color: '#15803D' }
   ],
 
   experiences: [

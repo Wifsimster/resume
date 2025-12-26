@@ -10,7 +10,7 @@ const { quality } = useQuality()
 </script>
 
 <template>
-  <section class="section experience-section" data-section="experience">
+  <section class="section bg-transparent" data-section="experience">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas :clear-color="'#0A0A0A'" :alpha="true">
@@ -20,40 +20,47 @@ const { quality } = useQuality()
 
     <!-- Content -->
     <div class="section-content">
-      <div class="experience-header">
-        <h2 class="section-title">{{ t('experience.title') }}</h2>
-        <p class="section-subtitle">{{ t('experience.subtitle') }}</p>
+      <div class="text-center mb-12">
+        <h2 class="text-(--color-terminal-green) mb-2">{{ t('experience.title') }}</h2>
+        <p class="font-(--font-display) text-2xl text-white/70">{{ t('experience.subtitle') }}</p>
       </div>
 
-      <div class="timeline">
+      <div class="max-w-[800px] mx-auto">
         <div 
           v-for="exp in resumeData.experiences" 
           :key="exp.id"
-          class="timeline-item glass"
-          :class="{ current: exp.current }"
+          class="glass flex flex-col md:flex-row gap-4 md:gap-6 p-4 sm:p-6 mb-4 sm:mb-6 relative"
+          :class="exp.current ? 'border-(--color-terminal-green) shadow-[var(--shadow-glow-green)]' : ''"
         >
-          <div class="timeline-marker">
-            <div class="marker-dot" />
-            <div class="marker-line" />
+          <div class="flex flex-row md:flex-col items-center shrink-0 gap-2">
+            <div 
+              class="w-4 h-4 rounded-full bg-(--color-terminal-green) shadow-[0_0_10px_var(--color-terminal-green)]"
+              :class="exp.current ? 'animate-pulse-glow' : ''"
+            />
+            <div class="flex-1 h-0.5 md:h-auto md:w-0.5 bg-gradient-to-r md:bg-gradient-to-b from-(--color-terminal-green) to-transparent md:mt-2" />
           </div>
           
-          <div class="timeline-content">
-            <div class="timeline-header">
-              <div class="timeline-meta">
-                <span class="company">{{ exp.company }}</span>
-                <span v-if="exp.current" class="current-badge">{{ t('experience.current') }}</span>
+          <div class="flex-1">
+            <div class="flex flex-wrap justify-between items-start mb-2 gap-2">
+              <div class="flex items-center gap-3">
+                <span class="font-(--font-code) text-sm text-(--color-vue-green)">{{ exp.company }}</span>
+                <span v-if="exp.current" class="text-[0.7rem] py-0.5 px-2 bg-(--color-terminal-green) text-(--color-wood-dark) rounded uppercase font-semibold">{{ t('experience.current') }}</span>
               </div>
-              <span class="period">{{ exp.period }}</span>
+              <span class="font-(--font-code) text-sm text-white/50">{{ exp.period }}</span>
             </div>
             
-            <h3 class="job-title">{{ t(`experience.${exp.id}.title`) }}</h3>
-            <p class="job-description">{{ t(`experience.${exp.id}.description`) }}</p>
+            <h3 class="font-(--font-display) text-[1.75rem] sm:text-[1.4rem] text-(--color-paper-cream) mb-2">{{ t(`experience.${exp.id}.title`) }}</h3>
+            <p class="text-white/70 mb-4 leading-relaxed sm:text-sm">{{ t(`experience.${exp.id}.description`) }}</p>
             
-            <div class="achievements">
-              <h4>{{ t('experience.achievements') }}</h4>
-              <ul>
-                <li v-for="(achievement, index) in exp.achievements" :key="index">
-                  <span class="achievement-icon">✓</span>
+            <div>
+              <h4 class="font-(--font-code) text-xs text-(--color-terminal-green) uppercase tracking-widest mb-2">{{ t('experience.achievements') }}</h4>
+              <ul class="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2">
+                <li 
+                  v-for="(achievement, index) in exp.achievements" 
+                  :key="index"
+                  class="flex items-start gap-2 text-sm sm:text-[0.85rem] text-white/80"
+                >
+                  <span class="text-(--color-terminal-green) font-bold">✓</span>
                   {{ achievement }}
                 </li>
               </ul>
@@ -64,198 +71,4 @@ const { quality } = useQuality()
     </div>
   </section>
 </template>
-
-<style scoped>
-.experience-section {
-  background: transparent;
-}
-
-.experience-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.section-title {
-  color: var(--color-terminal-green);
-  margin-bottom: 0.5rem;
-}
-
-.section-subtitle {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.timeline {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.timeline-item {
-  display: flex;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  position: relative;
-}
-
-.timeline-item.current {
-  border-color: var(--color-terminal-green);
-  box-shadow: var(--shadow-glow-green);
-}
-
-.timeline-marker {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.marker-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--color-terminal-green);
-  box-shadow: 0 0 10px var(--color-terminal-green);
-}
-
-.timeline-item.current .marker-dot {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.marker-line {
-  width: 2px;
-  flex: 1;
-  background: linear-gradient(180deg, var(--color-terminal-green), transparent);
-  margin-top: 0.5rem;
-}
-
-.timeline-content {
-  flex: 1;
-}
-
-.timeline-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.timeline-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.company {
-  font-family: var(--font-code);
-  font-size: 0.9rem;
-  color: var(--color-vue-green);
-}
-
-.current-badge {
-  font-size: 0.7rem;
-  padding: 0.2rem 0.5rem;
-  background: var(--color-terminal-green);
-  color: var(--color-wood-dark);
-  border-radius: 4px;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-.period {
-  font-family: var(--font-code);
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.job-title {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  color: var(--color-paper-cream);
-  margin-bottom: 0.5rem;
-}
-
-.job-description {
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 1rem;
-  line-height: 1.6;
-}
-
-.achievements h4 {
-  font-family: var(--font-code);
-  font-size: 0.8rem;
-  color: var(--color-terminal-green);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.5rem;
-}
-
-.achievements ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.5rem;
-}
-
-.achievements li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.achievement-icon {
-  color: var(--color-terminal-green);
-  font-weight: bold;
-}
-
-@media (max-width: 768px) {
-  .timeline-item {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .timeline-marker {
-    flex-direction: row;
-    gap: 0.5rem;
-  }
-  
-  .marker-line {
-    width: auto;
-    height: 2px;
-    flex: 1;
-    margin-top: 0;
-    background: linear-gradient(90deg, var(--color-terminal-green), transparent);
-  }
-}
-
-@media (max-width: 480px) {
-  .timeline-item {
-    padding: 1rem;
-    margin-bottom: 1rem;
-  }
-  
-  .job-title {
-    font-size: 1.4rem;
-  }
-  
-  .job-description {
-    font-size: 0.9rem;
-  }
-  
-  .achievements ul {
-    grid-template-columns: 1fr;
-  }
-  
-  .achievements li {
-    font-size: 0.85rem;
-  }
-}
-</style>
 

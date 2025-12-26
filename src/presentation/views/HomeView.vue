@@ -11,7 +11,7 @@ import ContactSection from '@presentation/components/sections/ContactSection.vue
 </script>
 
 <template>
-  <main class="home">
+  <main class="w-full">
     <HeroSection />
     <AboutSection />
     <ExperienceSection />
@@ -23,10 +23,4 @@ import ContactSection from '@presentation/components/sections/ContactSection.vue
     <ContactSection />
   </main>
 </template>
-
-<style scoped>
-.home {
-  width: 100%;
-}
-</style>
 

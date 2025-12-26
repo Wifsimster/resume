@@ -115,9 +115,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="min-h-screen bg-(--color-bg-primary)">
     <!-- Fixed UI Elements -->
-    <header class="fixed-header">
+    <header class="fixed top-4 right-4 z-100 flex gap-3 items-center sm:top-2 sm:right-2 sm:gap-2">
       <AchievementsIndicator />
       <LanguageSwitcher />
     </header>
@@ -133,30 +133,4 @@ onUnmounted(() => {
     />
   </div>
 </template>
-
-<style scoped>
-.app-container {
-  min-height: 100vh;
-  background: var(--color-bg-primary);
-}
-
-.fixed-header {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 100;
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-/* Mobile responsive */
-@media (max-width: 480px) {
-  .fixed-header {
-    top: 0.5rem;
-    right: 0.5rem;
-    gap: 0.5rem;
-  }
-}
-</style>
 

@@ -106,7 +106,7 @@ export default {
     title: 'À propos',
     subtitle: 'Construire, Partager, Expérimenter',
     philosophy: 'Ma philosophie',
-    intro: 'J\'aime construire des choses, physiques ou numériques.',
+    intro: 'De nature curieuse, j\'aime construire, expérimenter et apprendre.',
     passions: {
       title: 'Mes 7 passions',
       knowledge: 'Partage de connaissances',
@@ -121,11 +121,15 @@ export default {
       frontendDesc: 'Interfaces soignées, pixel-perfect, maîtrise Vue.js',
       teamBuilding: 'Construction d\'équipes',
       teamBuildingDesc: 'Recrutement, mentorat, développement des talents',
-      making: 'Fabrication',
-      makingDesc: 'Travail du bois, électronique, rénovation'
+      ai: 'IA',
+      aiDesc: 'LLM, Agents, MCP, prompt engineering',
+      devops: 'DevOps',
+      devopsDesc: 'Docker, AWS, pipelines CI/CD',
+      testing: 'Testing',
+      testingDesc: 'Vitest, Playwright, tests end-to-end'
     },
     hobby: 'Et quand je ne code pas...',
-    gaming: 'Je construis des objets, rénove ma maison et développe ma domotique. Je partage ma vie avec ma femme et nos deux enfants.'
+    gaming: 'Sur mon temps libre, je rénove ma maison, développe ma domotique et profite de ma famille.'
   },
   experience: {
     title: 'Expérience',

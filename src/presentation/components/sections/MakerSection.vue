@@ -40,7 +40,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="section maker-section" data-section="maker">
+  <section class="section bg-transparent relative" data-section="maker">
     <!-- 3D Canvas - Full background -->
     <div class="section-canvas">
       <TresCanvas :clear-color="'#0A0A0A'" :alpha="true">
@@ -49,127 +49,31 @@ onMounted(() => {
     </div>
 
     <!-- Compact Content Overlay -->
-    <div class="section-content maker-content">
-      <div class="maker-panel glass">
-        <div class="panel-header">
-          <h2 class="section-title">{{ t('maker.title') }}</h2>
-          <p class="section-subtitle">{{ t('maker.subtitle') }}</p>
+    <div class="section-content flex items-end justify-center pb-12 pointer-events-none">
+      <div class="bg-[#0A0A0A]/75 backdrop-blur-md border border-white/8 rounded-2xl py-6 px-8 max-w-[700px] pointer-events-auto md:mx-4 md:py-5 md:px-6">
+        <div class="text-center mb-4">
+          <h2 class="text-(--color-copper) mb-2">{{ t('maker.title') }}</h2>
+          <p class="font-(--font-display) text-2xl text-white/70">{{ t('maker.subtitle') }}</p>
         </div>
         
-        <div class="tech-row">
+        <div class="flex flex-wrap gap-2 mb-4">
           <span 
             v-for="tech in techStack" 
             :key="tech.label"
-            class="tech-badge"
+            class="inline-flex items-center gap-1.5 py-1.5 px-3 bg-white/5 border border-white/10 rounded-full text-sm text-(--color-paper-cream) transition-all duration-200 hover:bg-white/10 hover:border-(--color-copper)"
           >
-            <span class="tech-icon">{{ tech.icon }}</span>
-            <span class="tech-label">{{ tech.label }}</span>
+            <span class="text-base">{{ tech.icon }}</span>
+            <span class="text-xs">{{ tech.label }}</span>
           </span>
         </div>
         
-        <div class="projects-row">
-          <span class="project-tag">🚿 Italian Shower</span>
-          <span class="project-tag">💡 Ambilight</span>
-          <span class="project-tag">🤖 Domotics</span>
-          <span class="project-tag">🖥️ Self-Hosting</span>
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs text-white/60 py-1 px-2.5 bg-[#B87333]/15 rounded whitespace-nowrap">🚿 Italian Shower</span>
+          <span class="text-xs text-white/60 py-1 px-2.5 bg-[#B87333]/15 rounded whitespace-nowrap">💡 Ambilight</span>
+          <span class="text-xs text-white/60 py-1 px-2.5 bg-[#B87333]/15 rounded whitespace-nowrap">🤖 Domotics</span>
+          <span class="text-xs text-white/60 py-1 px-2.5 bg-[#B87333]/15 rounded whitespace-nowrap">🖥️ Self-Hosting</span>
         </div>
       </div>
     </div>
   </section>
 </template>
-
-<style scoped>
-.maker-section {
-  background: transparent;
-  position: relative;
-}
-
-.maker-content {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 3rem;
-  pointer-events: none;
-}
-
-.maker-panel {
-  background: rgba(10, 10, 10, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 1.5rem 2rem;
-  max-width: 700px;
-  pointer-events: auto;
-}
-
-.panel-header {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-.section-title {
-  color: var(--color-copper);
-  margin-bottom: 0.5rem;
-}
-
-.section-subtitle {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.tech-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.tech-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.7rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  font-size: 0.85rem;
-  color: var(--color-paper-cream);
-  transition: all 0.2s ease;
-}
-
-.tech-badge:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--color-copper);
-}
-
-.tech-icon {
-  font-size: 1rem;
-}
-
-.tech-label {
-  font-size: 0.8rem;
-}
-
-.projects-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.project-tag {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-  padding: 0.25rem 0.6rem;
-  background: rgba(184, 115, 51, 0.15);
-  border-radius: 4px;
-  white-space: nowrap;
-}
-
-@media (max-width: 768px) {
-  .maker-panel {
-    margin: 0 1rem;
-    padding: 1.25rem 1.5rem;
-  }
-}
-</style>

@@ -23,7 +23,7 @@ const handleCanvasReady = () => {
 </script>
 
 <template>
-  <section class="section hero-section" data-section="hero">
+  <section class="section bg-transparent" data-section="hero">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas
@@ -37,200 +37,26 @@ const handleCanvasReady = () => {
     </div>
 
     <!-- Content Overlay -->
-    <div class="section-content hero-content">
-      <div class="hero-text">
-        <p class="hero-greeting">{{ t('hero.greeting') }}</p>
-        <h1 class="hero-name">{{ t('hero.name') }}</h1>
-        <p class="hero-tagline">{{ t('hero.tagline') }}</p>
-        <p class="hero-subtitle">{{ t('hero.subtitle') }}</p>
+    <div class="section-content flex flex-col justify-center items-center text-center min-h-screen pt-16 md:pt-12 md:pb-16 sm:px-2 sm:py-8 sm:pb-20">
+      <div class="max-w-[800px]">
+        <p class="font-(--font-code) text-base text-(--color-terminal-green) mb-2 opacity-0 animate-fadeInUp [animation-delay:0.2s] sm:text-sm">{{ t('hero.greeting') }}</p>
+        <h1 class="text-[clamp(3rem,10vw,7rem)] text-(--color-text-primary) mb-4 [text-shadow:0_0_40px_rgba(124,58,237,0.3)] opacity-0 animate-fadeInUp [animation-delay:0.4s]">{{ t('hero.name') }}</h1>
+        <p class="font-(--font-display) text-[clamp(1.25rem,3vw,2rem)] text-(--color-terminal-green) mb-2 opacity-0 animate-fadeInUp [animation-delay:0.6s]">{{ t('hero.tagline') }}</p>
+        <p class="text-lg text-white/70 mb-8 opacity-0 animate-fadeInUp [animation-delay:0.8s] md:text-base">{{ t('hero.subtitle') }}</p>
         
-        <button class="btn btn-primary hero-cta" @click="scrollToNext">
+        <button class="btn btn-primary opacity-0 animate-fadeInUp [animation-delay:1s]" @click="scrollToNext">
           {{ t('hero.cta') }}
-          <span class="cta-arrow">↓</span>
+          <span class="inline-block animate-bounce">↓</span>
         </button>
       </div>
       
-      <div class="hero-hint">
-        <span class="hint-text">{{ t('common.scrollDown') }}</span>
-        <div class="scroll-indicator">
-          <div class="scroll-dot" />
+      <div class="absolute bottom-8 flex flex-col items-center gap-2 opacity-0 animate-fadeIn [animation-delay:1.5s] md:bottom-6 sm:bottom-4">
+        <span class="font-(--font-code) text-xs text-white/50 uppercase tracking-widest">{{ t('common.scrollDown') }}</span>
+        <div class="w-6 h-10 border-2 border-white/30 rounded-xl flex justify-center pt-2 sm:w-5 sm:h-8">
+          <div class="w-1 h-2 bg-(--color-accent-primary) rounded-sm animate-scrollDot" />
         </div>
       </div>
     </div>
   </section>
 </template>
-
-<style scoped>
-.hero-section {
-  background: transparent;
-}
-
-.hero-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  min-height: 100vh;
-  padding-top: 4rem;
-}
-
-.hero-text {
-  max-width: 800px;
-}
-
-.hero-greeting {
-  font-family: var(--font-code);
-  font-size: 1rem;
-  color: var(--color-terminal-green);
-  margin-bottom: 0.5rem;
-  opacity: 0;
-  animation: fadeInUp 0.6s ease forwards;
-  animation-delay: 0.2s;
-}
-
-.hero-name {
-  font-size: clamp(3rem, 10vw, 7rem);
-  color: var(--color-text-primary);
-  margin-bottom: 1rem;
-  text-shadow: 0 0 40px rgba(124, 58, 237, 0.3);
-  opacity: 0;
-  animation: fadeInUp 0.6s ease forwards;
-  animation-delay: 0.4s;
-}
-
-.hero-tagline {
-  font-family: var(--font-display);
-  font-size: clamp(1.25rem, 3vw, 2rem);
-  color: var(--color-terminal-green);
-  margin-bottom: 0.5rem;
-  opacity: 0;
-  animation: fadeInUp 0.6s ease forwards;
-  animation-delay: 0.6s;
-}
-
-.hero-subtitle {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 2rem;
-  opacity: 0;
-  animation: fadeInUp 0.6s ease forwards;
-  animation-delay: 0.8s;
-}
-
-.hero-cta {
-  opacity: 0;
-  animation: fadeInUp 0.6s ease forwards;
-  animation-delay: 1s;
-}
-
-.cta-arrow {
-  display: inline-block;
-  animation: bounce 1s ease infinite;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(4px); }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.hero-hint {
-  position: absolute;
-  bottom: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  opacity: 0;
-  animation: fadeIn 1s ease forwards;
-  animation-delay: 1.5s;
-}
-
-@keyframes fadeIn {
-  to { opacity: 0.7; }
-}
-
-.hint-text {
-  font-family: var(--font-code);
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.scroll-indicator {
-  width: 24px;
-  height: 40px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  padding-top: 8px;
-}
-
-.scroll-dot {
-  width: 4px;
-  height: 8px;
-  background: var(--color-accent-primary);
-  border-radius: 2px;
-  animation: scrollDot 1.5s ease-in-out infinite;
-}
-
-@keyframes scrollDot {
-  0%, 100% { 
-    transform: translateY(0);
-    opacity: 1;
-  }
-  50% { 
-    transform: translateY(12px);
-    opacity: 0.3;
-  }
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-  .hero-content {
-    padding-top: 3rem;
-    padding-bottom: 4rem;
-  }
-  
-  .hero-subtitle {
-    font-size: 1rem;
-  }
-  
-  .hero-hint {
-    bottom: 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-content {
-    padding: 2rem 0.5rem 5rem;
-  }
-  
-  .hero-greeting {
-    font-size: 0.9rem;
-  }
-  
-  .hero-hint {
-    bottom: 1rem;
-  }
-  
-  .scroll-indicator {
-    width: 20px;
-    height: 32px;
-  }
-}
-</style>
 

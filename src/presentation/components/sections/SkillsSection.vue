@@ -21,7 +21,7 @@ const skillsByCategory = computed(() => {
 </script>
 
 <template>
-  <section class="section skills-section" data-section="skills">
+  <section class="section bg-transparent" data-section="skills">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas :clear-color="'#0A0A0A'" :alpha="true">
@@ -31,27 +31,27 @@ const skillsByCategory = computed(() => {
 
     <!-- Content -->
     <div class="section-content">
-      <div class="skills-header">
-        <h2 class="section-title">{{ t('skills.title') }}</h2>
-        <p class="section-subtitle">{{ t('skills.subtitle') }}</p>
+      <div class="text-center mb-12">
+        <h2 class="text-(--color-growth-yellow) mb-2">{{ t('skills.title') }}</h2>
+        <p class="font-(--font-display) text-2xl text-white/70">{{ t('skills.subtitle') }}</p>
       </div>
 
-      <div class="skills-grid">
+      <div class="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-6 max-w-[1200px] mx-auto">
         <div 
           v-for="category in skillsByCategory" 
           :key="category.id"
-          class="skill-category glass"
+          class="glass p-5"
         >
-          <h3 class="category-name">{{ category.name }}</h3>
+          <h3 class="font-(--font-display) text-2xl text-(--color-terminal-green) mb-4 pb-2 border-b border-green-500/20">{{ category.name }}</h3>
           
-          <div class="skills-list">
+          <div class="flex flex-col gap-3">
             <div 
               v-for="skill in category.skills" 
               :key="skill.id"
-              class="skill-item"
+              class="flex items-center gap-2 py-2.5 px-3 bg-black/15 rounded-md transition-all duration-150 hover:bg-black/25 hover:translate-x-1"
             >
-              <span v-if="skill.icon" class="skill-icon">{{ skill.icon }}</span>
-              <span class="skill-name">{{ skill.name }}</span>
+              <span v-if="skill.icon" class="text-xl">{{ skill.icon }}</span>
+              <span class="text-[0.95rem] text-(--color-paper-cream)">{{ skill.name }}</span>
             </div>
           </div>
         </div>
@@ -59,83 +59,4 @@ const skillsByCategory = computed(() => {
     </div>
   </section>
 </template>
-
-<style scoped>
-.skills-section {
-  background: transparent;
-}
-
-.skills-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.section-title {
-  color: var(--color-growth-yellow);
-  margin-bottom: 0.5rem;
-}
-
-.section-subtitle {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.skills-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.skill-category {
-  padding: 1.25rem;
-}
-
-.category-name {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: var(--color-terminal-green);
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(0, 255, 65, 0.2);
-}
-
-.skills-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.skill-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 0.75rem;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 6px;
-  transition: all var(--transition-fast);
-}
-
-.skill-item:hover {
-  background: rgba(0, 0, 0, 0.25);
-  transform: translateX(4px);
-}
-
-.skill-icon {
-  font-size: 1.25rem;
-}
-
-.skill-name {
-  font-size: 0.95rem;
-  color: var(--color-paper-cream);
-}
-
-@media (max-width: 768px) {
-  .skills-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
 

@@ -121,11 +121,15 @@ export default {
       frontendDesc: 'Beautiful UIs, pixel-perfect details, Vue.js mastery',
       teamBuilding: 'Team Building',
       teamBuildingDesc: 'Recruiting, mentoring, growing developers',
-      making: 'Making',
-      makingDesc: 'Woodworking, electronics, renovation'
+      ai: 'AI',
+      aiDesc: 'LLM, Agents, MCP, prompt engineering',
+      devops: 'DevOps',
+      devopsDesc: 'Docker, AWS, CI/CD pipelines',
+      testing: 'Testing',
+      testingDesc: 'Vitest, Playwright, end-to-end tests'
     },
     hobby: 'And when I\'m not coding...',
-    gaming: 'I build things, renovate my home, and develop home automation. I share my life with my wife and our two kids.'
+    gaming: 'In my free time, I renovate my home, develop home automation, and enjoy time with my family.'
   },
   experience: {
     title: 'Experience',

@@ -24,7 +24,7 @@ const openBook = (url: string) => {
 </script>
 
 <template>
-  <section class="section books-section" data-section="books">
+  <section class="section bg-transparent" data-section="books">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas :clear-color="'#0A0A0A'" :alpha="true">
@@ -34,51 +34,51 @@ const openBook = (url: string) => {
 
     <!-- Content -->
     <div class="section-content">
-      <div class="books-header">
-        <h2 class="section-title">{{ t('books.title') }}</h2>
-        <p class="section-subtitle">{{ t('books.subtitle') }}</p>
+      <div class="text-center mb-12">
+        <h2 class="text-(--color-book-amber) mb-2">{{ t('books.title') }}</h2>
+        <p class="font-(--font-display) text-2xl text-white/70">{{ t('books.subtitle') }}</p>
       </div>
 
-      <div class="books-grid">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[900px] mx-auto">
         <!-- Read Books -->
-        <div class="books-category glass">
-          <h3 class="category-title">
-            <span class="status-icon">✓</span>
+        <div class="glass p-6">
+          <h3 class="font-(--font-display) text-2xl text-(--color-paper-cream) mb-4 flex items-center gap-2">
+            <span class="text-xl">✓</span>
             {{ t('books.read') }}
           </h3>
-          <div class="books-list">
+          <div class="flex flex-col gap-4">
             <div 
               v-for="book in booksByStatus.read" 
               :key="book.id"
-              class="book-item"
+              class="flex gap-4 p-3 bg-black/15 rounded-lg cursor-pointer transition-all duration-150 hover:bg-black/25 hover:translate-x-1"
               @click="openBook(book.url)"
             >
-              <div class="book-cover">📗</div>
-              <div class="book-info">
-                <span class="book-title">{{ book.title }}</span>
-                <span class="book-author">{{ book.author }}</span>
+              <div class="text-3xl w-[50px] h-[60px] flex items-center justify-center bg-white/3 rounded">📗</div>
+              <div class="flex flex-col justify-center gap-1">
+                <span class="text-sm text-(--color-paper-cream) leading-tight">{{ book.title }}</span>
+                <span class="text-xs text-white/50">{{ book.author }}</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- To Read Books -->
-        <div class="books-category glass to-read">
-          <h3 class="category-title">
-            <span class="status-icon">📖</span>
+        <div class="glass p-6 border-amber-400/30">
+          <h3 class="font-(--font-display) text-2xl text-(--color-paper-cream) mb-4 flex items-center gap-2">
+            <span class="text-xl">📖</span>
             {{ t('books.toRead') }}
           </h3>
-          <div class="books-list">
+          <div class="flex flex-col gap-4">
             <div 
               v-for="book in booksByStatus.toRead" 
               :key="book.id"
-              class="book-item"
+              class="flex gap-4 p-3 bg-black/15 rounded-lg cursor-pointer transition-all duration-150 hover:bg-black/25 hover:translate-x-1"
               @click="openBook(book.url)"
             >
-              <div class="book-cover">📕</div>
-              <div class="book-info">
-                <span class="book-title">{{ book.title }}</span>
-                <span class="book-author">{{ book.author }}</span>
+              <div class="text-3xl w-[50px] h-[60px] flex items-center justify-center bg-white/3 rounded">📕</div>
+              <div class="flex flex-col justify-center gap-1">
+                <span class="text-sm text-(--color-paper-cream) leading-tight">{{ book.title }}</span>
+                <span class="text-xs text-white/50">{{ book.author }}</span>
               </div>
             </div>
           </div>
@@ -87,112 +87,4 @@ const openBook = (url: string) => {
     </div>
   </section>
 </template>
-
-<style scoped>
-.books-section {
-  background: transparent;
-}
-
-.books-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.section-title {
-  color: var(--color-book-amber);
-  margin-bottom: 0.5rem;
-}
-
-.section-subtitle {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.books-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.books-category {
-  padding: 1.5rem;
-}
-
-.books-category.to-read {
-  border-color: rgba(255, 191, 0, 0.3);
-}
-
-.category-title {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: var(--color-paper-cream);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.status-icon {
-  font-size: 1.25rem;
-}
-
-.books-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.book-item {
-  display: flex;
-  gap: 1rem;
-  padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.book-item:hover {
-  background: rgba(0, 0, 0, 0.25);
-  transform: translateX(4px);
-}
-
-.book-cover {
-  font-size: 2rem;
-  width: 50px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 4px;
-}
-
-.book-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.25rem;
-}
-
-.book-title {
-  font-size: 0.9rem;
-  color: var(--color-paper-cream);
-  line-height: 1.3;
-}
-
-.book-author {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-@media (max-width: 768px) {
-  .books-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
 
