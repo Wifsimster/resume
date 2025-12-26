@@ -15,7 +15,8 @@ const teamStats = [
 
 const rituals = [
   { key: 'monthlyPresentations', icon: '🎤' },
-  { key: 'architectureMeetings', icon: '🏗️' }
+  { key: 'architectureMeetings', icon: '🏗️' },
+  { key: 'dailyMeeting', icon: '☀️' }
 ]
 
 const conferences = [

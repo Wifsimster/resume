@@ -177,8 +177,9 @@ export default {
     recruited: 'Développeurs recrutés',
     interns: 'Stagiaires encadrés',
     apprentices: 'Alternant encadré',
-    monthlyPresentations: 'Présentation tech mensuelle',
-    architectureMeetings: 'Réunion d\'architecture'
+    monthlyPresentations: 'Présentation tech mensuelle pour l\'ensemble des développeurs de la business unit',
+    architectureMeetings: 'Réunion d\'architecture',
+    dailyMeeting: 'Daily avec le PO et les équipes dev'
   },
   skills: {
     title: 'Compétences',

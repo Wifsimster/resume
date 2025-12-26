@@ -177,8 +177,9 @@ export default {
     recruited: 'Developers recruited',
     interns: 'Interns mentored',
     apprentices: 'Apprentice mentored',
-    monthlyPresentations: 'Monthly tech presentation',
-    architectureMeetings: 'Architecture meeting'
+    monthlyPresentations: 'Monthly tech presentation for all business unit developers',
+    architectureMeetings: 'Architecture meeting',
+    dailyMeeting: 'Daily with PO and dev teams'
   },
   skills: {
     title: 'Skills',
