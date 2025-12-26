@@ -98,7 +98,7 @@ const orbitRings = computed(() =>
 
 let startTime = 0
 
-const updateAnimations = (elapsed: number, delta: number) => {
+const updateAnimations = (elapsed: number, _delta: number) => {
   // Core rotation
   coreState.rotationY = elapsed * 0.15
   
@@ -125,7 +125,7 @@ onMounted(() => {
   startTime = Date.now()
   
   // Start animation loop with controller
-  animationController.start((elapsed, delta) => {
+  animationController.start((_elapsed, delta) => {
     const totalElapsed = (Date.now() - startTime) / 1000
     updateAnimations(totalElapsed, delta)
   })

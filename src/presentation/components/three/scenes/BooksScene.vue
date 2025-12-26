@@ -83,7 +83,7 @@ const setPageRef = (index: number, el: any) => {
 
 let startTime = 0
 
-const updateAnimations = (elapsed: number, delta: number) => {
+const updateAnimations = (elapsed: number, _delta: number) => {
   // Gentle scene rotation - like viewing a library
   if (sceneRef.value) {
     sceneRef.value.rotation.y = Math.sin(elapsed * 0.08) * 0.1
@@ -194,7 +194,7 @@ onMounted(() => {
   startTime = Date.now()
   
   // Start animation loop with controller
-  animationController.start((elapsed, delta) => {
+  animationController.start((_elapsed, delta) => {
     const totalElapsed = (Date.now() - startTime) / 1000
     updateAnimations(totalElapsed, delta)
   })

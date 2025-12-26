@@ -54,7 +54,7 @@ const particles = computed(() => {
 
 let startTime = 0
 
-const updateAnimations = (elapsed: number, delta: number) => {
+const updateAnimations = (elapsed: number, _delta: number) => {
   // Smooth scene rotation - slightly offset to show more of the right side
   if (groupRef.value) {
     groupRef.value.rotation.y = Math.sin(elapsed * 0.12) * 0.15 + 0.2
@@ -171,7 +171,7 @@ onMounted(() => {
   startTime = Date.now()
   
   // Start animation loop with controller
-  animationController.start((elapsed, delta) => {
+  animationController.start((_elapsed, delta) => {
     const totalElapsed = (Date.now() - startTime) / 1000
     updateAnimations(totalElapsed, delta)
   })

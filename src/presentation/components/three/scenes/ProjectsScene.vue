@@ -54,7 +54,7 @@ const starParticles = Array.from({ length: 40 }, (_, i) => ({
 
 let startTime = 0
 
-const updateAnimations = (elapsed: number, delta: number) => {
+const updateAnimations = (elapsed: number, _delta: number) => {
   // Animate main group with gentle rotation
   if (cardsRef.value) {
     cardsRef.value.rotation.y = Math.sin(elapsed * 0.15) * 0.1
@@ -89,7 +89,7 @@ onMounted(() => {
   startTime = Date.now()
   
   // Start animation loop with controller
-  animationController.start((elapsed, delta) => {
+  animationController.start((_elapsed, delta) => {
     const totalElapsed = (Date.now() - startTime) / 1000
     updateAnimations(totalElapsed, delta)
   })

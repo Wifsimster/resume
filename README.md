@@ -17,6 +17,7 @@ An interactive, infinite-scroll resume website featuring 9 unique WebGL 3D scene
 - **Bilingual** - French and English with automatic browser detection
 - **Responsive** - Works on desktop and mobile devices
 - **Performance Optimized** - Quality toggle, lazy loading, code splitting
+- **Mobile Optimized** - Frame rate limiting, visibility-based pausing, battery-aware quality degradation
 
 ## 🛠️ Tech Stack
 
@@ -127,15 +128,57 @@ Unlock 20 achievements by exploring the site:
 ## 🎮 Hidden Features
 
 - **Konami Code** - ↑↑↓↓←→←→BA for secret mode
-- **Quality Toggle** - Switch between Low/High quality for performance
+- **Quality Toggle** - Switch between Minimal/Low/High quality for performance
 - **Progress Bar** - XP bar shows scroll progress through sections
+
+## ⚡ Performance Optimizations
+
+### Mobile Animation Optimizations
+
+The application includes comprehensive mobile optimizations to ensure smooth performance and battery efficiency:
+
+- **Frame Rate Limiting**: Automatically targets 30fps on mobile devices (60fps on desktop)
+- **Visibility-Based Pausing**: Animations pause when sections are off-screen (<10% visible), reducing CPU/GPU usage
+- **Battery Awareness**: Quality automatically degrades when battery is low and not charging
+- **Thermal Throttling Detection**: Auto-degrades quality when FPS drops suddenly (thermal throttling)
+- **GPU Acceleration**: CSS animations use GPU-accelerated properties (`transform`, `opacity`) with `will-change` hints
+- **Mobile-Specific Settings**: Lower DPR (max 1.5), reduced particle counts, fewer lights on mobile
+
+### Quality System
+
+The quality system automatically detects device capabilities and adjusts settings:
+
+- **Minimal**: 30fps target, no particles, reduced geometry, low-power mode
+- **Low**: 30fps mobile / 45fps desktop, reduced particles, medium geometry
+- **High**: 30fps mobile / 60fps desktop, full particles, high geometry
+
+Quality detection considers:
+- GPU tier (low/medium/high)
+- CPU cores
+- Device memory
+- Mobile device detection
+- High DPR displays
+- Battery level (if available)
+- `prefers-reduced-motion` preference
+
+### CSS Optimizations
+
+- All animations use GPU-accelerated properties
+- `will-change` hints for better browser optimization
+- Faster animation durations on mobile devices
+- Respects `prefers-reduced-motion` for accessibility
 
 ## 📦 Project Structure
 
 ```
 src/
 ├── application/        # Composables, i18n config
-│   ├── composables/    # Vue composables (achievements, easter eggs, quality, scroll)
+│   ├── composables/    # Vue composables
+│   │   ├── useAchievements.ts      # Achievement system
+│   │   ├── useAnimationController.ts  # Animation controller with mobile optimizations
+│   │   ├── useEasterEggs.ts        # Easter eggs (Konami code, etc.)
+│   │   ├── useQuality.ts           # Quality system with auto-detection
+│   │   └── useScrollSection.ts     # Scroll tracking with visibility detection
 │   └── i18n/           # i18n configuration
 ├── domain/             # Business logic
 │   ├── data/           # Resume data
@@ -147,8 +190,9 @@ src/
 │   ├── components/
 │   │   ├── sections/   # Page sections (Hero, About, Skills, etc.)
 │   │   ├── three/      # Three.js scenes for each section
+│   │   │   └── scenes/ # Individual 3D scenes (HeroScene, AboutScene, etc.)
 │   │   └── ui/         # UI components (achievements, language switcher, etc.)
-│   ├── styles/         # Global CSS styles
+│   ├── styles/         # Global CSS styles with mobile optimizations
 │   └── views/          # Page views
 ├── App.vue             # Root component
 └── main.ts             # Application entry point

@@ -9,6 +9,7 @@ export type SecretTheme = 'default' | 'matrix' | 'retro' | 'cyberpunk'
 
 const currentTheme = ref<SecretTheme>('default')
 const konamiActivated = ref(false)
+const fpsEnabled = ref(false)
 const clickCount = ref(0)
 
 export function useEasterEggs() {
@@ -37,6 +38,9 @@ export function useEasterEggs() {
       konamiActivated.value = true
       currentTheme.value = 'matrix'
       unlock('codeHunter')
+      
+      // Enable FPS display
+      fpsEnabled.value = true
       
       // Apply matrix theme
       document.documentElement.classList.add('theme-matrix')
@@ -135,6 +139,7 @@ export function useEasterEggs() {
   return {
     currentTheme,
     konamiActivated,
+    fpsEnabled,
     clickCount,
     setTheme
   }

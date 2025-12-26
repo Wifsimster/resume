@@ -9,7 +9,7 @@ interface BatteryInfo {
 }
 
 export function useAnimationController(elementRef?: { value: HTMLElement | null }) {
-  const { quality, deviceCapabilities, renderSettings } = useQuality()
+  const { quality, deviceCapabilities } = useQuality()
   
   const isPaused = ref(false)
   const isVisible = ref(true)
@@ -158,7 +158,7 @@ export function useAnimationController(elementRef?: { value: HTMLElement | null 
   watch(
     () => [batteryInfo.value.level, batteryInfo.value.charging],
     ([level, charging]) => {
-      if (level !== null && level < 0.2 && !charging && isMobile.value) {
+      if (typeof level === 'number' && level < 0.2 && charging === false && isMobile.value) {
         // Reduce quality when battery is low
         if (quality.value === 'high') {
           // Quality will be auto-degraded by FPS monitoring

@@ -1,16 +1,32 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import { RouterView } from 'vue-router'
 import LanguageSwitcher from '@presentation/components/ui/LanguageSwitcher.vue'
 import AchievementToast from '@presentation/components/ui/AchievementToast.vue'
 import AchievementsIndicator from '@presentation/components/ui/AchievementsIndicator.vue'
+import FPSDisplay from '@presentation/components/ui/FPSDisplay.vue'
 import { useAchievements } from '@application/composables/useAchievements'
 import { useEasterEggs } from '@application/composables/useEasterEggs'
 
 const { currentAchievement, showAchievement, dismissAchievement, unlock, isUnlocked } = useAchievements()
 
 // Initialize easter eggs listener
-useEasterEggs()
+const { fpsEnabled } = useEasterEggs()
+
+// FPS display ref
+const fpsDisplayRef = ref<InstanceType<typeof FPSDisplay> | null>(null)
+
+// Watch for FPS enable/disable
+watch(fpsEnabled, async (enabled) => {
+  await nextTick()
+  if (fpsDisplayRef.value) {
+    if (enabled) {
+      fpsDisplayRef.value.start()
+    } else {
+      fpsDisplayRef.value.stop()
+    }
+  }
+})
 
 // Tracking state
 const clickCount = ref(0)
@@ -131,6 +147,9 @@ onUnmounted(() => {
       :achievement="currentAchievement"
       @close="dismissAchievement"
     />
+    
+    <!-- FPS Display -->
+    <FPSDisplay ref="fpsDisplayRef" />
   </div>
 </template>
 

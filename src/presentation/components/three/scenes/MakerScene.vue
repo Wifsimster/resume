@@ -79,7 +79,7 @@ const _screenLines = [
 void _screenLines // Suppress unused warning
 
 // Animation loop
-const updateAnimations = (elapsed: number, delta: number) => {
+const updateAnimations = (elapsed: number, _delta: number) => {
   anim.time = elapsed
   
   // LED rainbow flow
@@ -142,7 +142,7 @@ onMounted(() => {
   startTime = Date.now()
   
   // Start animation loop with controller
-  animationController.start((elapsed, delta) => {
+  animationController.start((_elapsed, delta) => {
     const totalElapsed = (Date.now() - startTime) / 1000
     updateAnimations(totalElapsed, delta)
   })

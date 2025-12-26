@@ -104,7 +104,7 @@ const createParticleSystems = () => {
   networkParticles.value = new Points(networkGeometry, networkMaterial)
 }
 
-const updateAnimations = (elapsed: number, delta: number) => {
+const updateAnimations = (elapsed: number, _delta: number) => {
   // Very gentle scene rotation (slowed down)
   if (sceneRef.value) {
     sceneRef.value.rotation.y = elapsed * 0.015
@@ -213,7 +213,7 @@ onMounted(() => {
   createParticleSystems()
   
   // Start animation loop with controller
-  animationController.start((elapsed, delta) => {
+  animationController.start((_elapsed, delta) => {
     const totalElapsed = (Date.now() - startTime) / 1000
     updateAnimations(totalElapsed, delta)
   })

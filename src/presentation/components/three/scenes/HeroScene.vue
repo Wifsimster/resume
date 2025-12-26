@@ -179,7 +179,7 @@ const createParticleSystems = () => {
 }
 
 // Main animation loop
-const updateAnimations = (elapsed: number, delta: number) => {
+const updateAnimations = (elapsed: number, _delta: number) => {
   // Animate passion spheres in orbit
   passionRefs.forEach((objRef, index) => {
     if (objRef.value) {
@@ -298,7 +298,7 @@ onMounted(() => {
   createParticleSystems()
   
   // Start animation loop with controller
-  animationController.start((elapsed, delta) => {
+  animationController.start((_elapsed, delta) => {
     const totalElapsed = (Date.now() - startTime) / 1000
     updateAnimations(totalElapsed, delta)
   })

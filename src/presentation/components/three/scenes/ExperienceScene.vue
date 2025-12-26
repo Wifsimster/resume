@@ -32,7 +32,7 @@ const ledStates = reactive<{ intensity: number }[]>(
   Array.from({ length: 20 }, () => ({ intensity: 1 }))
 )
 
-const updateAnimations = (elapsed: number, delta: number) => {
+const updateAnimations = (elapsed: number, _delta: number) => {
   // Animate rack with gentle continuous rotation + oscillation
   if (rackRef.value) {
     rackRef.value.rotation.y = elapsed * 0.1 + Math.sin(elapsed * 0.5) * 0.15
@@ -57,7 +57,7 @@ onMounted(() => {
   startTime = Date.now()
   
   // Start animation loop with controller
-  animationController.start((elapsed, delta) => {
+  animationController.start((_elapsed, delta) => {
     const totalElapsed = (Date.now() - startTime) / 1000
     updateAnimations(totalElapsed, delta)
   })
