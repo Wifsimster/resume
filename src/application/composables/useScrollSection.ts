@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
 import { useAchievements } from './useAchievements'
 
 export interface Section {
@@ -140,24 +140,28 @@ export function useScrollSection() {
     return sectionVisibility.value.get(sectionId) ?? false
   }
   
-  onMounted(() => {
-    startTime.value = Date.now()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll() // Initial check
+  // Only register lifecycle hooks if we're in a component context
+  const instance = getCurrentInstance()
+  if (instance) {
+    onMounted(() => {
+      startTime.value = Date.now()
+      window.addEventListener('scroll', handleScroll, { passive: true })
+      handleScroll() // Initial check
+      
+      // Setup visibility observer after a short delay to ensure DOM is ready
+      setTimeout(() => {
+        setupVisibilityObserver()
+      }, 100)
+    })
     
-    // Setup visibility observer after a short delay to ensure DOM is ready
-    setTimeout(() => {
-      setupVisibilityObserver()
-    }, 100)
-  })
-  
-  onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll)
-    if (intersectionObserver) {
-      intersectionObserver.disconnect()
-      intersectionObserver = null
-    }
-  })
+    onUnmounted(() => {
+      window.removeEventListener('scroll', handleScroll)
+      if (intersectionObserver) {
+        intersectionObserver.disconnect()
+        intersectionObserver = null
+      }
+    })
+  }
   
   return {
     sections,

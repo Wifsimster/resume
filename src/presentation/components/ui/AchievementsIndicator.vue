@@ -37,7 +37,8 @@ const achievementsWithHints = [
   'earlyBird',
   'weekendWarrior',
   'makerFan',
-  'githubVisitor'
+  'githubVisitor',
+  'bookBuyer'
 ]
 
 const hasHint = (id: string) => {

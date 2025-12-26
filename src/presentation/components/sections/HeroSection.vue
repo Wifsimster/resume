@@ -58,7 +58,7 @@ const handleCanvasReady = () => {
         </button>
       </div>
       
-      <div class="absolute bottom-8 flex flex-col items-center gap-2 opacity-0 animate-fadeIn [animation-delay:1.5s] md:bottom-6 sm:bottom-4">
+      <div class="absolute bottom-16 flex flex-col items-center gap-2 opacity-0 animate-fadeIn [animation-delay:1.5s] md:bottom-12 sm:bottom-8">
         <span class="font-(--font-code) text-xs text-white/50 uppercase tracking-widest">{{ t('common.scrollDown') }}</span>
         <div class="w-6 h-10 border-2 border-white/30 rounded-xl flex justify-center pt-2 sm:w-5 sm:h-8">
           <div class="w-1 h-2 bg-(--color-accent-primary) rounded-sm animate-scrollDot" />

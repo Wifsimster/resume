@@ -9,6 +9,17 @@ export default {
     scrollDown: 'Défiler vers le bas',
     backToTop: 'Retour en haut'
   },
+  toc: {
+    hero: 'Accueil',
+    about: 'À propos',
+    experience: 'Expérience',
+    leadership: 'Leadership',
+    skills: 'Compétences',
+    maker: 'Maker',
+    projects: 'Projets',
+    books: 'Lectures',
+    contact: 'Contact'
+  },
   achievements: {
     title: 'Succès',
     viewAll: 'Voir les succès',
@@ -110,6 +121,11 @@ export default {
       name: 'Explorateur de console',
       desc: 'Trouvé l\'easter egg de la console',
       hint: 'Ouvrez la console du navigateur...'
+    },
+    bookBuyer: {
+      name: 'Acheteur de livres',
+      desc: 'Cliqué sur un livre à acheter',
+      hint: 'Explorez la section des livres à acheter...'
     }
   },
   console: {
@@ -126,7 +142,7 @@ export default {
     greeting: 'Bonjour, je suis',
     name: 'Damien Battistella',
     tagline: 'Je construis des applications, des objets, des équipes.',
-    subtitle: 'Technical Lead Manager chez Dedalus',
+    subtitle: 'Tech Lead Manager chez Dedalus',
     cta: 'Découvrir mon parcours',
     pressStart: 'Appuyez sur Entrée pour commencer',
     lastUpdate: 'Dernière mise à jour'
@@ -167,7 +183,7 @@ export default {
     years: 'ans',
     achievements: 'Réalisations clés',
     'dedalus-lead': {
-      title: 'Technical Lead Manager',
+      title: 'Tech Lead Manager',
       company: 'Dedalus',
       period: '2022 - Présent',
       description: 'Direction technique d\'une équipe pluridisciplinaire, plateforme d\'interopérabilité santé, modernisation legacy.',
@@ -281,6 +297,7 @@ export default {
     read: 'Lu',
     reading: 'En cours',
     toRead: 'À lire',
+    toBuy: 'À acheter',
     recommend: 'Je recommande',
     cleanArchitecture: 'Clean Architecture: A Craftsman\'s Guide to Software Structure',
     pragmaticProgrammer: 'The Pragmatic Programmer: Your Journey to Mastery',

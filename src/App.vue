@@ -5,6 +5,7 @@ import LanguageSwitcher from '@presentation/components/ui/LanguageSwitcher.vue'
 import AchievementToast from '@presentation/components/ui/AchievementToast.vue'
 import AchievementsIndicator from '@presentation/components/ui/AchievementsIndicator.vue'
 import FPSDisplay from '@presentation/components/ui/FPSDisplay.vue'
+import TableOfContents from '@presentation/components/ui/TableOfContents.vue'
 import { useAchievements } from '@application/composables/useAchievements'
 import { useEasterEggs } from '@application/composables/useEasterEggs'
 
@@ -137,6 +138,9 @@ onUnmounted(() => {
       <AchievementsIndicator />
       <LanguageSwitcher />
     </header>
+    
+    <!-- Table of Contents (Desktop only) -->
+    <TableOfContents />
     
     <!-- Main Content -->
     <RouterView />

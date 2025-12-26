@@ -2,7 +2,7 @@ import type { ResumeData } from '../types/resume'
 
 export const resumeData: ResumeData = {
   name: 'Damien Battistella',
-  title: 'Technical Lead Manager',
+  title: 'Tech Lead Manager',
   company: 'Dedalus',
   location: 'France',
   bio: 'Passionate JavaScript developer, Tech Geek, Raspberry Pi & ESP lover. I build code, I build things, I share knowledge.',
@@ -23,7 +23,7 @@ export const resumeData: ResumeData = {
     {
       id: 'dedalus-lead',
       company: 'Dedalus',
-      title: 'Technical Lead Manager',
+      title: 'Tech Lead Manager',
       period: '2022 - Present',
       duration: '3 years',
       current: true,
@@ -184,6 +184,34 @@ export const resumeData: ResumeData = {
       author: 'Paul Jarvis',
       status: 'toRead',
       url: 'https://www.amazon.fr/dp/0241470463'
+    },
+    {
+      id: 'design-patterns',
+      title: 'Design Patterns: Elements of Reusable Object-Oriented Software',
+      author: 'Gang of Four',
+      status: 'toBuy',
+      url: 'https://www.amazon.fr/dp/0131177052/?coliid=INJTM1A1NCZIT&colid=JPHH2VURLKQ2&psc=1&ref_=list_c_wl_lv_ov_lig_dp_it'
+    },
+    {
+      id: 'learning-react',
+      title: 'Learning React: Modern Patterns for Developing React Apps',
+      author: 'Alex Banks & Eve Porcello',
+      status: 'toBuy',
+      url: 'https://www.amazon.fr/dp/149207800X/?coliid=I35U9S9P59O22J&colid=JPHH2VURLKQ2&psc=1&ref_=list_c_wl_lv_ov_lig_dp_it'
+    },
+    {
+      id: 'refactoring',
+      title: 'Refactoring: Improving the Design of Existing Code',
+      author: 'Martin Fowler',
+      status: 'toBuy',
+      url: 'https://www.amazon.fr/dp/0321834577/?coliid=I46J9P3USALAR&colid=JPHH2VURLKQ2&psc=1&ref_=list_c_wl_lv_ov_lig_dp_it'
+    },
+    {
+      id: 'effective-java',
+      title: 'Effective Java',
+      author: 'Joshua Bloch',
+      status: 'toBuy',
+      url: 'https://www.amazon.fr/dp/0134052501/?coliid=I3I89H0ERRF8MA&colid=JPHH2VURLKQ2&psc=1&ref_=list_c_wl_lv_ov_lig_dp_it'
     }
   ],
 

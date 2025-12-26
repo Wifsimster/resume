@@ -35,7 +35,7 @@ export interface Book {
   id: string
   title: string
   author: string
-  status: 'read' | 'reading' | 'toRead'
+  status: 'read' | 'reading' | 'toRead' | 'toBuy'
   url: string
   cover?: string
 }

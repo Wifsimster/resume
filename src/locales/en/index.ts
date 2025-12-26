@@ -9,6 +9,17 @@ export default {
     scrollDown: 'Scroll down',
     backToTop: 'Back to top'
   },
+  toc: {
+    hero: 'Home',
+    about: 'About',
+    experience: 'Experience',
+    leadership: 'Leadership',
+    skills: 'Skills',
+    maker: 'Maker',
+    projects: 'Projects',
+    books: 'Books',
+    contact: 'Contact'
+  },
   achievements: {
     title: 'Achievements',
     viewAll: 'View achievements',
@@ -110,6 +121,11 @@ export default {
       name: 'Console Explorer',
       desc: 'Found the console easter egg',
       hint: 'Open the browser console...'
+    },
+    bookBuyer: {
+      name: 'Book Buyer',
+      desc: 'Clicked on a book to buy',
+      hint: 'Explore the books to buy section...'
     }
   },
   console: {
@@ -167,10 +183,10 @@ export default {
     years: 'years',
     achievements: 'Key achievements',
     'dedalus-lead': {
-      title: 'Technical Lead Manager',
+      title: 'Tech Lead Manager',
       company: 'Dedalus',
       period: '2022 - Present',
-      description: 'Technical leadership of a cross-functional development team, healthcare interoperability platform, legacy modernization.',
+      description: 'Tech leadership of a cross-functional development team, healthcare interoperability platform, legacy modernization.',
       achievements: [
         'Led cross-functional team of 6 developers',
         'Healthcare interoperability platform (HL7, IHE PAM, HPRIM XML)',
@@ -281,6 +297,7 @@ export default {
     read: 'Read',
     reading: 'Reading',
     toRead: 'To Read',
+    toBuy: 'To Buy',
     recommend: 'I recommend',
     cleanArchitecture: 'Clean Architecture: A Craftsman\'s Guide to Software Structure',
     pragmaticProgrammer: 'The Pragmatic Programmer: Your Journey to Mastery',

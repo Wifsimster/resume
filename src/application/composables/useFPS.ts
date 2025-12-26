@@ -1,4 +1,4 @@
-import { ref, onUnmounted } from 'vue'
+import { ref, onUnmounted, getCurrentInstance } from 'vue'
 
 export function useFPS() {
   const fps = ref(0)
@@ -43,9 +43,13 @@ export function useFPS() {
     fps.value = 0
   }
   
-  onUnmounted(() => {
-    stop()
-  })
+  // Only register lifecycle hooks if we're in a component context
+  const instance = getCurrentInstance()
+  if (instance) {
+    onUnmounted(() => {
+      stop()
+    })
+  }
   
   return {
     fps,

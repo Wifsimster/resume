@@ -33,7 +33,8 @@ const defaultAchievements: Achievement[] = [
   { id: 'patience', name: 'Patient One', description: 'Waited for all 3D to load', icon: '⏳', unlocked: false },
   { id: 'contactAttempt', name: 'Reach Out', description: 'Opened contact section', icon: '✉️', unlocked: false },
   { id: 'githubVisitor', name: 'Open Sourcer', description: 'Clicked on a GitHub link', icon: '🐙', unlocked: false },
-  { id: 'consoleExplorer', name: 'Console Explorer', description: 'Found the console easter egg', icon: '💻', unlocked: false }
+  { id: 'consoleExplorer', name: 'Console Explorer', description: 'Found the console easter egg', icon: '💻', unlocked: false },
+  { id: 'bookBuyer', name: 'Book Buyer', description: 'Clicked on a book to buy', icon: '🛒', unlocked: false }
 ]
 
 // Load from localStorage

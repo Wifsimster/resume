@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, getCurrentInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAchievements } from './useAchievements'
 
@@ -264,31 +264,35 @@ export function useEasterEggs() {
       }
   }
 
-  onMounted(() => {
-    window.addEventListener('keydown', handleKeyDown)
-    window.addEventListener('click', trackClick)
+  // Only register lifecycle hooks if we're in a component context
+  const instance = getCurrentInstance()
+  if (instance) {
+    onMounted(() => {
+      window.addEventListener('keydown', handleKeyDown)
+      window.addEventListener('click', trackClick)
 
-    // Mobile touch events
-    window.addEventListener('touchstart', handleTouchStart, { passive: true })
-    window.addEventListener('touchend', handleTouchEnd, { passive: true })
+      // Mobile touch events
+      window.addEventListener('touchstart', handleTouchStart, { passive: true })
+      window.addEventListener('touchend', handleTouchEnd, { passive: true })
 
-    setupConsoleEasterEgg()
-  })
+      setupConsoleEasterEgg()
+    })
 
-  onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeyDown)
-    window.removeEventListener('click', trackClick)
-    window.removeEventListener('touchstart', handleTouchStart)
-    window.removeEventListener('touchend', handleTouchEnd)
+    onUnmounted(() => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('click', trackClick)
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchend', handleTouchEnd)
 
-    // Clean up timeouts
-    if (touchSequenceTimeout) {
-      clearTimeout(touchSequenceTimeout)
-    }
+      // Clean up timeouts
+      if (touchSequenceTimeout) {
+        clearTimeout(touchSequenceTimeout)
+      }
 
-    // Clean up the global function
-    delete (window as any).resume
-  })
+      // Clean up the global function
+      delete (window as any).resume
+    })
+  }
 
   return {
     currentTheme,
