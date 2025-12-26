@@ -19,6 +19,7 @@ export interface Skill {
   name: string
   category: 'frontend' | 'backend' | 'devops' | 'maker' | 'soft'
   icon?: string
+  url?: string
 }
 
 export interface Project {

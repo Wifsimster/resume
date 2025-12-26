@@ -58,31 +58,31 @@ export const resumeData: ResumeData = {
 
   skills: [
     // Frontend
-    { id: 'javascript', name: 'JavaScript', category: 'frontend', icon: '⚡' },
-    { id: 'vue', name: 'Vue.js', category: 'frontend', icon: '💚' },
-    { id: 'pinia', name: 'Pinia', category: 'frontend', icon: '🍍' },
-    { id: 'tailwind', name: 'TailwindCSS', category: 'frontend', icon: '🎨' },
+    { id: 'javascript', name: 'JavaScript', category: 'frontend', icon: '⚡', url: 'https://developer.mozilla.org/docs/Web/JavaScript' },
+    { id: 'vue', name: 'Vue.js', category: 'frontend', icon: '💚', url: 'https://vuejs.org/' },
+    { id: 'pinia', name: 'Pinia', category: 'frontend', icon: '🍍', url: 'https://pinia.vuejs.org/' },
+    { id: 'tailwind', name: 'TailwindCSS', category: 'frontend', icon: '🎨', url: 'https://tailwindcss.com/' },
 
     // Backend
-    { id: 'nodejs', name: 'Node.js', category: 'backend', icon: '💚' },
-    { id: 'postgresql', name: 'PostgreSQL', category: 'backend', icon: '🐘' },
-    { id: 'oracle', name: 'Oracle', category: 'backend', icon: '🔶' },
-    { id: 'restapi', name: 'REST API', category: 'backend', icon: '🔌' },
-    { id: 'hl7', name: 'HL7', category: 'backend', icon: '🏥' },
+    { id: 'nodejs', name: 'Node.js', category: 'backend', icon: '💚', url: 'https://nodejs.org/' },
+    { id: 'postgresql', name: 'PostgreSQL', category: 'backend', icon: '🐘', url: 'https://www.postgresql.org/' },
+    { id: 'oracle', name: 'Oracle', category: 'backend', icon: '🔶', url: 'https://www.oracle.com/database/' },
+    { id: 'restapi', name: 'REST API', category: 'backend', icon: '🔌', url: 'https://restfulapi.net/' },
+    { id: 'hl7', name: 'HL7', category: 'backend', icon: '🏥', url: 'https://www.hl7.org/' },
 
     // DevOps & CI/CD
-    { id: 'git', name: 'Git', category: 'devops', icon: '📦' },
-    { id: 'gitlab', name: 'GitLab CI', category: 'devops', icon: '🦊' },
-    { id: 'docker', name: 'Docker', category: 'devops', icon: '🐳' },
+    { id: 'git', name: 'Git', category: 'devops', icon: '📦', url: 'https://git-scm.com/' },
+    { id: 'gitlab', name: 'GitLab CI', category: 'devops', icon: '🦊', url: 'https://docs.gitlab.com/ee/ci/' },
+    { id: 'docker', name: 'Docker', category: 'devops', icon: '🐳', url: 'https://www.docker.com/' },
 
     // Testing
-    { id: 'vitest', name: 'Vitest', category: 'devops', icon: '🧪' },
-    { id: 'playwright', name: 'Playwright', category: 'devops', icon: '🎭' },
+    { id: 'vitest', name: 'Vitest', category: 'devops', icon: '🧪', url: 'https://vitest.dev/' },
+    { id: 'playwright', name: 'Playwright', category: 'devops', icon: '🎭', url: 'https://playwright.dev/' },
 
     // IDE & AI Tools
-    { id: 'vscode', name: 'VS Code', category: 'devops', icon: '💻' },
-    { id: 'cursor', name: 'Cursor', category: 'devops', icon: '✨' },
-    { id: 'copilot', name: 'Microsoft Copilot', category: 'devops', icon: '🤖' },
+    { id: 'vscode', name: 'VS Code', category: 'devops', icon: '💻', url: 'https://code.visualstudio.com/' },
+    { id: 'cursor', name: 'Cursor', category: 'devops', icon: '✨', url: 'https://cursor.com/' },
+    { id: 'copilot', name: 'Microsoft Copilot', category: 'devops', icon: '🤖', url: 'https://github.com/features/copilot' },
 
     // Soft Skills
     { id: 'leadership', name: 'Leadership', category: 'soft', icon: '👑' },

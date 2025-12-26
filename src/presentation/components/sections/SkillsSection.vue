@@ -45,14 +45,20 @@ const skillsByCategory = computed(() => {
           <h3 class="font-(--font-display) text-2xl text-(--color-terminal-green) mb-4 pb-2 border-b border-green-500/20">{{ category.name }}</h3>
           
           <div class="flex flex-col gap-3">
-            <div 
+            <component
+              :is="skill.url ? 'a' : 'div'"
               v-for="skill in category.skills" 
               :key="skill.id"
+              :href="skill.url || undefined"
+              :target="skill.url ? '_blank' : undefined"
+              :rel="skill.url ? 'noopener noreferrer' : undefined"
               class="flex items-center gap-2 py-2.5 px-3 bg-black/15 rounded-md transition-all duration-150 hover:bg-black/25 hover:translate-x-1"
+              :class="{ 'cursor-pointer': skill.url }"
             >
               <span v-if="skill.icon" class="text-xl">{{ skill.icon }}</span>
               <span class="text-[0.95rem] text-(--color-paper-cream)">{{ skill.name }}</span>
-            </div>
+              <span v-if="skill.url" class="ml-auto text-white/30 text-xs">↗</span>
+            </component>
           </div>
         </div>
       </div>

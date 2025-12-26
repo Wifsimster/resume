@@ -1,40 +1,93 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, onMounted, onUnmounted, reactive, computed } from 'vue'
 import type { QualityLevel } from '@application/composables/useQuality'
+import { resumeData } from '@domain/data/resume'
 
 defineProps<{
   quality: QualityLevel
 }>()
 
-const benchRef = ref()
-const ringRef = ref()
+const orbitGroupRef = ref()
 
-// Tool positions on workbench
-const tools = [
-  { x: -1.5, y: 0.6, z: 0, type: 'digital', color: '#42B883' },
-  { x: -0.8, y: 0.6, z: 0.3, type: 'digital', color: '#61DAFB' },
-  { x: 0, y: 0.6, z: 0, type: 'highlight', color: '#00FF41' },
-  { x: 0.8, y: 0.6, z: 0.3, type: 'physical', color: '#B87333' },
-  { x: 1.5, y: 0.6, z: 0, type: 'physical', color: '#8B5A2B' },
-]
+// Category config with vertical offset for better visibility
+const categoryConfig: Record<string, { color: string, orbitRadius: number, speed: number, yOffset: number }> = {
+  frontend: { color: '#42B883', orbitRadius: 1.2, speed: 0.08, yOffset: 0.6 },
+  backend: { color: '#61DAFB', orbitRadius: 1.8, speed: -0.06, yOffset: 0.2 },
+  devops: { color: '#FF6B35', orbitRadius: 2.4, speed: 0.05, yOffset: -0.2 },
+  soft: { color: '#FFD93D', orbitRadius: 3.0, speed: -0.04, yOffset: -0.6 }
+}
 
-// Reactive tool states for animations
-const toolStates = reactive(
-  tools.map(() => ({
-    y: 0.6,
-    rotationY: 0,
-    scale: 1,
-    emissive: 0.2
+// Build skill nodes from actual resume data
+const skillNodes = computed(() => {
+  const nodesByCategory: Record<string, typeof resumeData.skills> = {
+    frontend: [],
+    backend: [],
+    devops: [],
+    soft: []
+  }
+  
+  // Group skills by category
+  resumeData.skills.forEach(skill => {
+    if (nodesByCategory[skill.category]) {
+      nodesByCategory[skill.category].push(skill)
+    }
+  })
+  
+  // Create positioned nodes
+  const nodes: Array<{
+    id: string
+    name: string
+    color: string
+    orbitRadius: number
+    angle: number
+    speed: number
+    size: number
+    yOffset: number
+  }> = []
+  
+  Object.entries(nodesByCategory).forEach(([category, skills]) => {
+    const config = categoryConfig[category]
+    skills.forEach((skill, i) => {
+      const angle = (i / skills.length) * Math.PI * 2
+      nodes.push({
+        id: skill.id,
+        name: skill.name,
+        color: config.color,
+        orbitRadius: config.orbitRadius,
+        angle,
+        speed: config.speed,
+        size: 0.12,
+        yOffset: config.yOffset
+      })
+    })
+  })
+  
+  return nodes
+})
+
+// Reactive states for positions
+const nodeStates = reactive(
+  skillNodes.value.map((node) => ({
+    x: Math.cos(node.angle) * node.orbitRadius,
+    y: node.yOffset,
+    z: Math.sin(node.angle) * node.orbitRadius
   }))
 )
 
-// Leg positions typed as tuples
-const legPositions: [number, number, number][] = [
-  [-1.7, -0.7, 0.7],
-  [1.7, -0.7, 0.7],
-  [-1.7, -0.7, -0.7],
-  [1.7, -0.7, -0.7]
-]
+// Core rotation
+const coreState = reactive({
+  rotationY: 0
+})
+
+// Category orbit rings with tilt
+const orbitRings = computed(() => 
+  Object.entries(categoryConfig).map(([id, config]) => ({
+    id,
+    radius: config.orbitRadius,
+    color: config.color,
+    yOffset: config.yOffset
+  }))
+)
 
 let animationId: number
 let startTime = 0
@@ -42,36 +95,19 @@ let startTime = 0
 const animate = () => {
   const elapsed = (Date.now() - startTime) / 1000
   
-  // Animate bench with continuous rotation + gentle oscillation
-  if (benchRef.value) {
-    benchRef.value.rotation.y = elapsed * 0.08 + Math.sin(elapsed * 0.3) * 0.1
-    benchRef.value.position.y = Math.sin(elapsed * 0.4) * 0.03
-  }
+  // Core rotation
+  coreState.rotationY = elapsed * 0.15
   
-  // Animate each tool individually
-  tools.forEach((tool, index) => {
-    const offset = index * 0.8
-    // Floating effect
-    toolStates[index].y = 0.6 + Math.sin(elapsed * 1.5 + offset) * 0.08
-    // Rotation for digital tools
-    if (tool.type === 'digital' || tool.type === 'highlight') {
-      toolStates[index].rotationY = elapsed * 0.5 + offset
-    }
-    // Pulsing glow
-    toolStates[index].emissive = tool.type === 'highlight' 
-      ? 0.4 + Math.sin(elapsed * 2) * 0.3
-      : 0.2 + Math.sin(elapsed * 1.5 + offset) * 0.15
-    // Subtle scale pulse for highlight
-    if (tool.type === 'highlight') {
-      toolStates[index].scale = 1 + Math.sin(elapsed * 2) * 0.1
-    }
+  // Update node positions
+  skillNodes.value.forEach((node, index) => {
+    const currentAngle = node.angle + elapsed * node.speed
+    nodeStates[index].x = Math.cos(currentAngle) * node.orbitRadius
+    nodeStates[index].z = Math.sin(currentAngle) * node.orbitRadius
   })
   
-  // Animate skill indicator ring
-  if (ringRef.value) {
-    ringRef.value.rotation.z = elapsed * 0.5
-    const ringScale = 1 + Math.sin(elapsed * 1.5) * 0.15
-    ringRef.value.scale.set(ringScale, ringScale, ringScale)
+  // Orbit group rotation
+  if (orbitGroupRef.value) {
+    orbitGroupRef.value.rotation.y = elapsed * 0.02
   }
   
   animationId = requestAnimationFrame(animate)
@@ -88,109 +124,67 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <TresPerspectiveCamera :position="[0, 3, 6]" :look-at="[0, 0, 0]" />
+  <!-- Camera positioned for angled view -->
+  <TresPerspectiveCamera :position="[4, 3, 5]" :look-at="[0, 0, 0]" />
   
-  <TresAmbientLight :intensity="0.4" />
-  <TresPointLight :position="[0, 4, 3]" :intensity="1" color="#FFFFFF" />
-  <TresPointLight :position="[-2, 2, 2]" :intensity="0.3" color="#42B883" />
-  <TresPointLight :position="[2, 2, 2]" :intensity="0.3" color="#B87333" />
+  <!-- Lighting -->
+  <TresAmbientLight :intensity="0.5" />
+  <TresPointLight :position="[3, 4, 3]" :intensity="1.2" color="#FFFFFF" />
+  <TresPointLight :position="[-3, 2, -3]" :intensity="0.5" color="#42B883" />
   
-  <TresGroup ref="benchRef">
-    <!-- Workbench surface -->
-    <TresMesh :position="[0, 0, 0]">
-      <TresBoxGeometry :args="[4, 0.3, 2]" />
+  <!-- Central core -->
+  <TresGroup :rotation="[0, coreState.rotationY, 0]">
+    <TresMesh>
+      <TresIcosahedronGeometry :args="[0.35, 0]" />
       <TresMeshStandardMaterial
-        :color="'#5D4037'"
-        :roughness="0.9"
-        :metalness="0.1"
+        color="#00FF41"
+        emissive="#00FF41"
+        :emissive-intensity="0.6"
+        :roughness="0.3"
+        :metalness="0.7"
       />
     </TresMesh>
     
-    <!-- Bench legs -->
-    <TresMesh v-for="(pos, i) in legPositions" :key="`leg-${i}`" :position="pos">
-      <TresBoxGeometry :args="[0.15, 1.1, 0.15]" />
-      <TresMeshStandardMaterial :color="'#3E2723'" :roughness="0.9" />
+    <!-- Core ring -->
+    <TresMesh :rotation="[Math.PI / 2, 0, 0]">
+      <TresTorusGeometry :args="[0.55, 0.012, 8, 24]" />
+      <TresMeshBasicMaterial color="#00FF41" :opacity="0.5" :transparent="true" />
     </TresMesh>
-    
-    <!-- Tool pegboard backdrop -->
-    <TresMesh :position="[0, 1.5, -1.2]">
-      <TresBoxGeometry :args="[4.5, 2.5, 0.1]" />
-      <TresMeshStandardMaterial
-        :color="'#4E342E'"
-        :roughness="0.95"
-      />
-    </TresMesh>
-    
-    <!-- Tools on bench with animations -->
-    <TresGroup 
-      v-for="(tool, index) in tools" 
-      :key="`tool-${index}`" 
-      :position="[tool.x, toolStates[index].y, tool.z]"
-      :rotation="[0, toolStates[index].rotationY, 0]"
+  </TresGroup>
+  
+  <!-- Skill nodes orbiting by category - tilted for 3D effect -->
+  <TresGroup ref="orbitGroupRef" :rotation="[0.3, 0, 0.1]">
+    <!-- Actual skill nodes -->
+    <TresMesh 
+      v-for="(node, index) in skillNodes" 
+      :key="node.id"
+      :position="[nodeStates[index].x, nodeStates[index].y, nodeStates[index].z]"
     >
-      <!-- Digital tools = cubes with glow -->
-      <TresMesh 
-        v-if="tool.type === 'digital' || tool.type === 'highlight'"
-        :scale="[toolStates[index].scale, toolStates[index].scale, toolStates[index].scale]"
-      >
-        <TresBoxGeometry :args="[0.3, 0.3, 0.3]" />
-        <TresMeshStandardMaterial
-          :color="tool.color"
-          :emissive="tool.color"
-          :emissive-intensity="toolStates[index].emissive"
-          :roughness="0.3"
-          :metalness="0.7"
-        />
-      </TresMesh>
-      
-      <!-- Physical tools = cylinders (like chisels) -->
-      <TresMesh v-if="tool.type === 'physical'" :rotation="[Math.PI / 2, 0, 0]">
-        <TresCylinderGeometry :args="[0.05, 0.08, 0.5, 8]" />
-        <TresMeshStandardMaterial
-          :color="tool.color"
-          :emissive="tool.color"
-          :emissive-intensity="toolStates[index].emissive"
-          :roughness="0.7"
-          :metalness="0.3"
-        />
-      </TresMesh>
-      
-      <!-- Glow halo for highlight tool -->
-      <TresMesh v-if="tool.type === 'highlight'" :scale="[toolStates[index].scale * 1.5, toolStates[index].scale * 1.5, toolStates[index].scale * 1.5]">
-        <TresSphereGeometry :args="[0.25, 16, 16]" />
-        <TresMeshBasicMaterial :color="tool.color" :opacity="0.15" :transparent="true" />
-      </TresMesh>
-    </TresGroup>
+      <TresBoxGeometry :args="[node.size, node.size, node.size]" />
+      <TresMeshStandardMaterial
+        :color="node.color"
+        :emissive="node.color"
+        :emissive-intensity="0.4"
+        :roughness="0.4"
+        :metalness="0.6"
+      />
+    </TresMesh>
     
-    <!-- Skill level indicators (floating) -->
-    <TresGroup ref="ringRef" :position="[0, 2.2, -1]">
-      <!-- Pentagon ring -->
-      <TresMesh>
-        <TresRingGeometry :args="[0.3, 0.35, 5]" />
-        <TresMeshStandardMaterial 
-          :color="'#FFD93D'" 
-          :emissive="'#FFD93D'"
-          :emissive-intensity="0.5"
-          :side="2" 
-        />
-      </TresMesh>
-      <!-- Inner glow -->
-      <TresMesh>
-        <TresRingGeometry :args="[0.15, 0.25, 5]" />
-        <TresMeshBasicMaterial :color="'#FFD93D'" :opacity="0.3" :transparent="true" :side="2" />
-      </TresMesh>
-      <!-- Outer accent ring -->
-      <TresMesh>
-        <TresRingGeometry :args="[0.4, 0.42, 5]" />
-        <TresMeshBasicMaterial :color="'#FFD93D'" :opacity="0.2" :transparent="true" :side="2" />
-      </TresMesh>
-    </TresGroup>
+    <!-- Orbit rings per category at different heights -->
+    <TresMesh 
+      v-for="ring in orbitRings" 
+      :key="`orbit-${ring.id}`"
+      :position="[0, ring.yOffset, 0]"
+      :rotation="[-Math.PI / 2, 0, 0]"
+    >
+      <TresTorusGeometry :args="[ring.radius, 0.006, 4, 48]" />
+      <TresMeshBasicMaterial :color="ring.color" :opacity="0.2" :transparent="true" />
+    </TresMesh>
   </TresGroup>
   
   <!-- Floor -->
-  <TresMesh :position="[0, -1.3, 0]" :rotation="[-Math.PI / 2, 0, 0]">
-    <TresPlaneGeometry :args="[12, 12]" />
-    <TresMeshStandardMaterial :color="'#1A1410'" :roughness="0.95" />
+  <TresMesh :position="[0, -1.8, 0]" :rotation="[-Math.PI / 2, 0, 0]">
+    <TresPlaneGeometry :args="[10, 10]" />
+    <TresMeshStandardMaterial color="#0a0a12" :roughness="0.95" />
   </TresMesh>
 </template>
-

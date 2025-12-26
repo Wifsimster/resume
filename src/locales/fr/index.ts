@@ -192,7 +192,7 @@ export default {
   },
   maker: {
     title: 'Maker',
-    subtitle: 'Laboratoire électronique',
+    subtitle: 'J\'adore construire et expérimenter, voici quelques uns de mes projets...',
     electronics: 'Électronique',
     woodworking: 'Travail du bois',
     renovation: 'Rénovation',
@@ -215,35 +215,35 @@ export default {
     featured: 'Projets vedettes',
     adalight: {
       name: 'adalight_ws2812',
-      desc: 'Fork d\'Adalight pour LED WS2811/WS2812 avec FastLED'
+      desc: 'Rétroéclairage TV ambiant avec LEDs WS2812 qui synchronise les couleurs avec l\'écran en temps réel via Prismatik'
     },
     rtsp: {
       name: 'node-rtsp-stream-es6',
-      desc: 'Streaming RTSP vers WebSocket pour jsmpeg'
+      desc: 'Diffusion vidéo en direct depuis caméras IP (RTSP) vers navigateurs via WebSocket, idéal pour dashboards de surveillance'
     },
     rtspStream: {
       name: 'node-rtsp-stream-es6',
-      desc: 'Streaming RTSP vers WebSocket pour jsmpeg'
+      desc: 'Diffusion vidéo en direct depuis caméras IP (RTSP) vers navigateurs via WebSocket, idéal pour dashboards de surveillance'
     },
     pavie: {
       name: 'pavie',
-      desc: 'SDK Node.js pour l\'API Plex Media Server'
+      desc: 'SDK Node.js pour interagir avec Plex Media Server : parcourir les bibliothèques, contrôler la lecture et automatiser son media center'
     },
     overwatch: {
       name: 'overwatch',
-      desc: 'Domotique personnelle avec messagerie temps réel'
+      desc: 'Dashboard domotique Vue.js avec mises à jour WebSocket temps réel pour monitorer capteurs, caméras et objets connectés'
     },
     bordeaux: {
       name: 'bordeaux',
-      desc: 'Gestionnaire de séries TV avec Transmission, Trakt et Plex'
+      desc: 'Téléchargeur automatique de séries TV qui suit les épisodes via Trakt, télécharge via Transmission et organise les médias pour Plex'
     },
     pir: {
       name: 'pir-mqtt',
-      desc: 'Capteur de mouvement ESP8266 vers broker MQTT'
+      desc: 'Firmware ESP8266 pour capteurs de mouvement PIR publiant vers MQTT, permettant des automatisations domotiques'
     },
     pirMqtt: {
       name: 'pir-mqtt',
-      desc: 'Capteur de mouvement ESP8266 vers broker MQTT'
+      desc: 'Firmware ESP8266 pour capteurs de mouvement PIR publiant vers MQTT, permettant des automatisations domotiques'
     }
   },
   books: {

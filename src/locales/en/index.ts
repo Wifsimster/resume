@@ -215,35 +215,35 @@ export default {
     featured: 'Featured projects',
     adalight: {
       name: 'adalight_ws2812',
-      desc: 'Adalight fork for WS2811/WS2812 LED with FastLED'
+      desc: 'Arduino-based ambient TV backlight using WS2812 LEDs that sync colors with your screen in real-time via Prismatik'
     },
     rtsp: {
       name: 'node-rtsp-stream-es6',
-      desc: 'RTSP to WebSocket streaming for jsmpeg'
+      desc: 'Stream live video from IP cameras (RTSP) directly to browsers via WebSocket, perfect for home surveillance dashboards'
     },
     rtspStream: {
       name: 'node-rtsp-stream-es6',
-      desc: 'RTSP to WebSocket streaming for jsmpeg'
+      desc: 'Stream live video from IP cameras (RTSP) directly to browsers via WebSocket, perfect for home surveillance dashboards'
     },
     pavie: {
       name: 'pavie',
-      desc: 'Node.js SDK for Plex Media Server API'
+      desc: 'Node.js SDK to interact with Plex Media Server: browse libraries, control playback, and automate your media center'
     },
     overwatch: {
       name: 'overwatch',
-      desc: 'Personal home automation with real-time messaging'
+      desc: 'Vue.js home automation dashboard with real-time WebSocket updates for monitoring sensors, cameras, and smart devices'
     },
     bordeaux: {
       name: 'bordeaux',
-      desc: 'TV Show manager with Transmission, Trakt and Plex'
+      desc: 'Automated TV show downloader that tracks episodes via Trakt, downloads via Transmission, and organizes media for Plex'
     },
     pir: {
       name: 'pir-mqtt',
-      desc: 'ESP8266 motion sensor to MQTT broker'
+      desc: 'Tiny ESP8266 firmware for PIR motion sensors publishing to MQTT, enabling smart home automation triggers'
     },
     pirMqtt: {
       name: 'pir-mqtt',
-      desc: 'ESP8266 motion sensor to MQTT broker'
+      desc: 'Tiny ESP8266 firmware for PIR motion sensors publishing to MQTT, enabling smart home automation triggers'
     }
   },
   books: {

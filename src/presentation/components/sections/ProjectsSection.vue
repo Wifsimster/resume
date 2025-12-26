@@ -38,19 +38,24 @@ const openGithubProfile = () => {
       </div>
 
       <div class="flex flex-col items-center gap-4">
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-2 w-full max-w-[700px] md:max-w-[420px] sm:max-w-[340px]">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-[800px]">
           <div 
             v-for="project in resumeData.projects" 
             :key="project.id"
-            class="glass flex items-center gap-2.5 sm:gap-1.5 py-2.5 px-3 sm:py-2 sm:px-2.5 cursor-pointer transition-all duration-150 border border-white/10 pointer-events-auto bg-[#0A0A0F]/85 backdrop-blur hover:border-(--color-frontend-blue) hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(97,218,251,0.15)] hover:bg-[#0F0F19]/95"
+            class="glass flex flex-col gap-2 p-4 cursor-pointer transition-all duration-150 border border-white/10 pointer-events-auto bg-[#0A0A0F]/85 backdrop-blur hover:border-(--color-frontend-blue) hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(97,218,251,0.15)] hover:bg-[#0F0F19]/95"
             @click="openProject(project.url)"
           >
-            <div class="text-[1.4rem] sm:text-xl shrink-0">{{ project.icon }}</div>
-            <div class="flex-1 min-w-0 flex flex-col gap-0.5">
-              <h3 class="font-(--font-code) text-xs sm:text-[0.7rem] text-(--color-paper-cream) whitespace-nowrap overflow-hidden text-ellipsis">{{ project.name }}</h3>
-              <span class="font-(--font-code) text-[0.6rem] sm:text-[0.55rem] text-(--color-terminal-green) opacity-80">{{ project.tech }}</span>
+            <div class="flex items-center gap-3">
+              <div class="text-2xl shrink-0">{{ project.icon }}</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-(--font-code) text-sm text-(--color-paper-cream)">{{ project.name }}</h3>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="font-(--font-code) text-xs text-(--color-terminal-green) opacity-80">{{ project.tech }}</span>
+                <span class="text-xs text-(--color-growth-yellow)">⭐ {{ project.stars }}</span>
+              </div>
             </div>
-            <span class="text-[0.7rem] sm:text-[0.6rem] text-(--color-growth-yellow) shrink-0">⭐ {{ project.stars }}</span>
+            <p class="text-xs text-white/60 leading-relaxed">{{ t(`projects.${project.id}.desc`) }}</p>
           </div>
         </div>
 
