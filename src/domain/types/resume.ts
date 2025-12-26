@@ -53,6 +53,16 @@ export interface GitHubProfile {
   totalRepos: number
 }
 
+export interface Statistics {
+  yearsOfExperience: number
+  totalProjects: number
+  developersRecruited: number
+  presentations: number
+  linesOfCode2025: number
+  totalCommits2025: number
+  issuesClosed2025: number
+}
+
 export interface ResumeData {
   name: string
   title: string
@@ -66,5 +76,6 @@ export interface ResumeData {
   books: Book[]
   socialLinks: SocialLink[]
   github: GitHubProfile
+  statistics?: Statistics
 }
 

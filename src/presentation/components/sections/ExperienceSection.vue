@@ -1,12 +1,21 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { TresCanvas } from '@tresjs/core'
 import ExperienceScene from '@presentation/components/three/scenes/ExperienceScene.vue'
 import { useQuality } from '@application/composables/useQuality'
 import { resumeData } from '@domain/data/resume'
+import { i18n } from '@application/i18n'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { quality, renderSettings } = useQuality()
+
+const getAchievements = (expId: string): string[] => {
+  const currentLocale = locale.value
+  const messages = i18n.global.messages.value[currentLocale] as any
+  const achievements = messages?.experience?.[expId]?.achievements
+  return Array.isArray(achievements) ? achievements : []
+}
 </script>
 
 <template>
@@ -49,12 +58,12 @@ const { quality, renderSettings } = useQuality()
           <div class="flex-1">
             <div class="flex flex-wrap justify-between items-start mb-2 gap-2">
               <div class="flex items-center gap-3">
-                <span class="font-(--font-code) text-sm text-(--color-vue-green)">{{ exp.company }}</span>
+                <span class="font-(--font-code) text-sm text-(--color-vue-green)">{{ t(`experience.${exp.id}.company`) }}</span>
                 <span v-if="exp.current" class="text-[0.7rem] py-0.5 px-2 bg-(--color-terminal-green) text-(--color-wood-dark) rounded uppercase font-semibold">{{ t('experience.current') }}</span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="font-(--font-code) text-sm text-white/50">{{ exp.period }}</span>
-                <span class="font-(--font-code) text-xs text-(--color-terminal-green)/70">· {{ exp.duration }}</span>
+                <span class="font-(--font-code) text-sm text-white/50">{{ t(`experience.${exp.id}.period`) }}</span>
+                <span class="font-(--font-code) text-xs text-(--color-terminal-green)/70">· {{ t(`experience.${exp.id}.duration`) }}</span>
               </div>
             </div>
             
@@ -65,7 +74,7 @@ const { quality, renderSettings } = useQuality()
               <h4 class="font-(--font-code) text-xs text-(--color-terminal-green) uppercase tracking-widest mb-2">{{ t('experience.achievements') }}</h4>
               <ul class="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2">
                 <li 
-                  v-for="(achievement, index) in exp.achievements" 
+                  v-for="(achievement, index) in getAchievements(exp.id)" 
                   :key="index"
                   class="flex items-start gap-2 text-sm sm:text-[0.85rem] text-white/80"
                 >

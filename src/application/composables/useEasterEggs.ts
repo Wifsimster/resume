@@ -17,7 +17,12 @@ const fpsEnabled = ref(false)
 const clickCount = ref(0)
 
 export function useEasterEggs() {
-  const { t } = useI18n()
+  // Only use i18n if we're in a valid setup context
+  // Check if we're in setup by verifying instance has an active scope (not detached)
+  const instance = getCurrentInstance()
+  const scope = instance ? (instance as any).scope : null
+  const hasValidContext = scope && !scope.detached && scope._active
+  const { t } = hasValidContext ? useI18n() : { t: (key: string) => key }
   const { unlock, isUnlocked } = useAchievements()
   const keySequence = ref<string[]>([])
   const touchSequence = ref<string[]>([])
@@ -264,9 +269,9 @@ export function useEasterEggs() {
       }
   }
 
-  // Only register lifecycle hooks if we're in a component context
-  const instance = getCurrentInstance()
-  if (instance) {
+  // Only register lifecycle hooks if we're in a valid component setup context
+  // Check if scope is active (not detached) before registering hooks
+  if (hasValidContext) {
     onMounted(() => {
       window.addEventListener('keydown', handleKeyDown)
       window.addEventListener('click', trackClick)

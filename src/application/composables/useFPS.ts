@@ -43,9 +43,12 @@ export function useFPS() {
     fps.value = 0
   }
   
-  // Only register lifecycle hooks if we're in a component context
+  // Only register lifecycle hooks if we're in a valid component setup context
+  // Check if scope is active (not detached) before registering hooks
   const instance = getCurrentInstance()
-  if (instance) {
+  const scope = instance ? (instance as any).scope : null
+  const hasValidContext = scope && !scope.detached && scope._active
+  if (hasValidContext) {
     onUnmounted(() => {
       stop()
     })

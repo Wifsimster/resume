@@ -140,9 +140,12 @@ export function useScrollSection() {
     return sectionVisibility.value.get(sectionId) ?? false
   }
   
-  // Only register lifecycle hooks if we're in a component context
+  // Only register lifecycle hooks if we're in a valid component setup context
+  // Check if scope is active (not detached) before registering hooks
   const instance = getCurrentInstance()
-  if (instance) {
+  const scope = instance ? (instance as any).scope : null
+  const hasValidContext = scope && !scope.detached && scope._active
+  if (hasValidContext) {
     onMounted(() => {
       startTime.value = Date.now()
       window.addEventListener('scroll', handleScroll, { passive: true })

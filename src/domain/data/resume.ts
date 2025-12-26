@@ -234,6 +234,16 @@ export const resumeData: ResumeData = {
     username: 'Wifsimster',
     url: 'https://github.com/Wifsimster',
     totalRepos: 60
+  },
+
+  statistics: {
+    yearsOfExperience: 9, // Depuis 2016
+    totalProjects: 11, // Nombre de projets GitLab où j'ai participé
+    developersRecruited: 6, // Depuis les expériences
+    presentations: 12, // Présentations mensuelles estimées
+    linesOfCode2025: 16905, // Calculé depuis GitLab (apvhn/resume uniquement - autres projets sans commits en 2025)
+    totalCommits2025: 20, // Calculé depuis GitLab (apvhn/resume uniquement - autres projets sans commits en 2025)
+    issuesClosed2025: 21 // Issues fermées par apvhn en 2025 (tous projets GitLab)
   }
 }
 

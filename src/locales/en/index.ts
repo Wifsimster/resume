@@ -1,13 +1,10 @@
 export default {
   common: {
-    language: 'English',
-    switchLanguage: 'Français',
     quality: 'Quality',
     qualityMinimal: 'Eco',
     qualityLow: 'Low',
     qualityHigh: 'High',
-    scrollDown: 'Scroll down',
-    backToTop: 'Back to top'
+    scrollDown: 'Scroll down'
   },
   toc: {
     hero: 'Home',
@@ -144,37 +141,31 @@ export default {
     tagline: 'I build software, products, and people.',
     subtitle: 'R&D Team Leader at Dedalus',
     cta: 'Discover my journey',
-    pressStart: 'Press Enter to start',
     lastUpdate: 'Last update'
   },
   about: {
     title: 'About',
     subtitle: 'Build, Share, Experience',
-    philosophy: 'My philosophy',
-    intro: 'Love building things, physical or digital.',
     passions: {
-      title: 'My 7 passions',
       knowledge: 'Knowledge Sharing',
-      knowledgeDesc: 'Presentations, conferences, open source',
       architecture: 'Architecture',
-      architectureDesc: 'Clean Architecture, system design, microservices',
       modernization: 'Modernization',
-      modernizationDesc: 'Legacy migration, Vue 3 upgrades, refactoring',
       performance: 'Performance',
-      performanceDesc: 'Speed optimization, metrics, efficiency',
       frontend: 'Frontend',
-      frontendDesc: 'Beautiful UIs, pixel-perfect details, Vue.js mastery',
       teamBuilding: 'Team Building',
-      teamBuildingDesc: 'Recruiting, mentoring, growing developers',
       ai: 'AI',
-      aiDesc: 'LLM, Agents, MCP, prompt engineering',
       devops: 'DevOps',
-      devopsDesc: 'Docker, AWS, CI/CD pipelines',
-      testing: 'Testing',
-      testingDesc: 'Vitest, Playwright, end-to-end tests'
+      testing: 'Testing'
     },
-    hobby: 'And when I\'m not coding...',
-    gaming: 'In my free time, I renovate my home, develop home automation, and enjoy time with my family.'
+    gaming: 'In my free time, I renovate my home, develop home automation, and enjoy time with my family.',
+    stats: {
+      yearsExperience: 'Years of experience',
+      projects: 'Projects in 2025',
+      developers: 'Managing a team of 6',
+      linesOfCode: 'Lines of code 2025',
+      commits: 'Commits 2025',
+      issuesClosed: 'Issues closed 2025'
+    }
   },
   experience: {
     title: 'Experience',
@@ -186,6 +177,7 @@ export default {
       title: 'Tech Lead Manager',
       company: 'Dedalus',
       period: '2022 - Present',
+      duration: '3 years',
       description: 'Tech leadership of a cross-functional development team, healthcare interoperability platform, legacy modernization.',
       achievements: [
         'Led cross-functional team of 6 developers',
@@ -200,6 +192,7 @@ export default {
       title: 'R&D Full Stack Developer',
       company: 'Dedalus',
       period: '2016 - 2022',
+      duration: '6 years',
       description: 'Full-stack development, library creation, team mentoring, healthcare applications.',
       achievements: [
         'SQL query builder library in TypeScript (Oracle & PostgreSQL)',
@@ -237,57 +230,28 @@ export default {
   },
   maker: {
     title: 'Maker',
-    subtitle: 'Electronics Lab',
-    electronics: 'Electronics',
-    woodworking: 'Woodworking',
-    renovation: 'Renovation',
-    homeAutomation: 'Home Automation',
-    projects: 'DIY Projects',
-    raspberryPi: 'Raspberry Pi',
-    arduino: 'Arduino',
-    domotics: 'Domotics (Home Assistant)',
-    unify: 'Unify Network & Protect',
-    selfHosting: 'Self-Hosting (Home Server)'
+    subtitle: 'Electronics Lab'
   },
   projects: {
     title: 'Projects',
     subtitle: 'Open Source Gallery',
-    stars: 'stars',
-    viewOnGithub: 'View on GitHub',
-    viewProfile: 'View my GitHub profile',
     repositories: 'repositories',
-    totalRepos: 'Total repositories',
-    featured: 'Featured projects',
     adalight: {
-      name: 'adalight_ws2812',
       desc: 'Arduino-based ambient TV backlight using WS2812 LEDs that sync colors with your screen in real-time via Prismatik'
     },
     rtsp: {
-      name: 'node-rtsp-stream-es6',
-      desc: 'Stream live video from IP cameras (RTSP) directly to browsers via WebSocket, perfect for home surveillance dashboards'
-    },
-    rtspStream: {
-      name: 'node-rtsp-stream-es6',
       desc: 'Stream live video from IP cameras (RTSP) directly to browsers via WebSocket, perfect for home surveillance dashboards'
     },
     pavie: {
-      name: 'pavie',
       desc: 'Node.js SDK to interact with Plex Media Server: browse libraries, control playback, and automate your media center'
     },
     overwatch: {
-      name: 'overwatch',
       desc: 'Vue.js home automation dashboard with real-time WebSocket updates for monitoring sensors, cameras, and smart devices'
     },
     bordeaux: {
-      name: 'bordeaux',
       desc: 'Automated TV show downloader that tracks episodes via Trakt, downloads via Transmission, and organizes media for Plex'
     },
     pir: {
-      name: 'pir-mqtt',
-      desc: 'Tiny ESP8266 firmware for PIR motion sensors publishing to MQTT, enabling smart home automation triggers'
-    },
-    pirMqtt: {
-      name: 'pir-mqtt',
       desc: 'Tiny ESP8266 firmware for PIR motion sensors publishing to MQTT, enabling smart home automation triggers'
     }
   },
@@ -295,35 +259,15 @@ export default {
     title: 'Reading',
     subtitle: 'The Library',
     read: 'Read',
-    reading: 'Reading',
     toRead: 'To Read',
-    toBuy: 'To Buy',
-    recommend: 'I recommend',
-    cleanArchitecture: 'Clean Architecture: A Craftsman\'s Guide to Software Structure',
-    pragmaticProgrammer: 'The Pragmatic Programmer: Your Journey to Mastery',
-    philosophySoftware: 'A Philosophy of Software Design',
-    hundredMLeads: '$100M Leads',
-    designingDataIntensive: 'Designing Data-Intensive Applications',
-    companyOfOne: 'Company of One'
+    toBuy: 'To Buy'
   },
   contact: {
     title: 'Contact',
     subtitle: 'Let\'s Connect',
-    player2: 'Player 2 is ready to join',
     cta: 'Let\'s build together',
-    email: 'Email',
-    github: 'GitHub',
     linkedin: 'LinkedIn',
-    achievementsPreview: 'More achievements to unlock',
-    form: {
-      name: 'Your name',
-      email: 'Your email',
-      message: 'Your message',
-      send: 'Send',
-      sending: 'Sending...',
-      success: 'Message sent!',
-      error: 'Error sending message'
-    }
+    achievementsPreview: 'More achievements to unlock'
   },
   footer: {
     madeWith: 'Made with',

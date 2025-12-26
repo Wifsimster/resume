@@ -1,13 +1,10 @@
 export default {
   common: {
-    language: 'Français',
-    switchLanguage: 'English',
     quality: 'Qualité',
     qualityMinimal: 'Éco',
     qualityLow: 'Basse',
     qualityHigh: 'Haute',
-    scrollDown: 'Défiler vers le bas',
-    backToTop: 'Retour en haut'
+    scrollDown: 'Défiler vers le bas'
   },
   toc: {
     hero: 'Accueil',
@@ -141,40 +138,34 @@ export default {
   hero: {
     greeting: 'Bonjour, je suis',
     name: 'Damien Battistella',
-    tagline: 'Je construis des applications, des objets, des équipes.',
+    tagline: 'Je construis des applications, des objets et des équipes.',
     subtitle: 'Tech Lead Manager chez Dedalus',
     cta: 'Découvrir mon parcours',
-    pressStart: 'Appuyez sur Entrée pour commencer',
     lastUpdate: 'Dernière mise à jour'
   },
   about: {
     title: 'À propos',
     subtitle: 'Construire, Partager, Expérimenter',
-    philosophy: 'Ma philosophie',
-    intro: 'De nature curieuse, j\'aime construire, expérimenter et apprendre.',
     passions: {
-      title: 'Mes 7 passions',
       knowledge: 'Partage de connaissances',
-      knowledgeDesc: 'Présentations, conférences, open source',
       architecture: 'Architecture',
-      architectureDesc: 'Clean Architecture, design système, microservices',
       modernization: 'Modernisation',
-      modernizationDesc: 'Migration legacy, mises à jour Vue 3, refactoring',
       performance: 'Performance',
-      performanceDesc: 'Optimisation, métriques, efficacité',
       frontend: 'Frontend',
-      frontendDesc: 'Interfaces soignées, pixel-perfect, maîtrise Vue.js',
       teamBuilding: 'Construction d\'équipes',
-      teamBuildingDesc: 'Recrutement, mentorat, développement des talents',
       ai: 'IA',
-      aiDesc: 'LLM, Agents, MCP, prompt engineering',
       devops: 'DevOps',
-      devopsDesc: 'Docker, AWS, pipelines CI/CD',
-      testing: 'Testing',
-      testingDesc: 'Vitest, Playwright, tests end-to-end'
+      testing: 'Testing'
     },
-    hobby: 'Et quand je ne code pas...',
-    gaming: 'Sur mon temps libre, je rénove ma maison, développe ma domotique et profite de ma famille.'
+    gaming: 'Sur mon temps libre, je rénove ma maison, développe ma domotique et profite de ma famille.',
+    stats: {
+      yearsExperience: 'Années d\'expérience',
+      projects: 'Projets en 2025',
+      developers: 'Gérer une équipe de 6',
+      linesOfCode: 'Lignes de code 2025',
+      commits: 'Commits 2025',
+      issuesClosed: 'Issues fermées 2025'
+    }
   },
   experience: {
     title: 'Expérience',
@@ -186,6 +177,7 @@ export default {
       title: 'Tech Lead Manager',
       company: 'Dedalus',
       period: '2022 - Présent',
+      duration: '3 ans',
       description: 'Direction technique d\'une équipe pluridisciplinaire, plateforme d\'interopérabilité santé, modernisation legacy.',
       achievements: [
         'Direction d\'une équipe pluridisciplinaire de 6 développeurs',
@@ -200,6 +192,7 @@ export default {
       title: 'Développeur Full Stack R&D',
       company: 'Dedalus',
       period: '2016 - 2022',
+      duration: '6 ans',
       description: 'Développement full-stack, création de librairies, mentorat d\'équipe, applications de santé.',
       achievements: [
         'Librairie SQL query builder en TypeScript (Oracle & PostgreSQL)',
@@ -216,14 +209,14 @@ export default {
   leadership: {
     title: 'Leadership',
     subtitle: 'Développer les talents & partager les savoirs',
-    presentations: 'Rituels d\'équipe',
+    presentations: 'Rituels',
     conferences: 'Conférences',
     mentoring: 'Construction d\'équipe',
     recruited: 'Développeurs recrutés',
     interns: 'Stagiaires encadrés',
     apprentices: 'Alternant encadré',
     monthlyPresentations: 'Présentation tech mensuelle pour l\'ensemble des développeurs de la business unit',
-    architectureMeetings: 'Réunion d\'architecture',
+    architectureMeetings: 'Réunion mensuelle entre architectes',
     dailyMeeting: 'Daily avec le PO et les équipes dev'
   },
   skills: {
@@ -237,57 +230,28 @@ export default {
   },
   maker: {
     title: 'Maker',
-    subtitle: 'J\'adore construire et expérimenter, voici quelques uns de mes projets...',
-    electronics: 'Électronique',
-    woodworking: 'Travail du bois',
-    renovation: 'Rénovation',
-    homeAutomation: 'Domotique',
-    projects: 'Projets DIY',
-    raspberryPi: 'Raspberry Pi',
-    arduino: 'Arduino',
-    domotics: 'Domotique (Home Assistant)',
-    unify: 'Unify Network & Protect',
-    selfHosting: 'Auto-hébergement (Serveur maison)'
+    subtitle: 'J\'adore construire et expérimenter, voici quelques uns de mes projets...'
   },
   projects: {
     title: 'Projets',
     subtitle: 'Galerie Open Source',
-    stars: 'étoiles',
-    viewOnGithub: 'Voir sur GitHub',
-    viewProfile: 'Voir mon profil GitHub',
     repositories: 'repositories',
-    totalRepos: 'Total repositories',
-    featured: 'Projets vedettes',
     adalight: {
-      name: 'adalight_ws2812',
       desc: 'Rétroéclairage TV ambiant avec LEDs WS2812 qui synchronise les couleurs avec l\'écran en temps réel via Prismatik'
     },
     rtsp: {
-      name: 'node-rtsp-stream-es6',
-      desc: 'Diffusion vidéo en direct depuis caméras IP (RTSP) vers navigateurs via WebSocket, idéal pour dashboards de surveillance'
-    },
-    rtspStream: {
-      name: 'node-rtsp-stream-es6',
       desc: 'Diffusion vidéo en direct depuis caméras IP (RTSP) vers navigateurs via WebSocket, idéal pour dashboards de surveillance'
     },
     pavie: {
-      name: 'pavie',
       desc: 'SDK Node.js pour interagir avec Plex Media Server : parcourir les bibliothèques, contrôler la lecture et automatiser son media center'
     },
     overwatch: {
-      name: 'overwatch',
       desc: 'Dashboard domotique Vue.js avec mises à jour WebSocket temps réel pour monitorer capteurs, caméras et objets connectés'
     },
     bordeaux: {
-      name: 'bordeaux',
       desc: 'Téléchargeur automatique de séries TV qui suit les épisodes via Trakt, télécharge via Transmission et organise les médias pour Plex'
     },
     pir: {
-      name: 'pir-mqtt',
-      desc: 'Firmware ESP8266 pour capteurs de mouvement PIR publiant vers MQTT, permettant des automatisations domotiques'
-    },
-    pirMqtt: {
-      name: 'pir-mqtt',
       desc: 'Firmware ESP8266 pour capteurs de mouvement PIR publiant vers MQTT, permettant des automatisations domotiques'
     }
   },
@@ -295,35 +259,15 @@ export default {
     title: 'Lectures',
     subtitle: 'La bibliothèque',
     read: 'Lu',
-    reading: 'En cours',
     toRead: 'À lire',
-    toBuy: 'À acheter',
-    recommend: 'Je recommande',
-    cleanArchitecture: 'Clean Architecture: A Craftsman\'s Guide to Software Structure',
-    pragmaticProgrammer: 'The Pragmatic Programmer: Your Journey to Mastery',
-    philosophySoftware: 'A Philosophy of Software Design',
-    hundredMLeads: '$100M Leads',
-    designingDataIntensive: 'Designing Data-Intensive Applications',
-    companyOfOne: 'Company of One'
+    toBuy: 'À acheter'
   },
   contact: {
     title: 'Contact',
     subtitle: 'Connectons-nous',
-    player2: 'Le Joueur 2 est prêt à rejoindre',
     cta: 'Construisons ensemble',
-    email: 'Email',
-    github: 'GitHub',
     linkedin: 'LinkedIn',
-    achievementsPreview: 'Plus de succès à débloquer',
-    form: {
-      name: 'Votre nom',
-      email: 'Votre email',
-      message: 'Votre message',
-      send: 'Envoyer',
-      sending: 'Envoi en cours...',
-      success: 'Message envoyé !',
-      error: 'Erreur lors de l\'envoi'
-    }
+    achievementsPreview: 'Plus de succès à débloquer'
   },
   footer: {
     madeWith: 'Fait avec',
