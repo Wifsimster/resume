@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { TresCanvas } from '@tresjs/core'
 import ExperienceScene from '@presentation/components/three/scenes/ExperienceScene.vue'
@@ -11,9 +10,9 @@ const { t, locale } = useI18n()
 const { quality, renderSettings } = useQuality()
 
 const getAchievements = (expId: string): string[] => {
-  const currentLocale = locale.value
-  const messages = i18n.global.messages.value[currentLocale] as any
-  const achievements = messages?.experience?.[expId]?.achievements
+  const currentLocale = locale.value as 'fr' | 'en'
+  const messages = i18n.global.messages.value[currentLocale]
+  const achievements = (messages as any)?.experience?.[expId]?.achievements
   return Array.isArray(achievements) ? achievements : []
 }
 </script>

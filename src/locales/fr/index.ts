@@ -161,10 +161,7 @@ export default {
     stats: {
       yearsExperience: 'Années d\'expérience',
       projects: 'Projets en 2025',
-      developers: 'Gérer une équipe de 6',
-      linesOfCode: 'Lignes de code 2025',
-      commits: 'Commits 2025',
-      issuesClosed: 'Issues fermées 2025'
+      developers: 'Gérer une équipe de 6'
     }
   },
   experience: {

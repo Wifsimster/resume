@@ -4,31 +4,16 @@ import { TresCanvas } from '@tresjs/core'
 import AboutScene from '@presentation/components/three/scenes/AboutScene.vue'
 import { useQuality } from '@application/composables/useQuality'
 import { resumeData } from '@domain/data/resume'
-import { useGitLabStats } from '@application/composables/useGitLabStats'
 import { computed } from 'vue'
 
 const { t } = useI18n()
 const { quality, renderSettings } = useQuality()
-const { stats } = useGitLabStats()
 
 const statistics = computed(() => resumeData.statistics || {
   yearsOfExperience: 0,
   totalProjects: 0,
-  developersRecruited: 0,
-  linesOfCode2025: 0,
-  totalCommits2025: 0,
-  issuesClosed2025: 0
+  developersRecruited: 0
 })
-
-const formatNumber = (num: number): string => {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1) + 'M'
-  }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'k'
-  }
-  return num.toString()
-}
 </script>
 
 <template>
@@ -82,25 +67,6 @@ const formatNumber = (num: number): string => {
             <div class="text-2xl mb-1">🚀</div>
             <div class="text-lg font-bold text-white">{{ statistics.totalProjects }}</div>
             <div class="text-xs text-white/70 text-center">{{ t('about.stats.projects') }}</div>
-          </div>
-          <div
-            class="bg-[#0A0A0A]/60 backdrop-blur-md border border-purple-500/15 rounded-lg py-3 px-3 flex flex-col items-center justify-center transition-all duration-150 hover:bg-[#0A0A0A]/80 hover:border-purple-500/30">
-            <div class="text-2xl mb-1">💻</div>
-            <div class="text-lg font-bold text-white">{{ formatNumber(statistics.linesOfCode2025 ||
-              stats.totalLinesAdded) }}</div>
-            <div class="text-xs text-white/70 text-center">{{ t('about.stats.linesOfCode') }}</div>
-          </div>
-          <div
-            class="bg-[#0A0A0A]/60 backdrop-blur-md border border-purple-500/15 rounded-lg py-3 px-3 flex flex-col items-center justify-center transition-all duration-150 hover:bg-[#0A0A0A]/80 hover:border-purple-500/30">
-            <div class="text-2xl mb-1">📝</div>
-            <div class="text-lg font-bold text-white">{{ statistics.totalCommits2025 || stats.totalCommits }}</div>
-            <div class="text-xs text-white/70 text-center">{{ t('about.stats.commits') }}</div>
-          </div>
-          <div
-            class="bg-[#0A0A0A]/60 backdrop-blur-md border border-purple-500/15 rounded-lg py-3 px-3 flex flex-col items-center justify-center transition-all duration-150 hover:bg-[#0A0A0A]/80 hover:border-purple-500/30">
-            <div class="text-2xl mb-1">✅</div>
-            <div class="text-lg font-bold text-white">{{ statistics.issuesClosed2025 || 0 }}</div>
-            <div class="text-xs text-white/70 text-center">{{ t('about.stats.issuesClosed') }}</div>
           </div>
         </div>
 
