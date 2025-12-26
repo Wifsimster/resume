@@ -39,7 +39,7 @@ const openGithubProfile = () => {
     <!-- Content -->
     <div class="section-content flex flex-col items-center justify-center pointer-events-none">
       <div class="text-center mb-6 sm:mb-8">
-        <h2 class="text-(--color-frontend-blue) mb-2 text-2xl sm:text-3xl">{{ t('projects.title') }}</h2>
+        <h2 class="text-(--color-frontend-blue) mb-2 text-6xl sm:text-7xl">{{ t('projects.title') }}</h2>
         <p class="font-(--font-display) text-base sm:text-lg text-white/70">{{ t('projects.subtitle') }}</p>
       </div>
 

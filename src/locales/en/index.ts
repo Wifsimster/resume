@@ -264,7 +264,7 @@ export default {
   },
   contact: {
     title: 'Contact',
-    subtitle: 'Join My Party',
+    subtitle: 'Let\'s Connect',
     player2: 'Player 2 is ready to join',
     cta: 'Let\'s build together',
     email: 'Email',

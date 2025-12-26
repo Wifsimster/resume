@@ -264,7 +264,7 @@ export default {
   },
   contact: {
     title: 'Contact',
-    subtitle: 'Rejoignez ma partie',
+    subtitle: 'Connectons-nous',
     player2: 'Le Joueur 2 est prêt à rejoindre',
     cta: 'Construisons ensemble',
     email: 'Email',

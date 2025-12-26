@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, reactive } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import type { QualityLevel } from '@application/composables/useQuality'
 import { resumeData } from '@domain/data/resume'
 
@@ -66,36 +66,13 @@ const pageCount = 20
 // Initialize page refs array immediately
 pageTurnRefs.value = Array.from({ length: pageCount }, () => null)
 
-// Knowledge particles - words and letters floating from books
-const particleCount = computed(() => props.quality === 'high' ? 60 : 20)
-const knowledgeParticles = reactive<Array<{ 
-  x: number, 
-  y: number, 
-  z: number, 
-  speed: number, 
-  rotation: number,
-  rotationSpeed: number,
-  opacity: number,
-  scale: number
-}>>([])
-
-const initParticles = () => {
-  knowledgeParticles.length = 0
-  for (let i = 0; i < particleCount.value; i++) {
-    const angle = Math.random() * Math.PI * 2
-    const radius = 1.5 + Math.random() * 2
-    knowledgeParticles.push({
-      x: Math.cos(angle) * radius,
-      y: -1 + Math.random() * 3,
-      z: Math.sin(angle) * radius,
-      speed: 0.2 + Math.random() * 0.3,
-      rotation: Math.random() * Math.PI * 2,
-      rotationSpeed: (Math.random() - 0.5) * 0.1,
-      opacity: 0.3 + Math.random() * 0.5,
-      scale: 0.8 + Math.random() * 0.4
-    })
+// Helper function to set page ref
+const setPageRef = (index: number, el: any) => {
+  if (el && pageTurnRefs.value) {
+    pageTurnRefs.value[index] = el
   }
 }
+
 
 let animationId: number
 let startTime = 0
@@ -113,55 +90,59 @@ const animate = () => {
     bookshelfRef.value.position.y = Math.sin(elapsed * 0.3) * 0.02
   }
 
-  // Floating books - gentle orbit around center
+  // Floating books - smooth orbit around center
   floatingBooksRef.value.forEach((bookRef, index) => {
     if (bookRef && floatingBooks[index]) {
       const book = floatingBooks[index]
       const angle = book.angle + elapsed * book.speed * book.direction
       
-      // Circular orbit
+      // Smooth circular orbit
       bookRef.position.x = Math.cos(angle) * book.radius
       bookRef.position.z = Math.sin(angle) * book.radius
       
-      // Vertical float
-      bookRef.position.y = book.yOffset + Math.sin(elapsed * 0.5 + index * 0.3) * 0.15
+      // Smooth vertical float
+      bookRef.position.y = book.yOffset + Math.sin(elapsed * 0.4 + index * 0.4) * 0.12
       
-      // Book rotation - always face outward
+      // Book rotation - always face outward with smooth movement
       bookRef.rotation.y = -angle + Math.PI / 2
-      bookRef.rotation.x = Math.sin(elapsed * 0.4 + index) * 0.08
-      bookRef.rotation.z = Math.sin(elapsed * 0.3 + index * 0.5) * 0.05
+      bookRef.rotation.x = Math.sin(elapsed * 0.3 + index * 0.5) * 0.06
+      bookRef.rotation.z = Math.sin(elapsed * 0.25 + index * 0.6) * 0.04
       
-      // Gentle scale pulse for read books
+      // Subtle scale pulse for read books
       if (book.status === 'read') {
-        const pulse = 1 + Math.sin(elapsed * 1.2 + index) * 0.03
+        const pulse = 1 + Math.sin(elapsed * 1.0 + index * 0.7) * 0.02
         bookRef.scale.set(pulse, pulse, pulse)
       }
     }
   })
 
-  // Open book - centerpiece with page turning
+  // Open book - smooth floating and gentle rotation
   if (openBookRef.value) {
-    openBookRef.value.position.y = Math.sin(elapsed * 0.6) * 0.05
-    openBookRef.value.rotation.y = Math.sin(elapsed * 0.1) * 0.05
+    openBookRef.value.position.y = 0.5 + Math.sin(elapsed * 0.5) * 0.08
+    openBookRef.value.rotation.y = Math.sin(elapsed * 0.08) * 0.1
   }
 
-  // Page flutter - realistic page movement
+  // Page flutter - smooth, realistic page movement
   if (leftPageRef.value && rightPageRef.value) {
-    const pageFlutter = Math.sin(elapsed * 1.8) * 0.03
+    const pageFlutter = Math.sin(elapsed * 1.2) * 0.02
     leftPageRef.value.rotation.y = -0.35 + pageFlutter
     rightPageRef.value.rotation.y = 0.35 - pageFlutter
   }
 
-  // Page turning animation - sequential pages turning
+  // Page turning animation - smooth sequential pages turning
   pageTurnRefs.value.forEach((pageRef, index) => {
     if (pageRef) {
-      const pagePhase = ((elapsed * 0.3 + index * 0.1) % 1)
-      const isTurning = pagePhase < 0.3
+      const pagePhase = ((elapsed * 0.25 + index * 0.08) % 1)
+      const isTurning = pagePhase < 0.4
       
       if (isTurning) {
-        const turnProgress = pagePhase / 0.3
-        pageRef.rotation.y = -0.35 + turnProgress * 0.7
-        pageRef.position.x = -0.05 + turnProgress * 0.1
+        const turnProgress = pagePhase / 0.4
+        // Smooth easing for page turn
+        const eased = turnProgress < 0.5 
+          ? 2 * turnProgress * turnProgress 
+          : 1 - Math.pow(-2 * turnProgress + 2, 2) / 2
+        pageRef.rotation.y = -0.35 + eased * 0.7
+        pageRef.position.x = -0.05 + eased * 0.1
       } else {
         pageRef.rotation.y = 0.35
         pageRef.position.x = 0.05
@@ -175,30 +156,6 @@ const animate = () => {
     readingLightRef.value.intensity = 0.8 + Math.sin(elapsed * 1.5) * 0.2
   }
 
-  // Knowledge particles - floating words/letters from books
-  knowledgeParticles.forEach((particle, index) => {
-    particle.y += particle.speed * 0.016
-    particle.rotation += particle.rotationSpeed
-    
-    // Gentle drift
-    particle.x += Math.sin(elapsed * 0.5 + index) * 0.01
-    particle.z += Math.cos(elapsed * 0.5 + index) * 0.01
-    
-    // Fade in/out
-    const fadePhase = (particle.y / 3) % 1
-    particle.opacity = Math.sin(fadePhase * Math.PI) * 0.6
-    
-    // Reset when too high
-    if (particle.y > 3) {
-      const angle = Math.random() * Math.PI * 2
-      const radius = 1.5 + Math.random() * 2
-      particle.x = Math.cos(angle) * radius
-      particle.y = -1
-      particle.z = Math.sin(angle) * radius
-      particle.rotation = Math.random() * Math.PI * 2
-      particle.opacity = 0.3 + Math.random() * 0.5
-    }
-  })
 
   // Book glows - subtle pulsing for read books
   bookGlowRefs.value.forEach((glowRef, index) => {
@@ -227,7 +184,6 @@ const setBookGlowRef = (el: any, index: number) => {
 void setBookGlowRef // Used in template
 
 onMounted(() => {
-  initParticles()
   startTime = Date.now()
   animate()
 })
@@ -341,7 +297,7 @@ const segmentCount = computed(() => props.quality === 'high' ? 48 : 16)
       <!-- Individual pages turning -->
       <TresGroup v-for="(_, index) in pageCount" :key="`page-${index}`">
         <TresMesh 
-          :ref="(el) => { if (el && pageTurnRefs.value) pageTurnRefs.value[index] = el }"
+          :ref="(el) => setPageRef(index, el)"
           :position="[0.05 - ((index + 1) / pageCount) * 0.1, 0.02 + ((index + 1) / pageCount) * 0.001, 0]" 
           :rotation="[0, 0.35, 0]"
         >
@@ -388,24 +344,6 @@ const segmentCount = computed(() => props.quality === 'high' ? 48 : 16)
       </TresMesh>
     </TresGroup>
 
-    <!-- Knowledge particles - floating words/letters -->
-    <TresGroup>
-      <TresMesh
-        v-for="(particle, index) in knowledgeParticles"
-        :key="`particle-${index}`"
-        :position="[particle.x, particle.y, particle.z]"
-        :rotation="[0, particle.rotation, 0]"
-        :scale="[particle.scale, particle.scale, particle.scale]"
-      >
-        <TresPlaneGeometry :args="[0.15, 0.15]" />
-        <TresMeshBasicMaterial
-          :color="index % 4 === 0 ? '#FBBF24' : index % 4 === 1 ? '#3498DB' : index % 4 === 2 ? '#7B1FA2' : '#FFFFFF'"
-          :opacity="particle.opacity"
-          :transparent="true"
-          :side="2"
-        />
-      </TresMesh>
-    </TresGroup>
 
     <!-- Floating Books - from actual resume data -->
     <TresGroup
@@ -453,16 +391,6 @@ const segmentCount = computed(() => props.quality === 'high' ? 48 : 16)
       </TresMesh>
     </TresGroup>
 
-    <!-- Orbit ring trails (subtle) -->
-    <TresMesh 
-      v-for="(book, i) in floatingBooks" 
-      :key="`ring-${i}`" 
-      :position="[0, book.yOffset, 0]" 
-      :rotation="[-Math.PI / 2, 0, 0]"
-    >
-      <TresTorusGeometry :args="[book.radius, 0.008, 8, 64]" />
-      <TresMeshBasicMaterial :color="book.colors.emissive" :opacity="0.15" :transparent="true" />
-    </TresMesh>
   </TresGroup>
 
   <!-- Floor with mystical pattern -->
@@ -482,22 +410,5 @@ const segmentCount = computed(() => props.quality === 'high' ? 48 : 16)
     <TresMeshBasicMaterial :color="'#FBBF24'" :opacity="0.1" :transparent="true" />
   </TresMesh>
 
-  <!-- Ambient floating dust/sparkles -->
-  <TresMesh
-    v-for="i in (quality === 'high' ? 60 : 15)"
-    :key="`sparkle-${i}`"
-    :position="[
-      (Math.random() - 0.5) * 8,
-      Math.random() * 5 - 1,
-      (Math.random() - 0.5) * 6
-    ]"
-  >
-    <TresSphereGeometry :args="[0.02, 4, 4]" />
-    <TresMeshBasicMaterial 
-      :color="i % 3 === 0 ? '#FBBF24' : i % 3 === 1 ? '#A855F7' : '#FFFFFF'" 
-      :opacity="0.4 + Math.random() * 0.3" 
-      :transparent="true" 
-    />
-  </TresMesh>
 </template>
 

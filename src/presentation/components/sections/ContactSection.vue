@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { TresCanvas } from '@tresjs/core'
-import ContactScene from '@presentation/components/three/scenes/ContactScene.vue'
-import { useQuality } from '@application/composables/useQuality'
 import { useAchievements } from '@application/composables/useAchievements'
 
 const { t } = useI18n()
-const { quality, renderSettings } = useQuality()
 const { unlock } = useAchievements()
 
 const linkedInUrl = 'https://www.linkedin.com/in/damien-battistella-%F0%9F%92%BB-67964115/'
-const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(linkedInUrl)}&bgcolor=0A0A0A&color=7C3AED`
+const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(linkedInUrl)}&bgcolor=FFFFFF&color=000000`
 
 const openLinkedIn = () => {
   window.open(linkedInUrl, '_blank', 'noopener,noreferrer')
@@ -31,7 +27,7 @@ onMounted(() => {
     },
     { threshold: 0.3 }
   )
-  
+
   const section = document.querySelector('[data-section="contact"]')
   if (section) {
     observer.observe(section)
@@ -41,38 +37,27 @@ onMounted(() => {
 
 <template>
   <section class="section bg-transparent min-h-screen" data-section="contact">
-    <!-- 3D Canvas -->
-    <div class="section-canvas">
-      <TresCanvas
-        :clear-color="'#0A0A0A'"
-        :alpha="true"
-        :dpr="renderSettings.dpr"
-        :antialias="renderSettings.antialias"
-        :power-preference="renderSettings.powerPreference"
-      >
-        <ContactScene :quality="quality" />
-      </TresCanvas>
-    </div>
-
     <!-- Content -->
-    <div class="section-content">
+    <div class="section-content flex flex-col justify-center items-center h-full">
       <div class="text-center mb-12">
         <h2 class="text-(--color-terminal-green) mb-2">{{ t('contact.title') }}</h2>
         <p class="font-(--font-display) text-2xl text-white/70">{{ t('contact.subtitle') }}</p>
       </div>
 
-      <div 
+      <div
         class="glass max-w-[400px] mx-auto mb-12 md:mx-4 sm:mx-2 sm:mb-8 p-8 sm:p-6 flex flex-col items-center gap-6 cursor-pointer transition-all duration-150 border-2 border-transparent hover:border-(--color-terminal-green) hover:-translate-y-1 hover:shadow-[var(--shadow-glow-green)]"
-        @click="openLinkedIn"
-      >
+        @click="openLinkedIn">
         <div class="p-4 sm:p-3 bg-white rounded-xl">
-          <img :src="qrCodeUrl" alt="LinkedIn QR Code" class="block rounded-lg w-[200px] h-[200px] sm:w-40 sm:h-40" />
+          <img :src="qrCodeUrl" alt="LinkedIn QR Code"
+            class="block rounded-lg w-[200px] h-[200px] sm:w-40 sm:h-40 bg-white" />
         </div>
         <div class="text-center flex flex-col items-center gap-2">
           <span class="text-4xl sm:text-3xl">💼</span>
-          <h3 class="font-(--font-display) text-2xl sm:text-xl text-(--color-terminal-green) m-0">{{ t('contact.cta') }}</h3>
+          <h3 class="font-(--font-display) text-2xl sm:text-xl text-(--color-terminal-green) m-0">{{ t('contact.cta') }}
+          </h3>
           <p class="text-lg text-(--color-paper-cream) m-0">Damien Battistella</p>
-          <span class="font-(--font-code) text-sm text-(--color-frontend-blue) mt-2">{{ t('contact.linkedin') }} →</span>
+          <span class="font-(--font-code) text-sm text-(--color-frontend-blue) mt-2">{{ t('contact.linkedin') }}
+            →</span>
         </div>
       </div>
 
@@ -87,4 +72,3 @@ onMounted(() => {
     </div>
   </section>
 </template>
-
