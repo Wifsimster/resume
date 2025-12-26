@@ -62,6 +62,7 @@ export const resumeData: ResumeData = {
     { id: 'vue', name: 'Vue.js', category: 'frontend', icon: '💚', url: 'https://vuejs.org/' },
     { id: 'pinia', name: 'Pinia', category: 'frontend', icon: '🍍', url: 'https://pinia.vuejs.org/' },
     { id: 'tailwind', name: 'TailwindCSS', category: 'frontend', icon: '🎨', url: 'https://tailwindcss.com/' },
+    { id: 'primevue', name: 'PrimeVue', category: 'frontend', icon: '🎯', url: 'https://primevue.org/' },
 
     // Backend
     { id: 'nodejs', name: 'Node.js', category: 'backend', icon: '💚', url: 'https://nodejs.org/' },
@@ -82,7 +83,7 @@ export const resumeData: ResumeData = {
     // IDE & AI Tools
     { id: 'vscode', name: 'VS Code', category: 'devops', icon: '💻', url: 'https://code.visualstudio.com/' },
     { id: 'cursor', name: 'Cursor', category: 'devops', icon: '✨', url: 'https://cursor.com/' },
-    { id: 'copilot', name: 'Microsoft Copilot', category: 'devops', icon: '🤖', url: 'https://github.com/features/copilot' },
+    { id: 'copilot', name: 'GitHub Copilot', category: 'devops', icon: '🤖', url: 'https://github.com/features/copilot' },
 
     // Soft Skills
     { id: 'leadership', name: 'Leadership', category: 'soft', icon: '👑' },
