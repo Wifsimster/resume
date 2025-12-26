@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onUnmounted } from 'vue'
 
 export function useFPS() {
   const fps = ref(0)

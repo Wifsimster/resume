@@ -105,7 +105,22 @@ export default {
       name: 'Open Sourceur',
       desc: 'Cliqué sur un lien GitHub',
       hint: 'Découvrez les projets open source...'
+    },
+    consoleExplorer: {
+      name: 'Explorateur de console',
+      desc: 'Trouvé l\'easter egg de la console',
+      hint: 'Ouvrez la console du navigateur...'
     }
+  },
+  console: {
+    welcome: 'Salut développeur !',
+    found: 'Tu as trouvé la console ! 🎉',
+    hint: 'Tape "resume()" pour découvrir un secret...',
+    success: 'Bravo ! Tu as trouvé l\'easter egg de la console !',
+    tip: 'Astuce: Essaie le code Konami sur la page...',
+    konamiCode: '↑ ↑ ↓ ↓ ← → ← → B A',
+    asciiTitle: 'Bienvenue dans le code !',
+    asciiSubtitle: 'Tu es un vrai explorateur !'
   },
   hero: {
     greeting: 'Bonjour, je suis',
