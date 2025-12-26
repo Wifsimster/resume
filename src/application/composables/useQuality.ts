@@ -8,6 +8,8 @@ export interface RenderSettings {
   powerPreference: 'high-performance' | 'low-power' | 'default'
   particleMultiplier: number
   segmentMultiplier: number
+  targetFPS: number
+  lightCount: number
 }
 
 interface DeviceCapabilities {
@@ -144,11 +146,25 @@ const detectQuality = (): QualityLevel => {
   if (caps.deviceMemory >= 8) score += 2
   else if (caps.deviceMemory >= 4) score += 1
   
-  // Mobile penalty
-  if (caps.isMobile) score -= 2
+  // Mobile penalty (more aggressive)
+  if (caps.isMobile) {
+    score -= 3 // Increased penalty for mobile
+    // Additional penalty for low-end mobile GPUs
+    if (caps.gpuTier === 'low') score -= 1
+  }
   
   // High DPR penalty (more pixels to render)
   if (caps.nativeDpr > 2) score -= 1
+  
+  // Battery level consideration (if available)
+  try {
+    const battery = (navigator as any).getBattery?.() || (navigator as any).battery
+    if (battery && !battery.charging && battery.level < 0.3) {
+      score -= 1 // Reduce quality when battery is low and not charging
+    }
+  } catch {
+    // Battery API not available
+  }
   
   // Determine quality level
   if (score >= 5) return 'high'
@@ -159,6 +175,7 @@ const detectQuality = (): QualityLevel => {
 // Get render settings for a quality level
 const getRenderSettings = (level: QualityLevel): RenderSettings => {
   const caps = detectDeviceCapabilities()
+  const isMobile = caps.isMobile
   
   switch (level) {
     case 'minimal':
@@ -166,25 +183,31 @@ const getRenderSettings = (level: QualityLevel): RenderSettings => {
         dpr: 1,
         antialias: false,
         powerPreference: 'low-power',
-        particleMultiplier: 0.25,
-        segmentMultiplier: 0.25
+        particleMultiplier: isMobile ? 0.15 : 0.25,
+        segmentMultiplier: isMobile ? 0.2 : 0.25,
+        targetFPS: 30,
+        lightCount: isMobile ? 2 : 3
       }
     case 'low':
       return {
-        dpr: Math.min(caps.nativeDpr, 1.5),
+        dpr: isMobile ? Math.min(caps.nativeDpr, 1.2) : Math.min(caps.nativeDpr, 1.5),
         antialias: false,
-        powerPreference: 'default',
-        particleMultiplier: 0.5,
-        segmentMultiplier: 0.5
+        powerPreference: isMobile ? 'low-power' : 'default',
+        particleMultiplier: isMobile ? 0.35 : 0.5,
+        segmentMultiplier: isMobile ? 0.4 : 0.5,
+        targetFPS: isMobile ? 30 : 45,
+        lightCount: isMobile ? 3 : 4
       }
     case 'high':
     default:
       return {
-        dpr: Math.min(caps.nativeDpr, 2.5),
-        antialias: true,
-        powerPreference: 'high-performance',
-        particleMultiplier: 1.5,
-        segmentMultiplier: 1.5
+        dpr: isMobile ? Math.min(caps.nativeDpr, 1.5) : Math.min(caps.nativeDpr, 2.5),
+        antialias: !isMobile, // Disable antialias on mobile for performance
+        powerPreference: isMobile ? 'default' : 'high-performance',
+        particleMultiplier: isMobile ? 0.8 : 1.5,
+        segmentMultiplier: isMobile ? 0.9 : 1.5,
+        targetFPS: isMobile ? 30 : 60,
+        lightCount: isMobile ? 4 : 6
       }
   }
 }
@@ -227,13 +250,37 @@ const measureFPS = () => {
     if (fpsHistory.length >= 30) {
       const avgFPS = fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length
       
-      // Auto-degrade if FPS is consistently low
-      if (avgFPS < 25 && quality.value === 'high') {
+      // Auto-degrade if FPS is consistently low (more aggressive thresholds)
+      const targetFPS = getRenderSettings(quality.value).targetFPS
+      const threshold = targetFPS * 0.7 // Degrade if below 70% of target
+      
+      if (avgFPS < threshold && quality.value === 'high') {
         quality.value = 'low'
         fpsHistory = []
-      } else if (avgFPS < 20 && quality.value === 'low') {
+      } else if (avgFPS < threshold && quality.value === 'low') {
         quality.value = 'minimal'
         fpsHistory = []
+      }
+      
+      // Thermal throttling detection - if FPS drops suddenly
+      if (fpsHistory.length >= 10) {
+        const recentFPS = fpsHistory.slice(-10)
+        const recentAvg = recentFPS.reduce((a, b) => a + b, 0) / recentFPS.length
+        const earlierFPS = fpsHistory.slice(-30, -10)
+        if (earlierFPS.length > 0) {
+          const earlierAvg = earlierFPS.reduce((a, b) => a + b, 0) / earlierFPS.length
+          // If FPS dropped by more than 30%, likely thermal throttling
+          if (earlierAvg > 0 && recentAvg < earlierAvg * 0.7) {
+            // Degrade quality to reduce thermal load
+            if (quality.value === 'high') {
+              quality.value = 'low'
+              fpsHistory = []
+            } else if (quality.value === 'low') {
+              quality.value = 'minimal'
+              fpsHistory = []
+            }
+          }
+        }
       }
     }
   }

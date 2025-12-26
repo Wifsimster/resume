@@ -23,6 +23,7 @@ const currentSectionIndex = ref(0)
 const scrollProgress = ref(0)
 const visitedSections = ref<Set<string>>(new Set(['hero']))
 const startTime = ref<number | null>(null)
+const sectionVisibility = ref<Map<string, boolean>>(new Map())
 
 export function useScrollSection() {
   const { unlock } = useAchievements()
@@ -101,14 +102,61 @@ export function useScrollSection() {
     scrollToSection(sections[prevIndex].id)
   }
   
+  // IntersectionObserver for section visibility tracking
+  let intersectionObserver: IntersectionObserver | null = null
+  
+  const setupVisibilityObserver = () => {
+    const sectionElements = document.querySelectorAll('[data-section]')
+    
+    if (sectionElements.length === 0) return
+    
+    intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const sectionId = entry.target.getAttribute('data-section')
+          if (sectionId) {
+            // Section is visible if more than 10% is in viewport
+            sectionVisibility.value.set(sectionId, entry.intersectionRatio >= 0.1)
+          }
+        })
+      },
+      {
+        threshold: [0, 0.1, 0.5, 1.0], // Multiple thresholds for better tracking
+        rootMargin: '50px' // Start tracking slightly before fully visible
+      }
+    )
+    
+    sectionElements.forEach((el) => {
+      intersectionObserver?.observe(el)
+      // Initialize visibility state
+      const sectionId = el.getAttribute('data-section')
+      if (sectionId) {
+        sectionVisibility.value.set(sectionId, false)
+      }
+    })
+  }
+  
+  const isSectionVisible = (sectionId: string): boolean => {
+    return sectionVisibility.value.get(sectionId) ?? false
+  }
+  
   onMounted(() => {
     startTime.value = Date.now()
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll() // Initial check
+    
+    // Setup visibility observer after a short delay to ensure DOM is ready
+    setTimeout(() => {
+      setupVisibilityObserver()
+    }, 100)
   })
   
   onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll)
+    if (intersectionObserver) {
+      intersectionObserver.disconnect()
+      intersectionObserver = null
+    }
   })
   
   return {
@@ -119,10 +167,12 @@ export function useScrollSection() {
     scrollProgress,
     progressPercent,
     visitedSections,
+    sectionVisibility,
     scrollToSection,
     scrollToNext,
     scrollToPrevious,
-    markSectionVisited
+    markSectionVisited,
+    isSectionVisible
   }
 }
 

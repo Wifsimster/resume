@@ -2,10 +2,17 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import type { QualityLevel } from '@application/composables/useQuality'
 import { resumeData } from '@domain/data/resume'
+import { useAnimationController } from '@application/composables/useAnimationController'
 
 const props = defineProps<{
   quality: QualityLevel
 }>()
+
+// Get section element for visibility detection
+const sectionElement = ref<HTMLElement | null>(null)
+
+// Animation controller
+const animationController = useAnimationController(sectionElement)
 
 // Main refs
 const sceneRef = ref()
@@ -74,12 +81,9 @@ const setPageRef = (index: number, el: any) => {
 }
 
 
-let animationId: number
 let startTime = 0
 
-const animate = () => {
-  const elapsed = (Date.now() - startTime) / 1000
-
+const updateAnimations = (elapsed: number, delta: number) => {
   // Gentle scene rotation - like viewing a library
   if (sceneRef.value) {
     sceneRef.value.rotation.y = Math.sin(elapsed * 0.08) * 0.1
@@ -156,7 +160,6 @@ const animate = () => {
     readingLightRef.value.intensity = 0.8 + Math.sin(elapsed * 1.5) * 0.2
   }
 
-
   // Book glows - subtle pulsing for read books
   bookGlowRefs.value.forEach((glowRef, index) => {
     if (glowRef && floatingBooks[index]?.status === 'read') {
@@ -166,8 +169,6 @@ const animate = () => {
       }
     }
   })
-
-  animationId = requestAnimationFrame(animate)
 }
 
 const setFloatingBookRef = (el: any, index: number) => {
@@ -184,12 +185,23 @@ const setBookGlowRef = (el: any, index: number) => {
 void setBookGlowRef // Used in template
 
 onMounted(() => {
+  // Find the parent section element
+  const canvas = document.querySelector('[data-section="books"]')
+  if (canvas) {
+    sectionElement.value = canvas as HTMLElement
+  }
+  
   startTime = Date.now()
-  animate()
+  
+  // Start animation loop with controller
+  animationController.start((elapsed, delta) => {
+    const totalElapsed = (Date.now() - startTime) / 1000
+    updateAnimations(totalElapsed, delta)
+  })
 })
 
 onUnmounted(() => {
-  cancelAnimationFrame(animationId)
+  animationController.stop()
 })
 
 const segmentCount = computed(() => props.quality === 'high' ? 48 : 16)

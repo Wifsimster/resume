@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import type { QualityLevel } from '@application/composables/useQuality'
+import { useAnimationController } from '@application/composables/useAnimationController'
 
 const props = defineProps<{
   quality: QualityLevel
 }>()
+
+// Get section element for visibility detection
+const sectionElement = ref<HTMLElement | null>(null)
+
+// Animation controller
+const animationController = useAnimationController(sectionElement)
 
 const sceneRef = ref()
 
@@ -23,7 +30,6 @@ const colors = {
 }
 
 // Animation state
-let animationId: number
 let startTime = 0
 
 const anim = reactive({
@@ -73,8 +79,7 @@ const _screenLines = [
 void _screenLines // Suppress unused warning
 
 // Animation loop
-const animate = () => {
-  const elapsed = (Date.now() - startTime) / 1000
+const updateAnimations = (elapsed: number, delta: number) => {
   anim.time = elapsed
   
   // LED rainbow flow
@@ -103,8 +108,6 @@ const animate = () => {
     sceneRef.value.rotation.y = Math.sin(elapsed * 0.04) * 0.06
     sceneRef.value.position.y = Math.sin(elapsed * 0.1) * 0.02
   }
-  
-  animationId = requestAnimationFrame(animate)
 }
 
 // LED color with smooth gradient (unused but kept for potential future use)
@@ -130,12 +133,23 @@ const getDustPos = (particle: typeof dustParticles.value[0]) => {
 }
 
 onMounted(() => {
+  // Find the parent section element
+  const canvas = document.querySelector('[data-section="maker"]')
+  if (canvas) {
+    sectionElement.value = canvas as HTMLElement
+  }
+  
   startTime = Date.now()
-  animate()
+  
+  // Start animation loop with controller
+  animationController.start((elapsed, delta) => {
+    const totalElapsed = (Date.now() - startTime) / 1000
+    updateAnimations(totalElapsed, delta)
+  })
 })
 
 onUnmounted(() => {
-  cancelAnimationFrame(animationId)
+  animationController.stop()
 })
 </script>
 

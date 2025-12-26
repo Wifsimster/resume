@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import type { QualityLevel } from '@application/composables/useQuality'
+import { useAnimationController } from '@application/composables/useAnimationController'
 
 defineProps<{
   quality: QualityLevel
 }>()
+
+// Get section element for visibility detection
+const sectionElement = ref<HTMLElement | null>(null)
+
+// Animation controller
+const animationController = useAnimationController(sectionElement)
 
 // Theme colors
 const themeColors = {
@@ -45,12 +52,9 @@ const starParticles = Array.from({ length: 40 }, (_, i) => ({
   pulseOffset: Math.random() * Math.PI * 2
 }))
 
-let animationId: number
 let startTime = 0
 
-const animate = () => {
-  const elapsed = (Date.now() - startTime) / 1000
-
+const updateAnimations = (elapsed: number, delta: number) => {
   // Animate main group with gentle rotation
   if (cardsRef.value) {
     cardsRef.value.rotation.y = Math.sin(elapsed * 0.15) * 0.1
@@ -73,17 +77,26 @@ const animate = () => {
     cardStates[index].scale = 1 + Math.sin(phase * 0.6) * 0.03
     cardStates[index].glowIntensity = 0.2 + Math.sin(phase * 1.2) * 0.15
   })
-
-  animationId = requestAnimationFrame(animate)
 }
 
 onMounted(() => {
+  // Find the parent section element
+  const canvas = document.querySelector('[data-section="projects"]')
+  if (canvas) {
+    sectionElement.value = canvas as HTMLElement
+  }
+  
   startTime = Date.now()
-  animate()
+  
+  // Start animation loop with controller
+  animationController.start((elapsed, delta) => {
+    const totalElapsed = (Date.now() - startTime) / 1000
+    updateAnimations(totalElapsed, delta)
+  })
 })
 
 onBeforeUnmount(() => {
-  cancelAnimationFrame(animationId)
+  animationController.stop()
 })
 </script>
 

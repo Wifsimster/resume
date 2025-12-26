@@ -163,6 +163,9 @@ code, pre {
   position: absolute;
   inset: 0;
   z-index: 1;
+  /* GPU acceleration for canvas */
+  transform: translateZ(0);
+  will-change: contents;
 }
 
 /* ============================================
@@ -356,55 +359,121 @@ code, pre {
   to { box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
 }
 
+/* Animation classes with GPU acceleration and will-change hints */
 .animate-float {
   animation: float 3s ease-in-out infinite;
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
+  will-change: opacity;
 }
 
 .animate-rotate {
   animation: rotate 10s linear infinite;
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 .animate-fadeInUp {
   animation: fadeInUp 0.6s ease forwards;
+  will-change: transform, opacity;
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 .animate-fadeIn {
   animation: fadeIn 1s ease forwards;
+  will-change: opacity;
 }
 
 .animate-bounce {
   animation: bounce 1s ease infinite;
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 .animate-scrollDot {
   animation: scrollDot 1.5s ease-in-out infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 .animate-icon-bounce {
   animation: icon-bounce 0.5s ease infinite alternate;
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 .animate-trophy-shine {
   animation: trophy-shine 3s ease-in-out infinite;
+  will-change: filter;
 }
 
 .animate-icon-glow {
   animation: icon-glow 2s ease-in-out infinite alternate;
+  will-change: box-shadow;
+}
+
+/* Mobile-specific animation optimizations */
+@media (max-width: 768px) {
+  .animate-float {
+    animation-duration: 2.5s; /* Faster on mobile */
+  }
+  
+  .animate-pulse-glow {
+    animation-duration: 1.5s; /* Faster on mobile */
+  }
+  
+  .animate-rotate {
+    animation-duration: 8s; /* Faster on mobile */
+  }
+  
+  .animate-fadeInUp {
+    animation-duration: 0.5s; /* Faster on mobile */
+  }
+  
+  .animate-bounce {
+    animation-duration: 0.8s; /* Faster on mobile */
+  }
+  
+  .animate-scrollDot {
+    animation-duration: 1.2s; /* Faster on mobile */
+  }
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-pulse-glow,
+  .animate-rotate,
+  .animate-bounce,
+  .animate-scrollDot,
+  .animate-icon-bounce,
+  .animate-trophy-shine,
+  .animate-icon-glow {
+    animation: none !important;
+  }
+  
+  .animate-fadeInUp,
+  .animate-fadeIn {
+    animation-duration: 0.01ms !important; /* Instant for reduced motion */
+  }
 }
 
 /* Panel Transitions for Achievements */
 .panel-enter-active,
 .panel-leave-active {
   transition: opacity 0.3s ease;
+  will-change: opacity;
 }
 
 .panel-enter-active .achievements-panel,
 .panel-leave-active .achievements-panel {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  will-change: transform, opacity;
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 .panel-enter-from,

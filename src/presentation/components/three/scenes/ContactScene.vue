@@ -2,10 +2,17 @@
 import { ref, onMounted, onBeforeUnmount, computed, shallowRef, watch } from 'vue'
 import { BufferAttribute, BufferGeometry, Points, PointsMaterial, AdditiveBlending } from 'three'
 import type { QualityLevel } from '@application/composables/useQuality'
+import { useAnimationController } from '@application/composables/useAnimationController'
 
 const props = defineProps<{
   quality: QualityLevel
 }>()
+
+// Get section element for visibility detection
+const sectionElement = ref<HTMLElement | null>(null)
+
+// Animation controller
+const animationController = useAnimationController(sectionElement)
 
 const sceneRef = ref()
 const hubRef = ref()
@@ -21,7 +28,6 @@ const qrCodeRef = ref()
 const signalParticles = shallowRef<Points | null>(null)
 const networkParticles = shallowRef<Points | null>(null)
 
-let animationId: number
 let startTime = 0
 
 // Contact theme colors
@@ -98,9 +104,7 @@ const createParticleSystems = () => {
   networkParticles.value = new Points(networkGeometry, networkMaterial)
 }
 
-const animate = () => {
-  const elapsed = (Date.now() - startTime) / 1000
-  
+const updateAnimations = (elapsed: number, delta: number) => {
   // Very gentle scene rotation (slowed down)
   if (sceneRef.value) {
     sceneRef.value.rotation.y = elapsed * 0.015
@@ -194,20 +198,29 @@ const animate = () => {
   if (networkParticles.value) {
     networkParticles.value.rotation.y = -elapsed * 0.025
   }
-  
-  animationId = requestAnimationFrame(animate)
 }
 
 watch(() => props.quality, createParticleSystems, { immediate: true })
 
 onMounted(() => {
+  // Find the parent section element
+  const canvas = document.querySelector('[data-section="contact"]')
+  if (canvas) {
+    sectionElement.value = canvas as HTMLElement
+  }
+  
   startTime = Date.now()
   createParticleSystems()
-  animate()
+  
+  // Start animation loop with controller
+  animationController.start((elapsed, delta) => {
+    const totalElapsed = (Date.now() - startTime) / 1000
+    updateAnimations(totalElapsed, delta)
+  })
 })
 
 onBeforeUnmount(() => {
-  cancelAnimationFrame(animationId)
+  animationController.stop()
   if (signalParticles.value) {
     signalParticles.value.geometry.dispose()
     ;(signalParticles.value.material as PointsMaterial).dispose()

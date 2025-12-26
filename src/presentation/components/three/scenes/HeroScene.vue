@@ -2,10 +2,17 @@
 import { ref, shallowRef, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { BufferAttribute, BufferGeometry, Points, PointsMaterial, AdditiveBlending } from 'three'
 import type { QualityLevel } from '@application/composables/useQuality'
+import { useAnimationController } from '@application/composables/useAnimationController'
 
 const props = defineProps<{
   quality: QualityLevel
 }>()
+
+// Get section element for visibility detection
+const sectionElement = ref<HTMLElement | null>(null)
+
+// Animation controller - will be initialized after element is found
+const animationController = useAnimationController(sectionElement)
 
 // Theme colors for the hero scene
 const themeColors = {
@@ -40,7 +47,6 @@ const orbitGroupRef = ref()
 const passionRefs = passionSpheres.map(() => ref())
 
 // Animation state
-let animationId: number | null = null
 let startTime = 0
 
 // Orbital configuration
@@ -173,9 +179,7 @@ const createParticleSystems = () => {
 }
 
 // Main animation loop
-const animate = () => {
-  const elapsed = (Date.now() - startTime) / 1000
-
+const updateAnimations = (elapsed: number, delta: number) => {
   // Animate passion spheres in orbit
   passionRefs.forEach((objRef, index) => {
     if (objRef.value) {
@@ -260,8 +264,6 @@ const animate = () => {
   if (starField.value) {
     starField.value.rotation.y = elapsed * 0.003
   }
-
-  animationId = requestAnimationFrame(animate)
 }
 
 // Watch quality changes
@@ -286,15 +288,24 @@ const sphereSegments = computed(() => {
 const isMinimal = computed(() => props.quality === 'minimal')
 
 onMounted(() => {
+  // Find the parent section element
+  const canvas = document.querySelector('[data-section="hero"]')
+  if (canvas) {
+    sectionElement.value = canvas as HTMLElement
+  }
+  
   startTime = Date.now()
   createParticleSystems()
-  animate()
+  
+  // Start animation loop with controller
+  animationController.start((elapsed, delta) => {
+    const totalElapsed = (Date.now() - startTime) / 1000
+    updateAnimations(totalElapsed, delta)
+  })
 })
 
 onBeforeUnmount(() => {
-  if (animationId !== null) {
-    cancelAnimationFrame(animationId)
-  }
+  animationController.stop()
   const disposeParticles = (particles: Points | null) => {
     if (particles) {
       particles.geometry.dispose()

@@ -2,10 +2,17 @@
 import { ref, onMounted, onUnmounted, reactive, computed } from 'vue'
 import type { QualityLevel } from '@application/composables/useQuality'
 import { resumeData } from '@domain/data/resume'
+import { useAnimationController } from '@application/composables/useAnimationController'
 
 defineProps<{
   quality: QualityLevel
 }>()
+
+// Get section element for visibility detection
+const sectionElement = ref<HTMLElement | null>(null)
+
+// Animation controller
+const animationController = useAnimationController(sectionElement)
 
 const orbitGroupRef = ref()
 
@@ -89,12 +96,9 @@ const orbitRings = computed(() =>
   }))
 )
 
-let animationId: number
 let startTime = 0
 
-const animate = () => {
-  const elapsed = (Date.now() - startTime) / 1000
-  
+const updateAnimations = (elapsed: number, delta: number) => {
   // Core rotation
   coreState.rotationY = elapsed * 0.15
   
@@ -109,17 +113,26 @@ const animate = () => {
   if (orbitGroupRef.value) {
     orbitGroupRef.value.rotation.y = elapsed * 0.02
   }
-  
-  animationId = requestAnimationFrame(animate)
 }
 
 onMounted(() => {
+  // Find the parent section element
+  const canvas = document.querySelector('[data-section="skills"]')
+  if (canvas) {
+    sectionElement.value = canvas as HTMLElement
+  }
+  
   startTime = Date.now()
-  animate()
+  
+  // Start animation loop with controller
+  animationController.start((elapsed, delta) => {
+    const totalElapsed = (Date.now() - startTime) / 1000
+    updateAnimations(totalElapsed, delta)
+  })
 })
 
 onUnmounted(() => {
-  cancelAnimationFrame(animationId)
+  animationController.stop()
 })
 </script>
 

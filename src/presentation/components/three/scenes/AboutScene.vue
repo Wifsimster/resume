@@ -2,10 +2,17 @@
 import { ref, onMounted, onUnmounted, computed, shallowRef, watch } from 'vue'
 import { BufferAttribute, BufferGeometry, Points, PointsMaterial, AdditiveBlending } from 'three'
 import type { QualityLevel } from '@application/composables/useQuality'
+import { useAnimationController } from '@application/composables/useAnimationController'
 
 const props = defineProps<{
   quality: QualityLevel
 }>()
+
+// Get section element for visibility detection
+const sectionElement = ref<HTMLElement | null>(null)
+
+// Animation controller
+const animationController = useAnimationController(sectionElement)
 
 // Refs for each passion object
 const knowledgeRef = ref()
@@ -42,7 +49,6 @@ const themeColors = {
   energy: '#00FFFF'
 }
 
-let animationId: number
 let startTime = 0
 
 // Enhanced orbit configuration with elliptical paths
@@ -152,9 +158,7 @@ const createParticleSystems = () => {
 
 watch(() => props.quality, createParticleSystems, { immediate: true })
 
-const animate = () => {
-  const elapsed = (Date.now() - startTime) / 1000
-
+const updateAnimations = (elapsed: number, delta: number) => {
   // Animate each passion object with enhanced motion
   const refs = [
     knowledgeRef,
@@ -241,18 +245,27 @@ const animate = () => {
     energyParticles.value.rotation.y = -elapsed * 0.08
     energyParticles.value.rotation.x = Math.sin(elapsed * 0.1) * 0.1
   }
-
-  animationId = requestAnimationFrame(animate)
 }
 
 onMounted(() => {
+  // Find the parent section element
+  const canvas = document.querySelector('[data-section="about"]')
+  if (canvas) {
+    sectionElement.value = canvas as HTMLElement
+  }
+  
   startTime = Date.now()
   createParticleSystems()
-  animate()
+  
+  // Start animation loop with controller
+  animationController.start((elapsed, delta) => {
+    const totalElapsed = (Date.now() - startTime) / 1000
+    updateAnimations(totalElapsed, delta)
+  })
 })
 
 onUnmounted(() => {
-  cancelAnimationFrame(animationId)
+  animationController.stop()
   if (dustParticles.value) {
     dustParticles.value.geometry.dispose()
       ; (dustParticles.value.material as PointsMaterial).dispose()

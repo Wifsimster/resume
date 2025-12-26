@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import type { QualityLevel } from '@application/composables/useQuality'
+import { useAnimationController } from '@application/composables/useAnimationController'
 
 defineProps<{
   quality: QualityLevel
 }>()
+
+// Get section element for visibility detection
+const sectionElement = ref<HTMLElement | null>(null)
+
+// Animation controller
+const animationController = useAnimationController(sectionElement)
 
 // Theme colors matching the section (Cursor IDE purple theme)
 const themeColors = {
@@ -18,7 +25,6 @@ const themeColors = {
 // Server rack animation
 const rackRef = ref()
 
-let animationId: number
 let startTime = 0
 
 // Reactive LED states for blinking
@@ -26,9 +32,7 @@ const ledStates = reactive<{ intensity: number }[]>(
   Array.from({ length: 20 }, () => ({ intensity: 1 }))
 )
 
-const animate = () => {
-  const elapsed = (Date.now() - startTime) / 1000
-  
+const updateAnimations = (elapsed: number, delta: number) => {
   // Animate rack with gentle continuous rotation + oscillation
   if (rackRef.value) {
     rackRef.value.rotation.y = elapsed * 0.1 + Math.sin(elapsed * 0.5) * 0.15
@@ -41,17 +45,26 @@ const animate = () => {
     const blinkValue = Math.sin(elapsed * blinkSpeed + led.blinkOffset)
     ledStates[index].intensity = 0.5 + blinkValue * 0.5
   })
-  
-  animationId = requestAnimationFrame(animate)
 }
 
 onMounted(() => {
+  // Find the parent section element
+  const canvas = document.querySelector('[data-section="experience"]')
+  if (canvas) {
+    sectionElement.value = canvas as HTMLElement
+  }
+  
   startTime = Date.now()
-  animate()
+  
+  // Start animation loop with controller
+  animationController.start((elapsed, delta) => {
+    const totalElapsed = (Date.now() - startTime) / 1000
+    updateAnimations(totalElapsed, delta)
+  })
 })
 
 onUnmounted(() => {
-  cancelAnimationFrame(animationId)
+  animationController.stop()
 })
 
 // Generate LED positions for server rack
