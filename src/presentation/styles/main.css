@@ -1,0 +1,361 @@
+@import "tailwindcss";
+
+/* ============================================
+   Design Tokens - Cursor IDE Inspired Theme
+   ============================================ */
+
+:root {
+  /* Base colors */
+  --color-bg-primary: #0A0A0A;
+  --color-bg-secondary: #141414;
+  --color-bg-tertiary: #1E1E1E;
+  --color-bg-elevated: #252525;
+  
+  /* Legacy aliases for compatibility */
+  --color-wood-dark: #0A0A0A;
+  --color-wood-medium: #1E1E1E;
+  --color-wood-light: #3D3D3D;
+  --color-wood-highlight: #525252;
+  
+  /* Accent colors - Cursor blue/purple */
+  --color-accent-primary: #7C3AED;
+  --color-accent-secondary: #A855F7;
+  --color-accent-tertiary: #6366F1;
+  
+  /* Terminal/Code */
+  --color-terminal-green: #A855F7;
+  --color-terminal-bg: #0A0A0A;
+  --color-code-purple: #A855F7;
+  
+  /* Frontend passion */
+  --color-vue-green: #7C3AED;
+  --color-frontend-blue: #6366F1;
+  
+  /* Team/People */
+  --color-team-orange: #F97316;
+  --color-growth-yellow: #FBBF24;
+  
+  /* Knowledge/Books */
+  --color-book-amber: #F59E0B;
+  --color-paper-cream: #E5E5E5;
+  
+  /* Accents */
+  --color-copper: #A855F7;
+  --color-led-red: #EF4444;
+  --color-led-green: #22C55E;
+  --color-led-blue: #3B82F6;
+  
+  /* Gaming */
+  --color-xp-bar: linear-gradient(90deg, #7C3AED, #A855F7);
+  --color-achievement-gold: #FBBF24;
+  
+  /* Shadows */
+  --shadow-glow-green: 0 0 20px rgba(124, 58, 237, 0.4);
+  --shadow-glow-orange: 0 0 20px rgba(249, 115, 22, 0.3);
+  
+  /* Text colors */
+  --color-text-primary: #FAFAFA;
+  --color-text-secondary: #A1A1AA;
+  --color-text-muted: #71717A;
+  
+  /* Border */
+  --color-border: #27272A;
+  --color-border-hover: #3F3F46;
+  
+  /* Typography */
+  --font-display: 'JetBrains Mono', monospace;
+  --font-code: 'JetBrains Mono', monospace;
+  --font-body: 'Nunito', sans-serif;
+  
+  /* Spacing */
+  --spacing-unit: 4px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+  --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   Typography
+   ============================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(3rem, 8vw, 6rem);
+}
+
+h2 {
+  font-size: clamp(2rem, 5vw, 4rem);
+}
+
+h3 {
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+code, pre {
+  font-family: var(--font-code);
+}
+
+/* ============================================
+   Section Layout
+   ============================================ */
+
+.section {
+  min-height: 100vh;
+  scroll-snap-align: start;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  overflow: hidden;
+}
+
+.section-content {
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.section-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* ============================================
+   Gaming UI Elements
+   ============================================ */
+
+/* XP Bar */
+.xp-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.xp-bar-fill {
+  height: 100%;
+  background: var(--color-xp-bar);
+  transition: width var(--transition-normal);
+  box-shadow: var(--shadow-glow-green);
+}
+
+/* Achievement Toast */
+.achievement-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: linear-gradient(135deg, var(--color-wood-medium), var(--color-wood-dark));
+  border: 2px solid var(--color-achievement-gold);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 1000;
+  animation: achievement-slide-in 0.5s var(--transition-bounce);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+}
+
+@keyframes achievement-slide-in {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.achievement-icon {
+  font-size: 2rem;
+  animation: achievement-bounce 0.5s ease infinite alternate;
+}
+
+@keyframes achievement-bounce {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}
+
+/* Level Badge */
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--color-wood-medium);
+  border: 1px solid var(--color-terminal-green);
+  border-radius: 4px;
+  font-family: var(--font-code);
+  font-size: 0.75rem;
+  color: var(--color-terminal-green);
+}
+
+/* ============================================
+   Buttons & Interactive Elements
+   ============================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-primary {
+  background: var(--color-accent-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--color-accent-secondary);
+  box-shadow: var(--shadow-glow-green);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 2px solid var(--color-accent-primary);
+  color: var(--color-accent-primary);
+}
+
+.btn-secondary:hover {
+  background: rgba(124, 58, 237, 0.1);
+}
+
+/* ============================================
+   Glass Effect
+   ============================================ */
+
+.glass {
+  background: rgba(30, 30, 30, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-rotate {
+  animation: rotate 10s linear infinite;
+}
+
+/* ============================================
+   Scrollbar Styling
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-primary);
+}
+
+/* ============================================
+   Selection
+   ============================================ */
+
+::selection {
+  background: var(--color-accent-primary);
+  color: white;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+  .section {
+    padding: 1rem;
+  }
+  
+  .fixed-header {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+}
+
