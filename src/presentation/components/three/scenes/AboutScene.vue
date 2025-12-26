@@ -95,8 +95,11 @@ const createParticleSystems = () => {
     energyParticles.value = null
   }
 
-  const dustCount = props.quality === 'high' ? 300 : 100
-  const energyCount = props.quality === 'high' ? 150 : 50
+  // Skip particles entirely for minimal quality
+  if (props.quality === 'minimal') return
+
+  const dustCount = props.quality === 'high' ? 600 : 100
+  const energyCount = props.quality === 'high' ? 300 : 50
 
   // Cosmic dust - scattered throughout
   const dustPositions = new Float32Array(dustCount * 3)
@@ -260,8 +263,23 @@ onUnmounted(() => {
   }
 })
 
-const segmentCount = computed(() => props.quality === 'high' ? 48 : 24)
-const ringSegments = computed(() => props.quality === 'high' ? 96 : 48)
+// Computed quality values with minimal tier support
+const segmentCount = computed(() => {
+  if (props.quality === 'high') return 64
+  if (props.quality === 'low') return 24
+  return 12 // minimal
+})
+const ringSegments = computed(() => {
+  if (props.quality === 'high') return 128
+  if (props.quality === 'low') return 48
+  return 24 // minimal
+})
+const sphereSegments = computed(() => {
+  if (props.quality === 'high') return 32
+  if (props.quality === 'low') return 16
+  return 8 // minimal
+})
+const isMinimal = computed(() => props.quality === 'minimal')
 </script>
 
 <template>
@@ -384,30 +402,32 @@ const ringSegments = computed(() => props.quality === 'high' ? 96 : 48)
       <TresMeshStandardMaterial :color="passionColors.knowledge" :emissive="passionColors.knowledge"
         :emissive-intensity="0.7" :metalness="0.4" :roughness="0.3" />
     </TresMesh>
-    <TresMesh :position="[0, 0, 0.22]">
+    <TresMesh v-if="!isMinimal" :position="[0, 0, 0.22]">
       <TresBoxGeometry :args="[0.85, 1.05, 0.15]" />
       <TresMeshStandardMaterial :color="'#FFA500'" :emissive="passionColors.knowledge" :emissive-intensity="0.5"
         :metalness="0.3" :roughness="0.4" />
     </TresMesh>
-    <TresMesh :position="[0, 0, 0.4]">
+    <TresMesh v-if="!isMinimal" :position="[0, 0, 0.4]">
       <TresBoxGeometry :args="[0.8, 1.0, 0.12]" />
       <TresMeshStandardMaterial :color="passionColors.knowledge" :emissive="passionColors.knowledge"
         :emissive-intensity="0.6" :metalness="0.4" :roughness="0.3" />
     </TresMesh>
-    <!-- Knowledge aura -->
-    <TresMesh>
-      <TresSphereGeometry :args="[1.1, 24, 24]" />
+    <!-- Knowledge aura - hide on minimal -->
+    <TresMesh v-if="!isMinimal">
+      <TresSphereGeometry :args="[1.1, sphereSegments, sphereSegments]" />
       <TresMeshBasicMaterial :color="passionColors.knowledge" :opacity="0.15" :transparent="true" />
     </TresMesh>
-    <!-- Floating sparkles -->
-    <TresMesh :position="[0.5, 0.6, 0.3]">
-      <TresOctahedronGeometry :args="[0.08]" />
-      <TresMeshBasicMaterial :color="'#FFFFFF'" :opacity="0.9" :transparent="true" />
-    </TresMesh>
-    <TresMesh :position="[-0.4, -0.5, 0.2]">
-      <TresOctahedronGeometry :args="[0.06]" />
-      <TresMeshBasicMaterial :color="passionColors.knowledge" :opacity="0.8" :transparent="true" />
-    </TresMesh>
+    <!-- Floating sparkles - hide on minimal -->
+    <template v-if="!isMinimal">
+      <TresMesh :position="[0.5, 0.6, 0.3]">
+        <TresOctahedronGeometry :args="[0.08]" />
+        <TresMeshBasicMaterial :color="'#FFFFFF'" :opacity="0.9" :transparent="true" />
+      </TresMesh>
+      <TresMesh :position="[-0.4, -0.5, 0.2]">
+        <TresOctahedronGeometry :args="[0.06]" />
+        <TresMeshBasicMaterial :color="passionColors.knowledge" :opacity="0.8" :transparent="true" />
+      </TresMesh>
+    </template>
   </TresGroup>
 
   <!-- 2. Architecture - Crystal Temple (🏗️) -->
@@ -453,7 +473,7 @@ const ringSegments = computed(() => props.quality === 'high' ? 96 : 48)
   <TresGroup ref="modernizationRef">
     <!-- Main arc -->
     <TresMesh :rotation="[Math.PI / 2, 0, 0]">
-      <TresTorusGeometry :args="[0.65, 0.14, segmentCount, 48, Math.PI * 1.6]" />
+      <TresTorusGeometry :args="[0.65, 0.14, segmentCount, isMinimal ? 24 : 48, Math.PI * 1.6]" />
       <TresMeshStandardMaterial :color="passionColors.modernization" :emissive="passionColors.modernization"
         :emissive-intensity="0.8" :metalness="0.6" :roughness="0.2" />
     </TresMesh>
@@ -469,15 +489,17 @@ const ringSegments = computed(() => props.quality === 'high' ? 96 : 48)
       <TresMeshStandardMaterial :color="'#FFFFFF'" :emissive="passionColors.modernization" :emissive-intensity="1.2"
         :metalness="0.9" :roughness="0" />
     </TresMesh>
-    <!-- Multi-layer glow -->
-    <TresMesh>
-      <TresSphereGeometry :args="[0.5, 24, 24]" />
-      <TresMeshBasicMaterial :color="passionColors.modernization" :opacity="0.25" :transparent="true" />
-    </TresMesh>
-    <TresMesh>
-      <TresSphereGeometry :args="[1, 24, 24]" />
-      <TresMeshBasicMaterial :color="passionColors.modernization" :opacity="0.1" :transparent="true" />
-    </TresMesh>
+    <!-- Multi-layer glow - hide on minimal -->
+    <template v-if="!isMinimal">
+      <TresMesh>
+        <TresSphereGeometry :args="[0.5, sphereSegments, sphereSegments]" />
+        <TresMeshBasicMaterial :color="passionColors.modernization" :opacity="0.25" :transparent="true" />
+      </TresMesh>
+      <TresMesh>
+        <TresSphereGeometry :args="[1, sphereSegments, sphereSegments]" />
+        <TresMeshBasicMaterial :color="passionColors.modernization" :opacity="0.1" :transparent="true" />
+      </TresMesh>
+    </template>
   </TresGroup>
 
   <!-- 4. Performance - Electric Storm (⚡) -->
@@ -500,20 +522,22 @@ const ringSegments = computed(() => props.quality === 'high' ? 96 : 48)
       <TresMeshStandardMaterial :color="'#FFFFFF'" :emissive="passionColors.performance" :emissive-intensity="1.2"
         :metalness="1" :roughness="0" />
     </TresMesh>
-    <!-- Electric field -->
-    <TresMesh>
-      <TresSphereGeometry :args="[0.9, 24, 24]" />
+    <!-- Electric field - hide on minimal -->
+    <TresMesh v-if="!isMinimal">
+      <TresSphereGeometry :args="[0.9, sphereSegments, sphereSegments]" />
       <TresMeshBasicMaterial :color="passionColors.performance" :opacity="0.2" :transparent="true" />
     </TresMesh>
-    <!-- Spark particles -->
-    <TresMesh :position="[-0.3, 0.4, 0.2]">
-      <TresOctahedronGeometry :args="[0.06]" />
-      <TresMeshBasicMaterial :color="'#FFFFFF'" />
-    </TresMesh>
-    <TresMesh :position="[0.4, 0.2, -0.15]">
-      <TresOctahedronGeometry :args="[0.05]" />
-      <TresMeshBasicMaterial :color="passionColors.performance" />
-    </TresMesh>
+    <!-- Spark particles - hide on minimal -->
+    <template v-if="!isMinimal">
+      <TresMesh :position="[-0.3, 0.4, 0.2]">
+        <TresOctahedronGeometry :args="[0.06]" />
+        <TresMeshBasicMaterial :color="'#FFFFFF'" />
+      </TresMesh>
+      <TresMesh :position="[0.4, 0.2, -0.15]">
+        <TresOctahedronGeometry :args="[0.05]" />
+        <TresMeshBasicMaterial :color="passionColors.performance" />
+      </TresMesh>
+    </template>
   </TresGroup>
 
   <!-- 5. Frontend - Prism Palette (🎨) -->
@@ -524,28 +548,30 @@ const ringSegments = computed(() => props.quality === 'high' ? 96 : 48)
       <TresMeshStandardMaterial :color="passionColors.frontend" :emissive="passionColors.frontend"
         :emissive-intensity="0.6" :metalness="0.5" :roughness="0.3" />
     </TresMesh>
-    <!-- Floating color orbs -->
-    <TresMesh :position="[0.45, 0.4, 0.25]">
-      <TresSphereGeometry :args="[0.14, 16, 16]" />
-      <TresMeshStandardMaterial :color="'#FF4757'" :emissive="'#FF4757'" :emissive-intensity="0.8" />
-    </TresMesh>
-    <TresMesh :position="[-0.45, 0.35, 0.2]">
-      <TresSphereGeometry :args="[0.12, 16, 16]" />
-      <TresMeshStandardMaterial :color="'#2ED573'" :emissive="'#2ED573'" :emissive-intensity="0.8" />
-    </TresMesh>
-    <TresMesh :position="[0, -0.45, 0.3]">
-      <TresSphereGeometry :args="[0.13, 16, 16]" />
-      <TresMeshStandardMaterial :color="'#3742FA'" :emissive="'#3742FA'" :emissive-intensity="0.8" />
-    </TresMesh>
-    <TresMesh :position="[0.3, -0.2, -0.35]">
-      <TresSphereGeometry :args="[0.1, 16, 16]" />
-      <TresMeshStandardMaterial :color="'#FFA502'" :emissive="'#FFA502'" :emissive-intensity="0.8" />
-    </TresMesh>
-    <!-- Rainbow glow -->
-    <TresMesh>
-      <TresSphereGeometry :args="[1, 24, 24]" />
-      <TresMeshBasicMaterial :color="passionColors.frontend" :opacity="0.12" :transparent="true" />
-    </TresMesh>
+    <!-- Floating color orbs - hide on minimal -->
+    <template v-if="!isMinimal">
+      <TresMesh :position="[0.45, 0.4, 0.25]">
+        <TresSphereGeometry :args="[0.14, sphereSegments, sphereSegments]" />
+        <TresMeshStandardMaterial :color="'#FF4757'" :emissive="'#FF4757'" :emissive-intensity="0.8" />
+      </TresMesh>
+      <TresMesh :position="[-0.45, 0.35, 0.2]">
+        <TresSphereGeometry :args="[0.12, sphereSegments, sphereSegments]" />
+        <TresMeshStandardMaterial :color="'#2ED573'" :emissive="'#2ED573'" :emissive-intensity="0.8" />
+      </TresMesh>
+      <TresMesh :position="[0, -0.45, 0.3]">
+        <TresSphereGeometry :args="[0.13, sphereSegments, sphereSegments]" />
+        <TresMeshStandardMaterial :color="'#3742FA'" :emissive="'#3742FA'" :emissive-intensity="0.8" />
+      </TresMesh>
+      <TresMesh :position="[0.3, -0.2, -0.35]">
+        <TresSphereGeometry :args="[0.1, sphereSegments, sphereSegments]" />
+        <TresMeshStandardMaterial :color="'#FFA502'" :emissive="'#FFA502'" :emissive-intensity="0.8" />
+      </TresMesh>
+      <!-- Rainbow glow -->
+      <TresMesh>
+        <TresSphereGeometry :args="[1, sphereSegments, sphereSegments]" />
+        <TresMeshBasicMaterial :color="passionColors.frontend" :opacity="0.12" :transparent="true" />
+      </TresMesh>
+    </template>
   </TresGroup>
 
   <!-- 6. Team Building - Connected Nodes (👥) -->
@@ -557,61 +583,63 @@ const ringSegments = computed(() => props.quality === 'high' ? 96 : 48)
         :emissive-intensity="0.7" :metalness="0.4" :roughness="0.4" />
     </TresMesh>
     <TresMesh :position="[0, -0.15, 0]">
-      <TresCapsuleGeometry :args="[0.22, 0.45, 4, 16]" />
+      <TresCapsuleGeometry :args="[0.22, 0.45, 4, isMinimal ? 8 : 16]" />
       <TresMeshStandardMaterial :color="passionColors.teamBuilding" :emissive="passionColors.teamBuilding"
         :emissive-intensity="0.6" :metalness="0.4" :roughness="0.4" />
     </TresMesh>
-    <!-- Left member -->
-    <TresMesh :position="[-0.55, 0.25, -0.2]">
-      <TresSphereGeometry :args="[0.2, 16, 16]" />
-      <TresMeshStandardMaterial :color="'#FF8E72'" :emissive="passionColors.teamBuilding" :emissive-intensity="0.5" />
-    </TresMesh>
-    <TresMesh :position="[-0.55, -0.1, -0.2]">
-      <TresCapsuleGeometry :args="[0.16, 0.35, 4, 16]" />
-      <TresMeshStandardMaterial :color="'#FF8E72'" :emissive="passionColors.teamBuilding" :emissive-intensity="0.5" />
-    </TresMesh>
-    <!-- Right member -->
-    <TresMesh :position="[0.55, 0.25, -0.2]">
-      <TresSphereGeometry :args="[0.2, 16, 16]" />
-      <TresMeshStandardMaterial :color="'#FFB8A0'" :emissive="passionColors.teamBuilding" :emissive-intensity="0.5" />
-    </TresMesh>
-    <TresMesh :position="[0.55, -0.1, -0.2]">
-      <TresCapsuleGeometry :args="[0.16, 0.35, 4, 16]" />
-      <TresMeshStandardMaterial :color="'#FFB8A0'" :emissive="passionColors.teamBuilding" :emissive-intensity="0.5" />
-    </TresMesh>
-    <!-- Connection lines (simplified as rings) -->
-    <TresMesh :position="[-0.28, 0.1, -0.1]" :rotation="[0, Math.PI / 4, Math.PI / 2]">
-      <TresTorusGeometry :args="[0.2, 0.015, 8, 16]" />
-      <TresMeshBasicMaterial :color="passionColors.teamBuilding" :opacity="0.5" :transparent="true" />
-    </TresMesh>
-    <TresMesh :position="[0.28, 0.1, -0.1]" :rotation="[0, -Math.PI / 4, Math.PI / 2]">
-      <TresTorusGeometry :args="[0.2, 0.015, 8, 16]" />
-      <TresMeshBasicMaterial :color="passionColors.teamBuilding" :opacity="0.5" :transparent="true" />
-    </TresMesh>
-    <!-- Team aura -->
-    <TresMesh>
-      <TresSphereGeometry :args="[1.1, 24, 24]" />
-      <TresMeshBasicMaterial :color="passionColors.teamBuilding" :opacity="0.1" :transparent="true" />
-    </TresMesh>
+    <!-- Left member - hide on minimal -->
+    <template v-if="!isMinimal">
+      <TresMesh :position="[-0.55, 0.25, -0.2]">
+        <TresSphereGeometry :args="[0.2, sphereSegments, sphereSegments]" />
+        <TresMeshStandardMaterial :color="'#FF8E72'" :emissive="passionColors.teamBuilding" :emissive-intensity="0.5" />
+      </TresMesh>
+      <TresMesh :position="[-0.55, -0.1, -0.2]">
+        <TresCapsuleGeometry :args="[0.16, 0.35, 4, 16]" />
+        <TresMeshStandardMaterial :color="'#FF8E72'" :emissive="passionColors.teamBuilding" :emissive-intensity="0.5" />
+      </TresMesh>
+      <!-- Right member -->
+      <TresMesh :position="[0.55, 0.25, -0.2]">
+        <TresSphereGeometry :args="[0.2, sphereSegments, sphereSegments]" />
+        <TresMeshStandardMaterial :color="'#FFB8A0'" :emissive="passionColors.teamBuilding" :emissive-intensity="0.5" />
+      </TresMesh>
+      <TresMesh :position="[0.55, -0.1, -0.2]">
+        <TresCapsuleGeometry :args="[0.16, 0.35, 4, 16]" />
+        <TresMeshStandardMaterial :color="'#FFB8A0'" :emissive="passionColors.teamBuilding" :emissive-intensity="0.5" />
+      </TresMesh>
+      <!-- Connection lines (simplified as rings) -->
+      <TresMesh :position="[-0.28, 0.1, -0.1]" :rotation="[0, Math.PI / 4, Math.PI / 2]">
+        <TresTorusGeometry :args="[0.2, 0.015, 8, 16]" />
+        <TresMeshBasicMaterial :color="passionColors.teamBuilding" :opacity="0.5" :transparent="true" />
+      </TresMesh>
+      <TresMesh :position="[0.28, 0.1, -0.1]" :rotation="[0, -Math.PI / 4, Math.PI / 2]">
+        <TresTorusGeometry :args="[0.2, 0.015, 8, 16]" />
+        <TresMeshBasicMaterial :color="passionColors.teamBuilding" :opacity="0.5" :transparent="true" />
+      </TresMesh>
+      <!-- Team aura -->
+      <TresMesh>
+        <TresSphereGeometry :args="[1.1, sphereSegments, sphereSegments]" />
+        <TresMeshBasicMaterial :color="passionColors.teamBuilding" :opacity="0.1" :transparent="true" />
+      </TresMesh>
+    </template>
   </TresGroup>
 
   <!-- 7. Making - Kinetic Gear (🔧) -->
   <TresGroup ref="makingRef">
     <!-- Primary gear -->
     <TresMesh :rotation="[Math.PI / 2, 0, 0]">
-      <TresTorusGeometry :args="[0.45, 0.18, 8, 10]" />
+      <TresTorusGeometry :args="[0.45, 0.18, 8, isMinimal ? 6 : 10]" />
       <TresMeshStandardMaterial :color="passionColors.making" :emissive="passionColors.making" :emissive-intensity="0.5"
         :metalness="0.9" :roughness="0.2" />
     </TresMesh>
-    <!-- Outer teeth ring -->
-    <TresMesh :rotation="[Math.PI / 2, 0, 0]">
+    <!-- Outer teeth ring - hide on minimal -->
+    <TresMesh v-if="!isMinimal" :rotation="[Math.PI / 2, 0, 0]">
       <TresTorusGeometry :args="[0.62, 0.1, 6, 12]" />
       <TresMeshStandardMaterial :color="passionColors.making" :emissive="passionColors.making" :emissive-intensity="0.6"
         :metalness="0.95" :roughness="0.15" />
     </TresMesh>
     <!-- Center hub -->
     <TresMesh>
-      <TresCylinderGeometry :args="[0.18, 0.18, 0.35, 8]" />
+      <TresCylinderGeometry :args="[0.18, 0.18, 0.35, isMinimal ? 6 : 8]" />
       <TresMeshStandardMaterial :color="'#CD853F'" :emissive="passionColors.making" :emissive-intensity="0.4"
         :metalness="0.95" :roughness="0.1" />
     </TresMesh>
@@ -627,9 +655,9 @@ const ringSegments = computed(() => props.quality === 'high' ? 96 : 48)
       <TresMeshStandardMaterial :color="passionColors.making" :emissive="passionColors.making" :emissive-intensity="0.6"
         :metalness="0.9" :roughness="0.2" />
     </TresMesh>
-    <!-- Maker glow -->
-    <TresMesh>
-      <TresSphereGeometry :args="[1, 24, 24]" />
+    <!-- Maker glow - hide on minimal -->
+    <TresMesh v-if="!isMinimal">
+      <TresSphereGeometry :args="[1, sphereSegments, sphereSegments]" />
       <TresMeshBasicMaterial :color="passionColors.making" :opacity="0.12" :transparent="true" />
     </TresMesh>
   </TresGroup>

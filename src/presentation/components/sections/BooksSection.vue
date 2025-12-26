@@ -8,7 +8,7 @@ import { useAchievements } from '@application/composables/useAchievements'
 import { resumeData } from '@domain/data/resume'
 
 const { t } = useI18n()
-const { quality } = useQuality()
+const { quality, renderSettings } = useQuality()
 const { unlock } = useAchievements()
 
 const booksByStatus = computed(() => ({
@@ -27,7 +27,13 @@ const openBook = (url: string) => {
   <section class="section bg-transparent" data-section="books">
     <!-- 3D Canvas -->
     <div class="section-canvas">
-      <TresCanvas :clear-color="'#0A0A0A'" :alpha="true">
+      <TresCanvas
+        :clear-color="'#0A0A0A'"
+        :alpha="true"
+        :dpr="renderSettings.dpr"
+        :antialias="renderSettings.antialias"
+        :power-preference="renderSettings.powerPreference"
+      >
         <BooksScene :quality="quality" />
       </TresCanvas>
     </div>

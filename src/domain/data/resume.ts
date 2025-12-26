@@ -168,7 +168,7 @@ export const resumeData: ResumeData = {
       id: '100m-leads',
       title: '$100M Leads',
       author: 'Alex Hormozi',
-      status: 'read',
+      status: 'toRead',
       url: 'https://www.amazon.fr/dp/1963349075'
     },
     {

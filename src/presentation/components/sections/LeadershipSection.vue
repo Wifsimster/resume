@@ -5,7 +5,7 @@ import LeadershipScene from '@presentation/components/three/scenes/LeadershipSce
 import { useQuality } from '@application/composables/useQuality'
 
 const { t } = useI18n()
-const { quality } = useQuality()
+const { quality, renderSettings } = useQuality()
 
 const teamStats = [
   { key: 'recruited', value: '2', icon: '👥' },
@@ -30,7 +30,13 @@ const conferences = [
   <section class="section bg-transparent" data-section="leadership">
     <!-- 3D Canvas -->
     <div class="section-canvas">
-      <TresCanvas :clear-color="'#0A0A0A'" :alpha="true">
+      <TresCanvas
+        :clear-color="'#0A0A0A'"
+        :alpha="true"
+        :dpr="renderSettings.dpr"
+        :antialias="renderSettings.antialias"
+        :power-preference="renderSettings.powerPreference"
+      >
         <LeadershipScene :quality="quality" />
       </TresCanvas>
     </div>

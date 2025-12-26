@@ -6,14 +6,15 @@ import { useQuality } from '@application/composables/useQuality'
 import { resumeData } from '@domain/data/resume'
 
 const { t } = useI18n()
-const { quality } = useQuality()
+const { quality, renderSettings } = useQuality()
 </script>
 
 <template>
   <section class="section bg-transparent" data-section="about">
     <!-- 3D Canvas -->
     <div class="section-canvas">
-      <TresCanvas :clear-color="'#0A0A0A'" :alpha="true">
+      <TresCanvas :clear-color="'#0A0A0A'" :alpha="true" :dpr="renderSettings.dpr" :antialias="renderSettings.antialias"
+        :power-preference="renderSettings.powerPreference">
         <AboutScene :quality="quality" />
       </TresCanvas>
     </div>

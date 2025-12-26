@@ -3,6 +3,7 @@ export default {
     language: 'English',
     switchLanguage: 'Français',
     quality: 'Quality',
+    qualityMinimal: 'Eco',
     qualityLow: 'Low',
     qualityHigh: 'High',
     scrollDown: 'Scroll down',
@@ -100,7 +101,8 @@ export default {
     tagline: 'I build software, products, and people.',
     subtitle: 'R&D Team Leader at Dedalus',
     cta: 'Discover my journey',
-    pressStart: 'Press Enter to start'
+    pressStart: 'Press Enter to start',
+    lastUpdate: 'Last update'
   },
   about: {
     title: 'About',

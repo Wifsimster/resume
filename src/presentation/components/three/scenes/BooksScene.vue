@@ -26,7 +26,7 @@ const orbitingBooks = [
 ]
 
 // Knowledge particles that rise from open book
-const particleCount = computed(() => props.quality === 'high' ? 40 : 20)
+const particleCount = computed(() => props.quality === 'high' ? 80 : 20)
 const knowledgeParticles = reactive<Array<{ x: number, y: number, z: number, speed: number, char: string, opacity: number }>>([])
 
 // Characters that represent "knowledge" - mix of letters, symbols, code
@@ -138,7 +138,7 @@ onUnmounted(() => {
   cancelAnimationFrame(animationId)
 })
 
-const segmentCount = computed(() => props.quality === 'high' ? 32 : 16)
+const segmentCount = computed(() => props.quality === 'high' ? 48 : 16)
 </script>
 
 <template>
@@ -384,7 +384,7 @@ const segmentCount = computed(() => props.quality === 'high' ? 32 : 16)
 
   <!-- Ambient floating dust/sparkles -->
   <TresMesh
-    v-for="i in (quality === 'high' ? 30 : 15)"
+    v-for="i in (quality === 'high' ? 60 : 15)"
     :key="`sparkle-${i}`"
     :position="[
       (Math.random() - 0.5) * 8,

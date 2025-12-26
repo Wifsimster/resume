@@ -98,10 +98,13 @@ const createParticleSystems = () => {
   energyParticles.value = null
   starField.value = null
 
+  // Skip particles entirely for minimal quality
+  if (props.quality === 'minimal') return
+
   const isHigh = props.quality === 'high'
 
   // Star field - distant background stars
-  const starCount = isHigh ? 400 : 150
+  const starCount = isHigh ? 800 : 150
   const starPositions = new Float32Array(starCount * 3)
   for (let i = 0; i < starCount; i++) {
     const theta = Math.random() * Math.PI * 2
@@ -123,7 +126,7 @@ const createParticleSystems = () => {
   starField.value = new Points(starGeometry, starMaterial)
 
   // Cosmic dust - closer atmospheric particles
-  const dustCount = isHigh ? 250 : 80
+  const dustCount = isHigh ? 500 : 80
   const dustPositions = new Float32Array(dustCount * 3)
   for (let i = 0; i < dustCount; i++) {
     const theta = Math.random() * Math.PI * 2
@@ -146,7 +149,7 @@ const createParticleSystems = () => {
   cosmicDust.value = new Points(dustGeometry, dustMaterial)
 
   // Energy particles - concentrated near orbit path
-  const energyCount = isHigh ? 120 : 40
+  const energyCount = isHigh ? 250 : 40
   const energyPositions = new Float32Array(energyCount * 3)
   for (let i = 0; i < energyCount; i++) {
     const angle = Math.random() * Math.PI * 2
@@ -264,9 +267,23 @@ const animate = () => {
 // Watch quality changes
 watch(() => props.quality, createParticleSystems, { immediate: true })
 
-// Computed quality values
-const segmentCount = computed(() => props.quality === 'high' ? 48 : 24)
-const ringSegments = computed(() => props.quality === 'high' ? 96 : 48)
+// Computed quality values with minimal tier support
+const segmentCount = computed(() => {
+  if (props.quality === 'high') return 64
+  if (props.quality === 'low') return 24
+  return 12 // minimal
+})
+const ringSegments = computed(() => {
+  if (props.quality === 'high') return 128
+  if (props.quality === 'low') return 48
+  return 24 // minimal
+})
+const sphereSegments = computed(() => {
+  if (props.quality === 'high') return 48
+  if (props.quality === 'low') return 16
+  return 8 // minimal
+})
+const isMinimal = computed(() => props.quality === 'minimal')
 
 onMounted(() => {
   startTime = Date.now()
@@ -410,43 +427,45 @@ onBeforeUnmount(() => {
   <TresGroup v-for="(passion, index) in passionSpheres" :key="index" :ref="el => passionRefs[index].value = el">
     <!-- Main sphere -->
     <TresMesh>
-      <TresSphereGeometry :args="[0.28, quality === 'high' ? 32 : 16, quality === 'high' ? 32 : 16]" />
+      <TresSphereGeometry :args="[0.28, sphereSegments, sphereSegments]" />
       <TresMeshStandardMaterial :color="passion.color" :emissive="passion.color" :emissive-intensity="0.6"
         :roughness="0.25" :metalness="0.7" />
     </TresMesh>
-    <!-- Inner glow -->
-    <TresMesh>
+    <!-- Inner glow - hide on minimal -->
+    <TresMesh v-if="!isMinimal">
       <TresSphereGeometry :args="[0.38, 16, 16]" />
       <TresMeshBasicMaterial :color="passion.color" :opacity="0.15" :transparent="true" />
     </TresMesh>
-    <!-- Outer aura -->
-    <TresMesh>
+    <!-- Outer aura - hide on minimal -->
+    <TresMesh v-if="!isMinimal">
       <TresSphereGeometry :args="[0.5, 12, 12]" />
       <TresMeshBasicMaterial :color="passion.color" :opacity="0.06" :transparent="true" />
     </TresMesh>
   </TresGroup>
 
-  <!-- Decorative floating crystals -->
-  <TresMesh :position="[4.5, 2.5, -2]" :rotation="[0.3, 0.5, 0.2]">
-    <TresOctahedronGeometry :args="[0.15]" />
-    <TresMeshStandardMaterial :color="themeColors.energy" :emissive="themeColors.energy" :emissive-intensity="0.8"
-      :metalness="0.9" :roughness="0.1" />
-  </TresMesh>
-  <TresMesh :position="[-4, -2, -1]" :rotation="[0.5, 0.3, 0.4]">
-    <TresOctahedronGeometry :args="[0.12]" />
-    <TresMeshStandardMaterial :color="themeColors.gold" :emissive="themeColors.gold" :emissive-intensity="0.7"
-      :metalness="0.9" :roughness="0.1" />
-  </TresMesh>
-  <TresMesh :position="[3, -3, 1]" :rotation="[0.2, 0.7, 0.1]">
-    <TresOctahedronGeometry :args="[0.1]" />
-    <TresMeshStandardMaterial :color="themeColors.accent" :emissive="themeColors.accent" :emissive-intensity="0.6"
-      :metalness="0.9" :roughness="0.1" />
-  </TresMesh>
-  <TresMesh :position="[-3.5, 3, 0.5]" :rotation="[0.4, 0.2, 0.6]">
-    <TresOctahedronGeometry :args="[0.08]" />
-    <TresMeshStandardMaterial :color="themeColors.secondary" :emissive="themeColors.secondary" :emissive-intensity="0.5"
-      :metalness="0.9" :roughness="0.1" />
-  </TresMesh>
+  <!-- Decorative floating crystals - hide on minimal -->
+  <template v-if="!isMinimal">
+    <TresMesh :position="[4.5, 2.5, -2]" :rotation="[0.3, 0.5, 0.2]">
+      <TresOctahedronGeometry :args="[0.15]" />
+      <TresMeshStandardMaterial :color="themeColors.energy" :emissive="themeColors.energy" :emissive-intensity="0.8"
+        :metalness="0.9" :roughness="0.1" />
+    </TresMesh>
+    <TresMesh :position="[-4, -2, -1]" :rotation="[0.5, 0.3, 0.4]">
+      <TresOctahedronGeometry :args="[0.12]" />
+      <TresMeshStandardMaterial :color="themeColors.gold" :emissive="themeColors.gold" :emissive-intensity="0.7"
+        :metalness="0.9" :roughness="0.1" />
+    </TresMesh>
+    <TresMesh :position="[3, -3, 1]" :rotation="[0.2, 0.7, 0.1]">
+      <TresOctahedronGeometry :args="[0.1]" />
+      <TresMeshStandardMaterial :color="themeColors.accent" :emissive="themeColors.accent" :emissive-intensity="0.6"
+        :metalness="0.9" :roughness="0.1" />
+    </TresMesh>
+    <TresMesh :position="[-3.5, 3, 0.5]" :rotation="[0.4, 0.2, 0.6]">
+      <TresOctahedronGeometry :args="[0.08]" />
+      <TresMeshStandardMaterial :color="themeColors.secondary" :emissive="themeColors.secondary" :emissive-intensity="0.5"
+        :metalness="0.9" :roughness="0.1" />
+    </TresMesh>
+  </template>
 
   <!-- Particle systems -->
   <primitive v-if="starField" :object="starField" />

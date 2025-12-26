@@ -73,7 +73,7 @@ onBeforeUnmount(() => {
   cancelAnimationFrame(animationId)
 })
 
-const segmentCount = computed(() => props.quality === 'high' ? 64 : 32)
+const segmentCount = computed(() => props.quality === 'high' ? 96 : 32)
 </script>
 
 <template>

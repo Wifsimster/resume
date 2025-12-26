@@ -7,7 +7,7 @@ import { useQuality } from '@application/composables/useQuality'
 import { useAchievements } from '@application/composables/useAchievements'
 
 const { t } = useI18n()
-const { quality } = useQuality()
+const { quality, renderSettings } = useQuality()
 const { unlock } = useAchievements()
 
 const linkedInUrl = 'https://www.linkedin.com/in/damien-battistella-%F0%9F%92%BB-67964115/'
@@ -43,7 +43,13 @@ onMounted(() => {
   <section class="section bg-transparent min-h-screen" data-section="contact">
     <!-- 3D Canvas -->
     <div class="section-canvas">
-      <TresCanvas :clear-color="'#0A0A0A'" :alpha="true">
+      <TresCanvas
+        :clear-color="'#0A0A0A'"
+        :alpha="true"
+        :dpr="renderSettings.dpr"
+        :antialias="renderSettings.antialias"
+        :power-preference="renderSettings.powerPreference"
+      >
         <ContactScene :quality="quality" />
       </TresCanvas>
     </div>

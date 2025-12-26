@@ -3,6 +3,7 @@ export default {
     language: 'Français',
     switchLanguage: 'English',
     quality: 'Qualité',
+    qualityMinimal: 'Éco',
     qualityLow: 'Basse',
     qualityHigh: 'Haute',
     scrollDown: 'Défiler vers le bas',
@@ -100,7 +101,8 @@ export default {
     tagline: 'Je construis des applications, des objets, des équipes.',
     subtitle: 'Technical Lead Manager chez Dedalus',
     cta: 'Découvrir mon parcours',
-    pressStart: 'Appuyez sur Entrée pour commencer'
+    pressStart: 'Appuyez sur Entrée pour commencer',
+    lastUpdate: 'Dernière mise à jour'
   },
   about: {
     title: 'À propos',

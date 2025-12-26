@@ -64,12 +64,13 @@ const dustParticles = computed(() => {
   }))
 })
 
-// Screen content lines for each monitor
-const screenLines = [
+// Screen content lines for each monitor (used for reference)
+const _screenLines = [
   { count: 10, color: colors.serverGreen }, // Left - terminal
   { count: 12, color: colors.wifi },        // Center - code
   { count: 8, color: colors.led }           // Right - monitoring
 ]
+void _screenLines // Suppress unused warning
 
 // Animation loop
 const animate = () => {
@@ -169,7 +170,7 @@ onUnmounted(() => {
       </TresMesh>
       
       <!-- Desk legs -->
-      <TresMesh v-for="(pos, i) in [[-2.8, -0.9, -1], [2.8, -0.9, -1], [-2.8, -0.9, 1], [2.8, -0.9, 1]]" :key="`leg-${i}`" :position="pos">
+      <TresMesh v-for="(pos, i) in [[-2.8, -0.9, -1], [2.8, -0.9, -1], [-2.8, -0.9, 1], [2.8, -0.9, 1]] as const" :key="`leg-${i}`" :position="pos">
         <TresBoxGeometry :args="[0.1, 1.7, 0.1]" />
         <TresMeshStandardMaterial :color="colors.metal" :metalness="0.7" />
       </TresMesh>
@@ -280,30 +281,6 @@ onUnmounted(() => {
         />
       </TresMesh>
       
-      <!-- LED strip behind center monitor -->
-      <TresMesh :position="[0, 1.05, -0.1]">
-        <TresBoxGeometry :args="[3.3, 0.06, 0.03]" />
-        <TresMeshStandardMaterial :color="colors.darkMetal" />
-      </TresMesh>
-      
-      <TresMesh 
-        v-for="i in ledCount" 
-        :key="`led-${i}`"
-        :position="[-1.55 + (i - 1) * (3.1 / (ledCount - 1)), 1.05, -0.06]"
-      >
-        <TresSphereGeometry :args="[0.04, 6, 6]" />
-        <TresMeshBasicMaterial :color="getLedColor(i)" />
-      </TresMesh>
-      
-      <!-- LED glow on wall -->
-      <TresMesh :position="[0, 1.1, -0.3]">
-        <TresPlaneGeometry :args="[4, 1.5]" />
-        <TresMeshBasicMaterial 
-          :color="getLedColor(Math.floor(ledCount / 2))"
-          :opacity="0.2"
-          :transparent="true"
-        />
-      </TresMesh>
     </TresGroup>
     
     <!-- Right Monitor -->
@@ -365,46 +342,214 @@ onUnmounted(() => {
       </TresMesh>
     </TresGroup>
     
-    <!-- ========== KEYBOARD ========== -->
-    <TresGroup :position="[-1, 0.12, 0.8]">
+    <!-- ========== 75% MECHANICAL KEYBOARD (White/Blue theme) ========== -->
+    <TresGroup :position="[-1, 0.08, 0.8]">
+      <!-- Main keyboard body - white/cream -->
       <TresMesh>
-        <TresBoxGeometry :args="[1.6, 0.04, 0.5]" />
-        <TresMeshStandardMaterial :color="'#2D2D2D'" :roughness="0.4" />
+        <TresBoxGeometry :args="[1.7, 0.07, 0.55]" />
+        <TresMeshStandardMaterial :color="'#E8E4DC'" :roughness="0.4" :metalness="0.1" />
       </TresMesh>
-      <!-- Key rows -->
-      <TresMesh v-for="row in 4" :key="`keyrow-${row}`" :position="[0, 0.025, -0.15 + row * 0.1]">
-        <TresBoxGeometry :args="[1.4, 0.012, 0.065]" />
-        <TresMeshStandardMaterial :color="colors.darkMetal" />
+      
+      <!-- Keyboard top bezel -->
+      <TresMesh :position="[0, 0.04, 0]">
+        <TresBoxGeometry :args="[1.65, 0.015, 0.5]" />
+        <TresMeshStandardMaterial :color="'#F0EDE5'" :roughness="0.35" :metalness="0.05" />
       </TresMesh>
-      <!-- RGB underglow -->
-      <TresMesh :position="[0, -0.01, 0]">
-        <TresPlaneGeometry :args="[1.7, 0.6]" />
-        <TresMeshBasicMaterial 
-          :color="getLedColor(10)"
-          :opacity="0.15"
-          :transparent="true"
-        />
+      
+      <!-- ===== ROTARY KNOB (top right) ===== -->
+      <TresGroup :position="[0.72, 0.06, -0.2]">
+        <!-- Knob base -->
+        <TresMesh>
+          <TresCylinderGeometry :args="[0.055, 0.055, 0.03, 24]" />
+          <TresMeshStandardMaterial :color="'#C0C0C0'" :roughness="0.2" :metalness="0.8" />
+        </TresMesh>
+        <!-- Knob top -->
+        <TresMesh :position="[0, 0.025, 0]">
+          <TresCylinderGeometry :args="[0.05, 0.05, 0.02, 24]" />
+          <TresMeshStandardMaterial :color="'#A0A0A0'" :roughness="0.15" :metalness="0.9" />
+        </TresMesh>
+        <!-- Knob grip lines -->
+        <TresMesh v-for="line in 12" :key="`knob-${line}`" :position="[Math.cos(line * Math.PI / 6) * 0.048, 0.025, Math.sin(line * Math.PI / 6) * 0.048]">
+          <TresBoxGeometry :args="[0.004, 0.015, 0.008]" />
+          <TresMeshStandardMaterial :color="'#707070'" :metalness="0.7" />
+        </TresMesh>
+      </TresGroup>
+      
+      <!-- ===== ESCAPE KEY (dark navy) ===== -->
+      <TresMesh :position="[-0.75, 0.055, -0.2]">
+        <TresBoxGeometry :args="[0.08, 0.035, 0.065]" />
+        <TresMeshStandardMaterial :color="'#2C3E50'" :roughness="0.5" />
+      </TresMesh>
+      
+      <!-- ===== FUNCTION ROW ===== -->
+      <!-- F1-F4 (light) -->
+      <TresMesh v-for="key in 4" :key="`f1-4-${key}`" :position="[-0.58 + key * 0.095, 0.055, -0.2]">
+        <TresBoxGeometry :args="[0.07, 0.03, 0.055]" />
+        <TresMeshStandardMaterial :color="'#F5F5F0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- F5-F8 (gray-blue) -->
+      <TresMesh v-for="key in 4" :key="`f5-8-${key}`" :position="[-0.2 + key * 0.095, 0.055, -0.2]">
+        <TresBoxGeometry :args="[0.07, 0.03, 0.055]" />
+        <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- F9-F12 (light) -->
+      <TresMesh v-for="key in 4" :key="`f9-12-${key}`" :position="[0.18 + key * 0.095, 0.055, -0.2]">
+        <TresBoxGeometry :args="[0.07, 0.03, 0.055]" />
+        <TresMeshStandardMaterial :color="'#F5F5F0'" :roughness="0.45" />
+      </TresMesh>
+      
+      <!-- ===== NUMBER ROW (white keys) ===== -->
+      <TresMesh v-for="key in 13" :key="`num-${key}`" :position="[-0.72 + key * 0.095, 0.055, -0.1]">
+        <TresBoxGeometry :args="[0.075, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#F5F5F0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- Backspace (gray-blue) -->
+      <TresMesh :position="[0.58, 0.055, -0.1]">
+        <TresBoxGeometry :args="[0.12, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- Delete -->
+      <TresMesh :position="[0.72, 0.055, -0.1]">
+        <TresBoxGeometry :args="[0.07, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
+      </TresMesh>
+      
+      <!-- ===== QWERTY ROW ===== -->
+      <!-- Tab (gray-blue) -->
+      <TresMesh :position="[-0.75, 0.055, 0]">
+        <TresBoxGeometry :args="[0.1, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- Letter keys (white) -->
+      <TresMesh v-for="key in 12" :key="`qwerty-${key}`" :position="[-0.6 + key * 0.095, 0.055, 0]">
+        <TresBoxGeometry :args="[0.075, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#F5F5F0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- PgUp -->
+      <TresMesh :position="[0.72, 0.055, 0]">
+        <TresBoxGeometry :args="[0.07, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
+      </TresMesh>
+      
+      <!-- ===== HOME ROW ===== -->
+      <!-- Caps Lock (gray-blue) -->
+      <TresMesh :position="[-0.73, 0.055, 0.09]">
+        <TresBoxGeometry :args="[0.12, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- Letter keys (white) -->
+      <TresMesh v-for="key in 10" :key="`home-${key}`" :position="[-0.55 + key * 0.095, 0.055, 0.09]">
+        <TresBoxGeometry :args="[0.075, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#F5F5F0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- Enter (dark navy) -->
+      <TresMesh :position="[0.52, 0.055, 0.09]">
+        <TresBoxGeometry :args="[0.14, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#2C3E50'" :roughness="0.45" />
+      </TresMesh>
+      <!-- PgDn -->
+      <TresMesh :position="[0.72, 0.055, 0.09]">
+        <TresBoxGeometry :args="[0.07, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
+      </TresMesh>
+      
+      <!-- ===== BOTTOM ROW ===== -->
+      <!-- Left Shift (gray-blue) -->
+      <TresMesh :position="[-0.7, 0.055, 0.18]">
+        <TresBoxGeometry :args="[0.15, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- Letter keys (white) -->
+      <TresMesh v-for="key in 9" :key="`shift-row-${key}`" :position="[-0.5 + key * 0.095, 0.055, 0.18]">
+        <TresBoxGeometry :args="[0.075, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#F5F5F0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- Right Shift -->
+      <TresMesh :position="[0.45, 0.055, 0.18]">
+        <TresBoxGeometry :args="[0.1, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- Up arrow (dark) -->
+      <TresMesh :position="[0.58, 0.055, 0.18]">
+        <TresBoxGeometry :args="[0.07, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#2C3E50'" :roughness="0.45" />
+      </TresMesh>
+      
+      <!-- ===== SPACE ROW ===== -->
+      <!-- Ctrl, Win, Alt (gray-blue) -->
+      <TresMesh v-for="(key, i) in 3" :key="`mod-left-${i}`" :position="[-0.7 + i * 0.1, 0.055, 0.27]">
+        <TresBoxGeometry :args="[0.08, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- Spacebar (dark navy) -->
+      <TresMesh :position="[-0.1, 0.055, 0.27]">
+        <TresBoxGeometry :args="[0.45, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#2C3E50'" :roughness="0.45" />
+      </TresMesh>
+      <!-- Fn, Ctrl right (gray-blue) -->
+      <TresMesh v-for="(key, i) in 2" :key="`mod-right-${i}`" :position="[0.22 + i * 0.1, 0.055, 0.27]">
+        <TresBoxGeometry :args="[0.08, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#B8C5D0'" :roughness="0.45" />
+      </TresMesh>
+      <!-- Arrow keys (dark) -->
+      <TresMesh :position="[0.45, 0.055, 0.27]">
+        <TresBoxGeometry :args="[0.07, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#2C3E50'" :roughness="0.45" />
+      </TresMesh>
+      <TresMesh :position="[0.58, 0.055, 0.27]">
+        <TresBoxGeometry :args="[0.07, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#2C3E50'" :roughness="0.45" />
+      </TresMesh>
+      <TresMesh :position="[0.71, 0.055, 0.27]">
+        <TresBoxGeometry :args="[0.07, 0.035, 0.07]" />
+        <TresMeshStandardMaterial :color="'#2C3E50'" :roughness="0.45" />
+      </TresMesh>
+      
+      <!-- USB Cable -->
+      <TresMesh :position="[0, 0, -0.35]">
+        <TresCylinderGeometry :args="[0.02, 0.02, 0.25, 8]" />
+        <TresMeshStandardMaterial :color="'#E0E0E0'" :roughness="0.5" />
       </TresMesh>
     </TresGroup>
     
-    <!-- ========== MOUSE ========== -->
-    <TresGroup :position="[0.8, 0.1, 0.9]">
+    <!-- ========== SIMPLE WIRELESS MOUSE ========== -->
+    <TresGroup :position="[0.8, 0.05, 0.85]">
+      <!-- Main body -->
       <TresMesh>
-        <TresBoxGeometry :args="[0.25, 0.07, 0.4]" />
-        <TresMeshStandardMaterial :color="'#2D2D2D'" :roughness="0.35" />
+        <TresBoxGeometry :args="[0.28, 0.1, 0.45]" />
+        <TresMeshStandardMaterial :color="'#4A4A4A'" :roughness="0.4" :metalness="0.1" />
       </TresMesh>
-      <TresMesh :position="[0, 0.04, -0.1]">
-        <TresCylinderGeometry :args="[0.018, 0.018, 0.07, 12]" />
-        <TresMeshStandardMaterial :color="'#424242'" />
+      
+      <!-- Top curved part -->
+      <TresMesh :position="[0, 0.04, 0.03]">
+        <TresBoxGeometry :args="[0.26, 0.04, 0.38]" />
+        <TresMeshStandardMaterial :color="'#4D4D4D'" :roughness="0.35" :metalness="0.1" />
       </TresMesh>
-      <!-- RGB strip -->
-      <TresMesh :position="[0, 0.01, 0.15]">
-        <TresPlaneGeometry :args="[0.2, 0.05]" />
-        <TresMeshBasicMaterial 
-          :color="getLedColor(15)"
-          :opacity="0.6"
-          :transparent="true"
-        />
+      
+      <!-- Left click -->
+      <TresMesh :position="[-0.055, 0.075, -0.1]">
+        <TresBoxGeometry :args="[0.1, 0.015, 0.2]" />
+        <TresMeshStandardMaterial :color="'#3D3D3D'" :roughness="0.3" />
+      </TresMesh>
+      
+      <!-- Right click -->
+      <TresMesh :position="[0.055, 0.075, -0.1]">
+        <TresBoxGeometry :args="[0.1, 0.015, 0.2]" />
+        <TresMeshStandardMaterial :color="'#3D3D3D'" :roughness="0.3" />
+      </TresMesh>
+      
+      <!-- Scroll wheel -->
+      <TresMesh :position="[0, 0.08, -0.08]" :rotation="[Math.PI / 2, 0, 0]">
+        <TresCylinderGeometry :args="[0.025, 0.025, 0.03, 16]" />
+        <TresMeshStandardMaterial :color="'#606060'" :roughness="0.3" :metalness="0.5" />
+      </TresMesh>
+    </TresGroup>
+    
+    <!-- ========== MOUSEPAD ========== -->
+    <TresGroup :position="[0.8, 0.02, 0.85]">
+      <TresMesh>
+        <TresBoxGeometry :args="[0.9, 0.008, 0.65]" />
+        <TresMeshStandardMaterial :color="'#2A2A2A'" :roughness="0.85" />
       </TresMesh>
     </TresGroup>
     
@@ -445,7 +590,7 @@ onUnmounted(() => {
       
       <!-- Ventilation holes pattern -->
       <TresMesh 
-        v-for="(row, ri) in 12" 
+        v-for="(_row, ri) in 12" 
         :key="`vent-row-${ri}`"
         :position="[-0.5, -0.4 + ri * 0.28, 0.64]"
       >

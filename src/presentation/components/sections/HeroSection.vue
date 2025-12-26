@@ -8,7 +8,7 @@ import { useQuality } from '@application/composables/useQuality'
 
 const { t } = useI18n()
 const { scrollToNext } = useScrollSection()
-const { quality } = useQuality()
+const { quality, renderSettings } = useQuality()
 
 const isLoaded = ref(false)
 const isMounted = ref(false)
@@ -30,10 +30,18 @@ const handleCanvasReady = () => {
         v-if="isMounted"
         :clear-color="'#0A0A0A'"
         :alpha="true"
+        :dpr="renderSettings.dpr"
+        :antialias="renderSettings.antialias"
+        :power-preference="renderSettings.powerPreference"
         @ready="handleCanvasReady"
       >
         <HeroScene :quality="quality" />
       </TresCanvas>
+    </div>
+
+    <!-- Update Date -->
+    <div class="absolute top-3 left-3 z-10 opacity-0 animate-fadeIn [animation-delay:1.5s]">
+      <span class="font-(--font-code) text-xs text-white/40">{{ t('hero.lastUpdate') }} 26/12/24</span>
     </div>
 
     <!-- Content Overlay -->
