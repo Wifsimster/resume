@@ -16,23 +16,28 @@ export default {
     unlocked: 'Achievement unlocked!',
     explorer: {
       name: 'Explorer',
-      desc: 'Visited all sections'
+      desc: 'Visited all sections',
+      hint: 'Visit every section of the site...'
     },
     bookworm: {
       name: 'Bookworm',
-      desc: 'Viewed all books'
+      desc: 'Viewed all books',
+      hint: 'Check out all the books in the library...'
     },
     codeHunter: {
       name: 'Code Hunter',
-      desc: 'Found the Konami code'
+      desc: 'Found the Konami code',
+      hint: 'Try the classic gaming sequence...'
     },
     networker: {
       name: 'Networker',
-      desc: 'Clicked all social links'
+      desc: 'Clicked all social links',
+      hint: 'Connect through all social platforms...'
     },
     speedRunner: {
       name: 'Speed Runner',
-      desc: 'Scrolled through site in less than 30s'
+      desc: 'Scrolled through site in less than 30s',
+      hint: 'Complete the journey in under 30 seconds...'
     },
     completionist: {
       name: 'Completionist',
@@ -56,23 +61,28 @@ export default {
     },
     earlyBird: {
       name: 'Early Bird',
-      desc: 'Visited between 5AM and 8AM'
+      desc: 'Visited between 5AM and 8AM',
+      hint: 'Visit during the early morning hours...'
     },
     weekendWarrior: {
       name: 'Weekend Warrior',
-      desc: 'Visited on a weekend'
+      desc: 'Visited on a weekend',
+      hint: 'Come back on Saturday or Sunday...'
     },
     timeSpent: {
       name: 'Deep Diver',
-      desc: 'Spent 5+ minutes exploring'
+      desc: 'Spent 5+ minutes exploring',
+      hint: 'Take your time, explore for 5+ minutes...'
     },
     scrollMaster: {
       name: 'Scroll Master',
-      desc: 'Scrolled over 10,000 pixels'
+      desc: 'Scrolled over 10,000 pixels',
+      hint: 'Keep scrolling, reach 10,000 pixels...'
     },
     clickHappy: {
       name: 'Click Happy',
-      desc: 'Clicked 50 times'
+      desc: 'Clicked 50 times',
+      hint: 'Click around, reach 50 clicks...'
     },
     qualityToggler: {
       name: 'Graphics Guru',
@@ -80,7 +90,8 @@ export default {
     },
     makerFan: {
       name: 'Maker Fan',
-      desc: 'Explored the maker section'
+      desc: 'Explored the maker section',
+      hint: 'Discover the maker section...'
     },
     patience: {
       name: 'Patient One',
@@ -92,7 +103,8 @@ export default {
     },
     githubVisitor: {
       name: 'Open Sourcer',
-      desc: 'Clicked on a GitHub link'
+      desc: 'Clicked on a GitHub link',
+      hint: 'Check out the open source projects...'
     }
   },
   hero: {
@@ -270,6 +282,7 @@ export default {
     email: 'Email',
     github: 'GitHub',
     linkedin: 'LinkedIn',
+    achievementsPreview: 'More achievements to unlock',
     form: {
       name: 'Your name',
       email: 'Your email',

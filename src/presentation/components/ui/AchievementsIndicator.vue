@@ -23,6 +23,26 @@ const sortedAchievements = computed(() => {
     return 0
   })
 })
+
+// Achievements that should show hints when locked
+const achievementsWithHints = [
+  'codeHunter',
+  'speedRunner',
+  'explorer',
+  'bookworm',
+  'networker',
+  'scrollMaster',
+  'clickHappy',
+  'timeSpent',
+  'earlyBird',
+  'weekendWarrior',
+  'makerFan',
+  'githubVisitor'
+]
+
+const hasHint = (id: string) => {
+  return achievementsWithHints.includes(id)
+}
 </script>
 
 <template>
@@ -77,17 +97,17 @@ const sortedAchievements = computed(() => {
               >
                 <div 
                   class="text-[1.75rem] sm:text-2xl w-12 sm:w-10 h-12 sm:h-10 flex items-center justify-center bg-black/30 rounded-xl shrink-0"
-                  :class="achievement.unlocked ? 'bg-amber-400/10 animate-icon-glow' : ''"
-                >{{ achievement.unlocked ? achievement.icon : '🔒' }}</div>
+                  :class="achievement.unlocked ? 'bg-amber-400/10 animate-icon-glow' : hasHint(achievement.id) ? 'bg-purple-400/10' : ''"
+                >{{ achievement.unlocked ? achievement.icon : (hasHint(achievement.id) ? achievement.icon : '🔒') }}</div>
                 <div class="flex-1 min-w-0 flex flex-col gap-0.5">
                   <span 
                     class="font-(--font-display) text-[0.95rem] font-semibold"
-                    :class="achievement.unlocked ? 'text-(--color-achievement-gold)' : 'text-(--color-text-primary)'"
+                    :class="achievement.unlocked ? 'text-(--color-achievement-gold)' : hasHint(achievement.id) ? 'text-purple-400/70' : 'text-(--color-text-primary)'"
                   >
-                    {{ achievement.unlocked ? t(`achievements.${achievement.id}.name`) : '???' }}
+                    {{ achievement.unlocked ? t(`achievements.${achievement.id}.name`) : (hasHint(achievement.id) ? t(`achievements.${achievement.id}.name`) : '???') }}
                   </span>
                   <span class="text-xs text-(--color-text-muted) leading-tight">
-                    {{ achievement.unlocked ? t(`achievements.${achievement.id}.desc`) : t('achievements.locked') }}
+                    {{ achievement.unlocked ? t(`achievements.${achievement.id}.desc`) : (hasHint(achievement.id) ? t(`achievements.${achievement.id}.hint`) : t('achievements.locked')) }}
                   </span>
                 </div>
                 <div 

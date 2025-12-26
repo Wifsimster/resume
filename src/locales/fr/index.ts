@@ -16,23 +16,28 @@ export default {
     unlocked: 'Succès débloqué !',
     explorer: {
       name: 'Explorateur',
-      desc: 'Visité toutes les sections'
+      desc: 'Visité toutes les sections',
+      hint: 'Visitez chaque section du site...'
     },
     bookworm: {
       name: 'Rat de bibliothèque',
-      desc: 'Consulté tous les livres'
+      desc: 'Consulté tous les livres',
+      hint: 'Découvrez tous les livres de la bibliothèque...'
     },
     codeHunter: {
       name: 'Chasseur de code',
-      desc: 'Trouvé le code Konami'
+      desc: 'Trouvé le code Konami',
+      hint: 'Essayez la séquence de jeu classique...'
     },
     networker: {
       name: 'Connecté',
-      desc: 'Cliqué sur tous les liens sociaux'
+      desc: 'Cliqué sur tous les liens sociaux',
+      hint: 'Connectez-vous via toutes les plateformes...'
     },
     speedRunner: {
       name: 'Speed Runner',
-      desc: 'Parcouru le site en moins de 30s'
+      desc: 'Parcouru le site en moins de 30s',
+      hint: 'Terminez le parcours en moins de 30 secondes...'
     },
     completionist: {
       name: 'Complétionniste',
@@ -56,23 +61,28 @@ export default {
     },
     earlyBird: {
       name: 'Lève-tôt',
-      desc: 'Visité entre 5h et 8h du matin'
+      desc: 'Visité entre 5h et 8h du matin',
+      hint: 'Visitez tôt le matin...'
     },
     weekendWarrior: {
       name: 'Guerrier du weekend',
-      desc: 'Visité un weekend'
+      desc: 'Visité un weekend',
+      hint: 'Revenez un samedi ou dimanche...'
     },
     timeSpent: {
       name: 'Plongeur',
-      desc: 'Passé plus de 5 minutes à explorer'
+      desc: 'Passé plus de 5 minutes à explorer',
+      hint: 'Prenez votre temps, explorez 5+ minutes...'
     },
     scrollMaster: {
       name: 'Maître du scroll',
-      desc: 'Scrollé plus de 10 000 pixels'
+      desc: 'Scrollé plus de 10 000 pixels',
+      hint: 'Continuez à scroller, atteignez 10 000 pixels...'
     },
     clickHappy: {
       name: 'Cliqueur fou',
-      desc: 'Cliqué 50 fois'
+      desc: 'Cliqué 50 fois',
+      hint: 'Cliquez partout, atteignez 50 clics...'
     },
     qualityToggler: {
       name: 'Gourou graphique',
@@ -80,7 +90,8 @@ export default {
     },
     makerFan: {
       name: 'Fan de maker',
-      desc: 'Exploré la section maker'
+      desc: 'Exploré la section maker',
+      hint: 'Découvrez la section maker...'
     },
     patience: {
       name: 'Patient',
@@ -92,7 +103,8 @@ export default {
     },
     githubVisitor: {
       name: 'Open Sourceur',
-      desc: 'Cliqué sur un lien GitHub'
+      desc: 'Cliqué sur un lien GitHub',
+      hint: 'Découvrez les projets open source...'
     }
   },
   hero: {
@@ -270,6 +282,7 @@ export default {
     email: 'Email',
     github: 'GitHub',
     linkedin: 'LinkedIn',
+    achievementsPreview: 'Plus de succès à débloquer',
     form: {
       name: 'Votre nom',
       email: 'Votre email',

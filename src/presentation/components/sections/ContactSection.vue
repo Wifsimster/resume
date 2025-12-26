@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAchievements } from '@application/composables/useAchievements'
 
 const { t } = useI18n()
-const { unlock } = useAchievements()
+const { unlock, achievements } = useAchievements()
 
 const linkedInUrl = 'https://www.linkedin.com/in/damien-battistella-%F0%9F%92%BB-67964115/'
 const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(linkedInUrl)}&bgcolor=FFFFFF&color=000000`
@@ -13,6 +13,34 @@ const openLinkedIn = () => {
   window.open(linkedInUrl, '_blank', 'noopener,noreferrer')
   unlock('networker')
 }
+
+// Achievements that should show hints when locked
+const achievementsWithHints = [
+  'codeHunter',
+  'speedRunner',
+  'explorer',
+  'bookworm',
+  'networker',
+  'scrollMaster',
+  'clickHappy',
+  'timeSpent',
+  'earlyBird',
+  'weekendWarrior',
+  'makerFan',
+  'githubVisitor'
+]
+
+const hasHint = (id: string) => {
+  return achievementsWithHints.includes(id)
+}
+
+// Get 3 random locked achievements with hints
+const lockedAchievementsPreview = computed(() => {
+  const locked = achievements.value
+    .filter(a => !a.unlocked && hasHint(a.id))
+    .slice(0, 3)
+  return locked
+})
 
 // Unlock contact achievement when section becomes visible
 onMounted(() => {
@@ -58,6 +86,27 @@ onMounted(() => {
           <p class="text-lg text-(--color-paper-cream) m-0">Damien Battistella</p>
           <span class="font-(--font-code) text-sm text-(--color-frontend-blue) mt-2">{{ t('contact.linkedin') }}
             →</span>
+        </div>
+      </div>
+
+      <!-- Locked Achievements Preview -->
+      <div v-if="lockedAchievementsPreview.length > 0" class="w-full max-w-[600px] mx-auto mb-8 px-4">
+        <div class="glass p-6 sm:p-4 rounded-xl border border-white/10">
+          <h3 class="text-center font-(--font-display) text-lg text-(--color-terminal-green) mb-4">
+            {{ t('contact.achievementsPreview') }}
+          </h3>
+          <div class="grid grid-cols-3 gap-4 sm:gap-2">
+            <div v-for="achievement in lockedAchievementsPreview" :key="achievement.id"
+              class="flex flex-col items-center gap-2 p-3 sm:p-2 rounded-lg bg-black/20 border border-purple-400/20 hover:border-purple-400/40 transition-all duration-150">
+              <div class="text-3xl sm:text-2xl opacity-70">{{ achievement.icon }}</div>
+              <span class="font-(--font-display) text-xs sm:text-[0.7rem] text-purple-400/70 text-center leading-tight">
+                {{ t(`achievements.${achievement.id}.name`) }}
+              </span>
+              <span class="text-[0.65rem] sm:text-[0.6rem] text-white/50 text-center leading-tight">
+                {{ t(`achievements.${achievement.id}.hint`) }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
