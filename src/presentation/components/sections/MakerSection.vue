@@ -83,44 +83,17 @@ onUnmounted(() => {
         :antialias="renderSettings.antialias"
         :power-preference="renderSettings.powerPreference"
       >
-        <MakerScene :quality="quality" @hover-unit="handleHoverUnit" />
+        <MakerScene 
+          :quality="quality" 
+          :projects="projects"
+          :tech-stack="techStack"
+          :title="t('maker.title')"
+          :subtitle="t('maker.subtitle')"
+          @hover-unit="handleHoverUnit" 
+        />
       </TresCanvas>
     </div>
 
-    <!-- Compact Content Overlay -->
-    <div class="section-content flex items-end justify-start pb-12 pointer-events-none pl-4 md:pl-8 xl:pl-12">
-      <div class="bg-[#0A0A0A]/75 backdrop-blur-md border border-white/8 rounded-2xl py-6 px-8 max-w-[500px] xl:max-w-[600px] 2xl:max-w-[700px] pointer-events-auto md:py-5 md:px-6">
-        <div class="text-center mb-4">
-          <h2 class="text-[var(--color-copper)] mb-2">{{ t('maker.title') }}</h2>
-          <p class="font-(--font-display) text-2xl text-white/70">{{ t('maker.subtitle') }}</p>
-        </div>
-        
-        <!-- Real DIY Projects -->
-        <div class="flex flex-wrap gap-2 mb-4">
-          <span 
-            v-for="project in projects" 
-            :key="project.label"
-            class="inline-flex items-center gap-1.5 py-2 px-3 bg-[#B87333]/15 border border-[#B87333]/30 rounded-lg text-sm text-[var(--color-paper-cream)] transition-all duration-200 hover:bg-[#B87333]/25 hover:border-[#B87333]/50"
-          >
-            <span class="text-base">{{ project.icon }}</span>
-            <span class="text-xs">{{ project.label }}</span>
-            <span class="text-[10px] text-white/40 ml-1">{{ project.year }}</span>
-          </span>
-        </div>
-        
-        <!-- Tech Stack -->
-        <div class="flex flex-wrap gap-2">
-          <span 
-            v-for="tech in techStack" 
-            :key="tech.label"
-            class="inline-flex items-center gap-1.5 py-1 px-2.5 bg-white/5 border border-white/10 rounded-full text-xs text-white/60 transition-all duration-200 hover:bg-white/10"
-          >
-            <span class="text-sm">{{ tech.icon }}</span>
-            <span>{{ tech.label }}</span>
-          </span>
-        </div>
-      </div>
-    </div>
     
     <!-- Tooltip for server rack units -->
     <div
