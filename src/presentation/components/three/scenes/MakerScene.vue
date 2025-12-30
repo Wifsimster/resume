@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import { Raycaster, Vector2 } from 'three'
 import { useTres } from '@tresjs/core'
 import type { QualityLevel } from '@application/composables/useQuality'
@@ -137,7 +137,6 @@ let startTime = 0
 
 const anim = reactive({
   time: 0,
-  ledPhase: 0,
   serverLeds: [] as number[],
   fanRotation: 0,
   hddActivity: 0,
@@ -149,8 +148,7 @@ const visibleRackUnits = computed(() =>
   props.quality === 'high' ? rackUnits : rackUnits.slice(0, 5)
 )
 
-// LED strip configuration
-const ledCount = computed(() => props.quality === 'high' ? 30 : 18)
+// LED strip configuration (removed - not used)
 
 // Network cables
 const networkCables = computed(() => props.quality === 'high' ? 6 : 3)
@@ -179,8 +177,7 @@ void _screenLines // Suppress unused warning
 const updateAnimations = (elapsed: number, _delta: number) => {
   anim.time = elapsed
   
-  // LED rainbow flow
-  anim.ledPhase = elapsed * 45
+  // LED rainbow flow (removed - not used)
   
   // Server LEDs blinking pattern (kept for compatibility)
   anim.serverLeds = visibleRackUnits.value.map((_, i) => {
@@ -207,18 +204,14 @@ const updateAnimations = (elapsed: number, _delta: number) => {
   }
 }
 
-// LED color with smooth gradient (unused but kept for potential future use)
-const _getLedColor = (index: number) => {
-  const hue = (index * (360 / ledCount.value) + anim.ledPhase) % 360
-  return `hsl(${hue}, 100%, 55%)`
-}
-void _getLedColor // Suppress unused warning
+// LED color with smooth gradient (removed - not used)
 
-// Server LED state
-const getServerLedState = (serverIndex: number, ledIndex: number) => {
+// Server LED state (unused but kept for potential future use)
+const _getServerLedState = (serverIndex: number, ledIndex: number) => {
   const pattern = Math.sin(anim.time * (3 + ledIndex * 0.8) + serverIndex * 2 + ledIndex) > 0.3
   return pattern ? 1 : 0.15
 }
+void _getServerLedState // Suppress unused warning
 
 // Dust particle animation
 const getDustPos = (particle: typeof dustParticles.value[0]) => {
@@ -231,9 +224,11 @@ const getDustPos = (particle: typeof dustParticles.value[0]) => {
 
 // Mouse move handler for raycasting
 const handleMouseMove = (event: MouseEvent) => {
-  if (!camera.value || !renderer.value || !sceneRef.value) return
+  const rendererInstance = (renderer as any).value
+  if (!camera.value || !rendererInstance || !sceneRef.value) return
   
-  const canvas = renderer.value.domElement
+  // Access renderer's domElement (TresJS compatibility)
+  const canvas = rendererInstance.domElement
   const rect = canvas.getBoundingClientRect()
   
   // Calculate normalized device coordinates
@@ -263,11 +258,13 @@ const handleMouseMove = (event: MouseEvent) => {
     
     // Check if this object or any parent is in our map
     while (current && !unitId) {
+      const currentObj = current
       unitId = Array.from(serverUnitMeshes.value.entries())
         .find(([_, mesh]) => {
           const meshObj = mesh?.value || mesh
-          return meshObj === current || (meshObj && meshObj.children && meshObj.children.includes(current))
+          return meshObj === currentObj || (meshObj && meshObj.children && meshObj.children.includes(currentObj))
         })?.[0] || null
+      // @ts-expect-error - parent can be null, but while loop handles it
       current = current.parent
     }
     
@@ -309,7 +306,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <TresPerspectiveCamera :position="[1.5, 2.2, 7]" :look-at="[1.2, 1.5, 0]" />
+  <TresPerspectiveCamera :position="[-1.5, 1.3, 4.5]" :look-at="[-1, 1.6, 0]" />
   
   <!-- Enhanced Lighting -->
   <TresAmbientLight :intensity="1.0" />
@@ -319,9 +316,10 @@ onUnmounted(() => {
   <TresPointLight :position="[-1, 2.5, -0.5]" :intensity="2" color="#FFFFFF" />
   <TresPointLight :position="[1, 2.5, -0.5]" :intensity="2" color="#FFFFFF" />
   <!-- Server rack lighting -->
-  <TresPointLight :position="[3.5, 2, 0]" :intensity="3" :color="colors.serverBlue" />
-  <TresPointLight :position="[3, 1, 1]" :intensity="2" :color="colors.serverGreen" />
-  <TresPointLight :position="[4, 3, 0]" :intensity="2" color="#FFFFFF" />
+  <TresPointLight :position="[3.5, 2, 0]" :intensity="4" :color="colors.serverBlue" />
+  <TresPointLight :position="[3, 1, 1]" :intensity="3" :color="colors.serverGreen" />
+  <TresPointLight :position="[4, 3, 0]" :intensity="3" color="#FFFFFF" />
+  <TresPointLight :position="[3.5, 2.5, 0.5]" :intensity="2.5" color="#FFFFFF" />
   <!-- General fill lights -->
   <TresPointLight :position="[0, 3, 2]" :intensity="1.5" :color="colors.wifi" />
   <TresPointLight :position="[-2, 1, 3]" :intensity="1.5" color="#FFFFFF" />
@@ -332,7 +330,7 @@ onUnmounted(() => {
   <TresGroup ref="sceneRef">
     
     <!-- ========== LARGE DESK ========== -->
-    <TresGroup :position="[-1, 0, 0.5]">
+    <TresGroup :position="[-2, 0, 0.5]">
       <!-- Desktop surface -->
       <TresMesh :position="[0, 0, 0]">
         <TresBoxGeometry :args="[6, 0.1, 2.5]" />
@@ -359,7 +357,7 @@ onUnmounted(() => {
     <!-- ========== THREE MONITORS ========== -->
     
     <!-- Left Monitor -->
-    <TresGroup :position="[-3.2, 1.6, -0.8]" :rotation="[0, 0.25, 0]">
+    <TresGroup :position="[-4.2, 1.6, -0.8]" :rotation="[0, 0.25, 0]">
       <!-- Monitor stand -->
       <TresMesh :position="[0, -0.7, 0.2]">
         <TresCylinderGeometry :args="[0.12, 0.2, 0.12, 16]" />
@@ -408,7 +406,7 @@ onUnmounted(() => {
     </TresGroup>
     
     <!-- Center Monitor (Main - Larger) -->
-    <TresGroup :position="[-1, 1.8, -1]">
+    <TresGroup :position="[-2, 1.8, -1]">
       <!-- Monitor stand -->
       <TresMesh :position="[0, -0.85, 0.25]">
         <TresCylinderGeometry :args="[0.15, 0.28, 0.15, 16]" />
@@ -458,7 +456,7 @@ onUnmounted(() => {
     </TresGroup>
     
     <!-- Right Monitor -->
-    <TresGroup :position="[1.2, 1.6, -0.8]" :rotation="[0, -0.25, 0]">
+    <TresGroup :position="[0.2, 1.6, -0.8]" :rotation="[0, -0.25, 0]">
       <!-- Monitor stand -->
       <TresMesh :position="[0, -0.7, 0.2]">
         <TresCylinderGeometry :args="[0.12, 0.2, 0.12, 16]" />
@@ -517,7 +515,7 @@ onUnmounted(() => {
     </TresGroup>
     
     <!-- ========== 75% MECHANICAL KEYBOARD (White/Blue theme) ========== -->
-    <TresGroup :position="[-1, 0.08, 0.8]">
+    <TresGroup :position="[-2, 0.08, 0.8]">
       <!-- Main keyboard body - white/cream -->
       <TresMesh>
         <TresBoxGeometry :args="[1.7, 0.07, 0.55]" />
@@ -687,7 +685,7 @@ onUnmounted(() => {
     </TresGroup>
     
     <!-- ========== SIMPLE WIRELESS MOUSE ========== -->
-    <TresGroup :position="[0.8, 0.05, 0.85]">
+    <TresGroup :position="[-0.2, 0.05, 0.85]">
       <!-- Main body -->
       <TresMesh>
         <TresBoxGeometry :args="[0.28, 0.1, 0.45]" />
@@ -720,7 +718,7 @@ onUnmounted(() => {
     </TresGroup>
     
     <!-- ========== MOUSEPAD ========== -->
-    <TresGroup :position="[0.8, 0.02, 0.85]">
+    <TresGroup :position="[-0.2, 0.02, 0.85]">
       <TresMesh>
         <TresBoxGeometry :args="[0.9, 0.008, 0.65]" />
         <TresMeshStandardMaterial :color="'#2A2A2A'" :roughness="0.85" />
@@ -728,7 +726,7 @@ onUnmounted(() => {
     </TresGroup>
     
     <!-- ========== COFFEE MUG ========== -->
-    <TresGroup :position="[1.8, 0.22, 0.5]">
+    <TresGroup :position="[0.8, 0.22, 0.5]">
       <TresMesh>
         <TresCylinderGeometry :args="[0.1, 0.08, 0.25, 16]" />
         <TresMeshStandardMaterial :color="'#1A1A1A'" :roughness="0.5" />
@@ -774,7 +772,7 @@ onUnmounted(() => {
       
       <!-- Server units - Actual equipment -->
       <TresGroup 
-        v-for="(unit, ui) in visibleRackUnits" 
+        v-for="unit in visibleRackUnits" 
         :key="`unit-${unit.id}`"
         :position="[0, unit.y, 0.4]"
         :ref="(el: any) => { 

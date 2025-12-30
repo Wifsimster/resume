@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { TresCanvas } from '@tresjs/core'
 import HeroScene from '@presentation/components/three/scenes/HeroScene.vue'
@@ -12,6 +12,14 @@ const { quality, renderSettings } = useQuality()
 
 const isLoaded = ref(false)
 const isMounted = ref(false)
+
+const currentDate = computed(() => {
+  const now = new Date()
+  const day = String(now.getDate()).padStart(2, '0')
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const year = String(now.getFullYear()).slice(-2)
+  return `${day}/${month}/${year}`
+})
 
 onMounted(() => {
   isMounted.value = true
@@ -41,7 +49,7 @@ const handleCanvasReady = () => {
 
     <!-- Update Date -->
     <div class="absolute top-3 left-3 z-10 opacity-0 animate-fadeIn [animation-delay:1.5s]">
-      <span class="font-(--font-code) text-xs text-white/40">{{ t('hero.lastUpdate') }} 26/12/24</span>
+      <span class="font-(--font-code) text-xs text-white/40">{{ t('hero.lastUpdate') }} {{ currentDate }}</span>
     </div>
 
     <!-- Content Overlay -->

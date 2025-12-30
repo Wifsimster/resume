@@ -62,22 +62,29 @@ const handleScroll = () => {
   
   // If no section is significantly visible, find the one closest to viewport center
   if (!bestMatch) {
+    let closest: { index: number; distance: number } | null = null
     sectionElements.forEach((el, index) => {
       const rect = el.getBoundingClientRect()
       const sectionCenter = rect.top + rect.height / 2
       const distance = Math.abs(viewportMiddle - sectionCenter)
       
-      if (!bestMatch || distance < bestMatch.distance) {
-        bestMatch = { index, distance }
+      if (!closest || distance < closest.distance) {
+        closest = { index, distance }
       }
     })
+    if (closest) {
+      bestMatch = closest
+    }
   }
   
-  if (bestMatch && currentSectionIndex.value !== bestMatch.index) {
-    currentSectionIndex.value = bestMatch.index
-    const sectionId = sectionElements[bestMatch.index].getAttribute('data-section')
-    if (sectionId) {
-      markSectionVisited(sectionId)
+  if (bestMatch !== null) {
+    const match = bestMatch as { index: number; distance: number }
+    if (currentSectionIndex.value !== match.index) {
+      currentSectionIndex.value = match.index
+      const sectionId = sectionElements[match.index].getAttribute('data-section')
+      if (sectionId) {
+        markSectionVisited(sectionId)
+      }
     }
   }
   

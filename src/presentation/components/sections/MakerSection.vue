@@ -88,8 +88,8 @@ onUnmounted(() => {
     </div>
 
     <!-- Compact Content Overlay -->
-    <div class="section-content flex items-end justify-center pb-12 pointer-events-none">
-      <div class="bg-[#0A0A0A]/75 backdrop-blur-md border border-white/8 rounded-2xl py-6 px-8 max-w-[700px] xl:max-w-[900px] 2xl:max-w-[1100px] pointer-events-auto md:mx-4 md:py-5 md:px-6">
+    <div class="section-content flex items-end justify-start pb-12 pointer-events-none pl-4 md:pl-8 xl:pl-12">
+      <div class="bg-[#0A0A0A]/75 backdrop-blur-md border border-white/8 rounded-2xl py-6 px-8 max-w-[500px] xl:max-w-[600px] 2xl:max-w-[700px] pointer-events-auto md:py-5 md:px-6">
         <div class="text-center mb-4">
           <h2 class="text-[var(--color-copper)] mb-2">{{ t('maker.title') }}</h2>
           <p class="font-(--font-display) text-2xl text-white/70">{{ t('maker.subtitle') }}</p>
