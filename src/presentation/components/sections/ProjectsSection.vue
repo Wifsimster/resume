@@ -22,7 +22,7 @@ const openGithubProfile = () => {
 </script>
 
 <template>
-  <section class="section bg-transparent" data-section="projects">
+  <section id="projects" class="section bg-transparent" data-section="projects">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas
@@ -44,7 +44,7 @@ const openGithubProfile = () => {
       </div>
 
       <div class="flex flex-col items-center gap-4 w-full px-4 sm:px-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full max-w-[400px] sm:max-w-[640px] lg:max-w-[960px]">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 w-full max-w-[400px] sm:max-w-[640px] lg:max-w-[960px] xl:max-w-[1280px] 2xl:max-w-[1600px]">
           <div 
             v-for="project in resumeData.projects" 
             :key="project.id"

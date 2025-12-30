@@ -19,6 +19,74 @@ export const resumeData: ResumeData = {
     { id: 'testing', icon: '🧪', color: '#15803D' }
   ],
 
+  behaviors: [
+    { id: 'autonome', icon: '🎯', color: '#FF6B35', category: 'agir' },
+    { id: 'calme', icon: '🧘', color: '#42B883', category: 'ressentir' },
+    { id: 'conciliant', icon: '🤝', color: '#42B883', category: 'ressentir' },
+    { id: 'consciencieux', icon: '📋', color: '#FFD93D', category: 'reflechir' },
+    { id: 'creatif', icon: '🎨', color: '#FFD93D', category: 'reflechir' },
+    { id: 'curieux', icon: '🤔', color: '#FFD93D', category: 'reflechir' },
+    { id: 'direct', icon: '➡️', color: '#FF6B35', category: 'agir' },
+    { id: 'enthousiaste', icon: '⭐', color: '#42B883', category: 'ressentir' },
+    { id: 'observateur', icon: '👁️', color: '#FFD93D', category: 'reflechir' }
+  ],
+
+  strengths: [
+    {
+      id: 'relationships',
+      category: 'relationships',
+      icon: '💚',
+      description: 'Il sait garder une distance affective dans ses relations, s\'en protéger. Il est sûr de ses décisions, et attaché à tenir sa ligne de conduite. Il va à l\'essentiel dans ses propos, ne cherche pas à en rajouter.'
+    },
+    {
+      id: 'work',
+      category: 'work',
+      icon: '💼',
+      description: 'Il est tenace, ne se décourage pas facilement. Il a une facilité pour faire face à plusieurs projets de front. Il est force de proposition, produit facilement de nouvelles idées.'
+    },
+    {
+      id: 'emotions',
+      category: 'emotions',
+      icon: '❤️',
+      description: 'Il est serein, ne se laisse pas perturber par les événements extérieurs. Il dégage de l\'enthousiasme, voit les choses positivement. Il maîtrise ses émotions, ne les répercute pas sur les autres.'
+    }
+  ],
+
+  improvementAreas: [
+    {
+      id: 'empathie',
+      description: 'Il pourrait quelquefois faire preuve de davantage d\'empathie vis-à-vis des personnes qui l\'entourent, être moins "dur" avec elles.'
+    },
+    {
+      id: 'ecoute',
+      description: 'Il gagnerait à poser des questions aux autres et à s\'enrichir de leurs retours, plutôt que de se centrer uniquement sur sa façon d\'envisager les situations.'
+    },
+    {
+      id: 'delegation',
+      description: 'Il gagnerait à laisser aux autres le soin de se charger de certaines tâches plutôt que de chercher à toutes les réaliser par lui-même.'
+    }
+  ],
+
+  talentTags: [
+    { id: 'conciliant', label: 'Conciliant' },
+    { id: 'observateur', label: 'Observateur' },
+    { id: 'direct', label: 'Direct' },
+    { id: 'impartial', label: 'Impartial' },
+    { id: 'confiant', label: 'Confiant' },
+    { id: 'tolerant', label: 'Tolérant' },
+    { id: 'hyperactif', label: 'Hyperactif' },
+    { id: 'curieux', label: 'Curieux' },
+    { id: 'creatif', label: 'Créatif' },
+    { id: 'organise', label: 'Organisé' },
+    { id: 'consciencieux', label: 'Consciencieux' },
+    { id: 'perseverant', label: 'Persévérant' },
+    { id: 'entreprenant', label: 'Entreprenant' },
+    { id: 'calme', label: 'Calme' },
+    { id: 'enthousiaste', label: 'Enthousiaste' },
+    { id: 'maitreDeSoi', label: 'Maître De Soi' },
+    { id: 'stable', label: 'Stable' }
+  ],
+
   experiences: [
     {
       id: 'dedalus-lead',

@@ -15,7 +15,16 @@ const router = createRouter({
   ],
   scrollBehavior(to, _from, savedPosition) {
     if (to.hash) {
-      return { el: to.hash, behavior: 'smooth' }
+      // Try to find element by id first
+      const element = document.querySelector(to.hash)
+      if (element) {
+        return { el: element, behavior: 'smooth' }
+      }
+      // Fallback: try to find by data-section
+      const sectionElement = document.querySelector(`[data-section="${to.hash.slice(1)}"]`)
+      if (sectionElement) {
+        return { el: sectionElement, behavior: 'smooth' }
+      }
     }
     if (savedPosition) {
       return savedPosition

@@ -51,7 +51,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="section bg-transparent relative" data-section="maker">
+  <section id="maker" class="section bg-transparent relative" data-section="maker">
     <!-- 3D Canvas - Full background -->
     <div class="section-canvas">
       <TresCanvas
@@ -67,7 +67,7 @@ onMounted(() => {
 
     <!-- Compact Content Overlay -->
     <div class="section-content flex items-end justify-center pb-12 pointer-events-none">
-      <div class="bg-[#0A0A0A]/75 backdrop-blur-md border border-white/8 rounded-2xl py-6 px-8 max-w-[700px] pointer-events-auto md:mx-4 md:py-5 md:px-6">
+      <div class="bg-[#0A0A0A]/75 backdrop-blur-md border border-white/8 rounded-2xl py-6 px-8 max-w-[700px] xl:max-w-[900px] 2xl:max-w-[1100px] pointer-events-auto md:mx-4 md:py-5 md:px-6">
         <div class="text-center mb-4">
           <h2 class="text-(--color-copper) mb-2">{{ t('maker.title') }}</h2>
           <p class="font-(--font-display) text-2xl text-white/70">{{ t('maker.subtitle') }}</p>

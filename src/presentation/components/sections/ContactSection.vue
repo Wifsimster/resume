@@ -64,7 +64,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="section bg-transparent min-h-screen" data-section="contact">
+  <section id="contact" class="section bg-transparent min-h-screen" data-section="contact">
     <!-- Content -->
     <div class="section-content flex flex-col justify-center items-center h-full">
       <div class="text-center mb-12">
@@ -73,7 +73,7 @@ onMounted(() => {
       </div>
 
       <div
-        class="glass max-w-[400px] mx-auto mb-12 md:mx-4 sm:mx-2 sm:mb-8 p-8 sm:p-6 flex flex-col items-center gap-6 cursor-pointer transition-all duration-150 border-2 border-transparent hover:border-(--color-terminal-green) hover:-translate-y-1 hover:shadow-[var(--shadow-glow-green)]"
+        class="glass max-w-[400px] xl:max-w-[500px] 2xl:max-w-[600px] mx-auto mb-12 md:mx-4 sm:mx-2 sm:mb-8 p-8 sm:p-6 flex flex-col items-center gap-6 cursor-pointer transition-all duration-150 border-2 border-transparent hover:border-(--color-terminal-green) hover:-translate-y-1 hover:shadow-[var(--shadow-glow-green)]"
         @click="openLinkedIn">
         <div class="p-4 sm:p-3 bg-white rounded-xl">
           <img :src="qrCodeUrl" alt="LinkedIn QR Code"
@@ -90,7 +90,7 @@ onMounted(() => {
       </div>
 
       <!-- Locked Achievements Preview -->
-      <div v-if="lockedAchievementsPreview.length > 0" class="w-full max-w-[600px] mx-auto mb-8 px-4">
+      <div v-if="lockedAchievementsPreview.length > 0" class="w-full max-w-[600px] xl:max-w-[800px] 2xl:max-w-[1000px] mx-auto mb-8 px-4">
         <div class="glass p-6 sm:p-4 rounded-xl border border-white/10">
           <h3 class="text-center font-(--font-display) text-lg text-(--color-terminal-green) mb-4">
             {{ t('contact.achievementsPreview') }}

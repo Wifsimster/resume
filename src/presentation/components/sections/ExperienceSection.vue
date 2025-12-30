@@ -18,7 +18,7 @@ const getAchievements = (expId: string): string[] => {
 </script>
 
 <template>
-  <section class="section bg-transparent" data-section="experience">
+  <section id="experience" class="section bg-transparent" data-section="experience">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas
@@ -39,7 +39,7 @@ const getAchievements = (expId: string): string[] => {
         <p class="font-(--font-display) text-2xl text-white/70">{{ t('experience.subtitle') }}</p>
       </div>
 
-      <div class="max-w-[800px] mx-auto">
+      <div class="max-w-[800px] xl:max-w-[1000px] 2xl:max-w-[1200px] mx-auto">
         <div 
           v-for="exp in resumeData.experiences" 
           :key="exp.id"

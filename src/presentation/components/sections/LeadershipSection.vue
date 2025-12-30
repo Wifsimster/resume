@@ -27,7 +27,7 @@ const conferences = [
 </script>
 
 <template>
-  <section class="section bg-transparent" data-section="leadership">
+  <section id="leadership" class="section bg-transparent" data-section="leadership">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas
@@ -48,7 +48,7 @@ const conferences = [
         <p class="font-(--font-display) text-2xl text-white/70">{{ t('leadership.subtitle') }}</p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-[900px] w-full">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-[900px] xl:max-w-[1100px] 2xl:max-w-[1300px] w-full">
         <!-- Team Building Card -->
         <div class="glass p-5 flex flex-col gap-4">
           <h3 class="font-(--font-display) text-lg text-(--color-team-orange) pb-2 border-b border-orange-500/20">{{ t('leadership.mentoring') }}</h3>

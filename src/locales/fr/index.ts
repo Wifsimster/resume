@@ -145,7 +145,7 @@ export default {
   },
   about: {
     title: 'À propos',
-    subtitle: 'Construire, Partager, Expérimenter',
+    subtitle: 'Curieux, créatif et autonome, je transforme les défis techniques en opportunités d\'innovation',
     passions: {
       knowledge: 'Partage de connaissances',
       architecture: 'Architecture',
@@ -156,6 +156,73 @@ export default {
       ai: 'IA',
       devops: 'DevOps',
       testing: 'Testing'
+    },
+    behaviors: {
+      title: 'Comportements qui me motivent particulièrement',
+      diriger: 'Diriger',
+      concevoir: 'Concevoir',
+      curieux: 'Curieux',
+      observateur: 'Observateur',
+      creatif: 'Créatif',
+      consciencieux: 'Consciencieux',
+      anticiperObstacles: 'Anticiper les obstacles',
+      developperVision: 'Développer une vision',
+      innover: 'Innover',
+      entreprendre: 'Entreprendre',
+      autonome: 'Autonome',
+      direct: 'Direct',
+      conciliant: 'Conciliant',
+      perfectionnerControle: 'Perfectionner et contrôler',
+      reactivite: 'Faire preuve de réactivité',
+      gererStress: 'Gérer le stress',
+      calme: 'Calme',
+      enthousiaste: 'Enthousiaste',
+      stable: 'Stable'
+    },
+    strengths: {
+      title: 'Mes points forts',
+      relationships: {
+        title: 'Dans ma relation avec les autres',
+        description: 'Je sais garder une distance affective dans mes relations, m\'en protéger. Je suis sûr de mes décisions, et attaché à tenir ma ligne de conduite. Je vais à l\'essentiel dans mes propos, ne cherche pas à en rajouter.'
+      },
+      work: {
+        title: 'Dans ma manière de travailler',
+        description: 'Je suis tenace, ne me décourage pas facilement. J\'ai une facilité pour faire face à plusieurs projets de front. Je suis force de proposition, produis facilement de nouvelles idées.'
+      },
+      emotions: {
+        title: 'Dans ma gestion des émotions',
+        description: 'Je suis serein, ne me laisse pas perturber par les événements extérieurs. Je dégage de l\'enthousiasme, vois les choses positivement. Je maîtrise mes émotions, ne les répercute pas sur les autres.'
+      }
+    },
+    improvementAreas: {
+      title: 'Domaines d\'amélioration',
+      empathie: 'Je pourrais quelquefois faire preuve de davantage d\'empathie vis-à-vis des personnes qui m\'entourent, être moins "dur" avec elles.',
+      ecoute: 'Je gagnerais à poser des questions aux autres et à m\'enrichir de leurs retours, plutôt que de me centrer uniquement sur ma façon d\'envisager les situations.',
+      delegation: 'Je gagnerais à laisser aux autres le soin de se charger de certaines tâches plutôt que de chercher à toutes les réaliser par moi-même.'
+    },
+    footnote: {
+      prefix: 'Données issues du site',
+      link: 'Access First'
+    },
+    talentTags: {
+      title: 'Tags de talents',
+      conciliant: 'Conciliant',
+      observateur: 'Observateur',
+      direct: 'Direct',
+      impartial: 'Impartial',
+      confiant: 'Confiant',
+      tolerant: 'Tolérant',
+      hyperactif: 'Hyperactif',
+      curieux: 'Curieux',
+      creatif: 'Créatif',
+      organise: 'Organisé',
+      consciencieux: 'Consciencieux',
+      perseverant: 'Persévérant',
+      entreprenant: 'Entreprenant',
+      calme: 'Calme',
+      enthousiaste: 'Enthousiaste',
+      maitreDeSoi: 'Maître De Soi',
+      stable: 'Stable'
     },
     gaming: 'Sur mon temps libre, je rénove ma maison, développe ma domotique et profite de ma famille.',
     stats: {

@@ -28,7 +28,7 @@ const openBook = (url: string, status?: string) => {
 </script>
 
 <template>
-  <section class="section bg-transparent" data-section="books">
+  <section id="books" class="section bg-transparent" data-section="books">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas
@@ -49,7 +49,7 @@ const openBook = (url: string, status?: string) => {
         <p class="font-(--font-display) text-2xl text-white/70">{{ t('books.subtitle') }}</p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-[1200px] mx-auto mt-48">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-[1200px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto mt-48">
         <!-- Read Books -->
         <div class="glass p-4">
           <h3 class="font-(--font-display) text-xl text-(--color-paper-cream) mb-3 flex items-center gap-2">

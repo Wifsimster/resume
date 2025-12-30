@@ -85,3 +85,4 @@ console.log('')
 console.log('Pour obtenir le total complet, exécutez les appels MCP GitLab')
 console.log('pour chaque projet et calculez le total.')
 
+

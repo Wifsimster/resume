@@ -145,7 +145,7 @@ export default {
   },
   about: {
     title: 'About',
-    subtitle: 'Build, Share, Experience',
+    subtitle: 'Curious, creative and autonomous, I transform technical challenges into innovation opportunities',
     passions: {
       knowledge: 'Knowledge Sharing',
       architecture: 'Architecture',
@@ -156,6 +156,73 @@ export default {
       ai: 'AI',
       devops: 'DevOps',
       testing: 'Testing'
+    },
+    behaviors: {
+      title: 'Behaviors that particularly motivate me',
+      diriger: 'Lead',
+      concevoir: 'Design',
+      curieux: 'Curious',
+      observateur: 'Observant',
+      creatif: 'Creative',
+      consciencieux: 'Conscientious',
+      anticiperObstacles: 'Anticipate obstacles',
+      developperVision: 'Develop a vision',
+      innover: 'Innovate',
+      entreprendre: 'Entrepreneurship',
+      autonome: 'Autonomous',
+      direct: 'Direct',
+      conciliant: 'Conciliatory',
+      perfectionnerControle: 'Perfect and control',
+      reactivite: 'Show reactivity',
+      gererStress: 'Manage stress',
+      calme: 'Calm',
+      enthousiaste: 'Enthusiastic',
+      stable: 'Stable'
+    },
+    strengths: {
+      title: 'My Strengths',
+      relationships: {
+        title: 'In my relationships with others',
+        description: 'I know how to maintain emotional distance in relationships, protecting myself. I am sure of my decisions and committed to my line of conduct. I get straight to the point in my remarks, not trying to overdo it.'
+      },
+      work: {
+        title: 'In my way of working',
+        description: 'I am tenacious, do not get discouraged easily. I have an aptitude for tackling several projects simultaneously. I am proactive, easily generating new ideas.'
+      },
+      emotions: {
+        title: 'In my emotion management',
+        description: 'I am serene, not easily disturbed by external events. I exude enthusiasm, see things positively. I master my emotions, not letting them affect others.'
+      }
+    },
+    improvementAreas: {
+      title: 'Areas for improvement',
+      empathie: 'I could sometimes show more empathy towards the people around me, be less "hard" on them.',
+      ecoute: 'I would benefit from asking questions to others and enriching myself with their feedback, rather than focusing solely on my own way of seeing situations.',
+      delegation: 'I would benefit from letting others take care of certain tasks rather than trying to do them all myself.'
+    },
+    footnote: {
+      prefix: 'Data from',
+      link: 'Access First'
+    },
+    talentTags: {
+      title: 'Talent Tags',
+      conciliant: 'Conciliatory',
+      observateur: 'Observant',
+      direct: 'Direct',
+      impartial: 'Impartial',
+      confiant: 'Confident',
+      tolerant: 'Tolerant',
+      hyperactif: 'Hyperactive',
+      curieux: 'Curious',
+      creatif: 'Creative',
+      organise: 'Organized',
+      consciencieux: 'Conscientious',
+      perseverant: 'Persevering',
+      entreprenant: 'Enterprising',
+      calme: 'Calm',
+      enthousiaste: 'Enthusiastic',
+      maitreDeSoi: 'Self-controlled',
+      stable: 'Stable'
     },
     gaming: 'In my free time, I renovate my home, develop home automation, and enjoy time with my family.',
     stats: {

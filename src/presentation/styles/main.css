@@ -159,6 +159,33 @@ code, pre {
   width: 100%;
 }
 
+/* Large screen optimizations */
+@media (min-width: 1440px) {
+  .section-content {
+    max-width: 1400px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .section-content {
+    max-width: 1600px;
+  }
+  
+  .section {
+    padding: 3rem;
+  }
+}
+
+@media (min-width: 2560px) {
+  .section-content {
+    max-width: 2000px;
+  }
+  
+  .section {
+    padding: 4rem;
+  }
+}
+
 .section-canvas {
   position: absolute;
   inset: 0;

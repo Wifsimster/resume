@@ -4,6 +4,13 @@ export interface Passion {
   color: string
 }
 
+export interface Behavior {
+  id: string
+  icon: string
+  color: string
+  category: 'influencer' | 'cooperer' | 'reflechir' | 'agir' | 'ressentir'
+}
+
 export interface Experience {
   id: string
   company: string
@@ -63,6 +70,23 @@ export interface Statistics {
   issuesClosed2025: number
 }
 
+export interface Strength {
+  id: string
+  category: 'relationships' | 'work' | 'emotions'
+  icon: string
+  description: string
+}
+
+export interface ImprovementArea {
+  id: string
+  description: string
+}
+
+export interface TalentTag {
+  id: string
+  label: string
+}
+
 export interface ResumeData {
   name: string
   title: string
@@ -70,6 +94,7 @@ export interface ResumeData {
   location: string
   bio: string
   passions: Passion[]
+  behaviors?: Behavior[]
   experiences: Experience[]
   skills: Skill[]
   projects: Project[]
@@ -77,5 +102,8 @@ export interface ResumeData {
   socialLinks: SocialLink[]
   github: GitHubProfile
   statistics?: Statistics
+  strengths?: Strength[]
+  improvementAreas?: ImprovementArea[]
+  talentTags?: TalentTag[]
 }
 

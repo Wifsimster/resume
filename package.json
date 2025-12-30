@@ -13,22 +13,22 @@
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "vue": "^3.5.13",
-    "vue-i18n": "^9.14.4",
-    "vue-router": "^4.5.0",
-    "@tresjs/core": "^4.3.2",
-    "@tresjs/cientos": "^4.1.0",
-    "three": "^0.170.0"
+    "vue": "^3.5.26",
+    "vue-i18n": "^11.2.7",
+    "vue-router": "^4.6.4",
+    "@tresjs/core": "^5.2.1",
+    "@tresjs/cientos": "^5.2.1",
+    "three": "^0.182.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.3",
-    "@tailwindcss/vite": "^4.1.4",
-    "tailwindcss": "^4.1.4",
-    "typescript": "~5.6.3",
-    "vite": "^6.3.4",
-    "vue-tsc": "^2.2.0",
-    "@types/three": "^0.170.0",
-    "@types/node": "^22.14.0"
+    "@vitejs/plugin-vue": "^6.0.3",
+    "@tailwindcss/vite": "^4.1.18",
+    "tailwindcss": "^4.1.18",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.0",
+    "vue-tsc": "^3.2.1",
+    "@types/three": "^0.182.0",
+    "@types/node": "^25.0.3"
   },
   "engines": {
     "node": ">=24.0.0"

@@ -23,7 +23,7 @@ const handleCanvasReady = () => {
 </script>
 
 <template>
-  <section class="section bg-transparent" data-section="hero">
+  <section id="hero" class="section bg-transparent" data-section="hero">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas
@@ -46,7 +46,7 @@ const handleCanvasReady = () => {
 
     <!-- Content Overlay -->
     <div class="section-content flex flex-col justify-center items-center text-center min-h-screen pt-16 md:pt-12 md:pb-16 sm:px-2 sm:py-8 sm:pb-20">
-      <div class="max-w-[800px]">
+      <div class="max-w-[800px] xl:max-w-[1000px] 2xl:max-w-[1200px]">
         <p class="font-(--font-code) text-base text-(--color-terminal-green) mb-2 opacity-0 animate-fadeInUp [animation-delay:0.2s] sm:text-sm">{{ t('hero.greeting') }}</p>
         <h1 class="text-[clamp(3rem,10vw,7rem)] text-(--color-text-primary) mb-4 [text-shadow:0_0_40px_rgba(124,58,237,0.3)] opacity-0 animate-fadeInUp [animation-delay:0.4s]">{{ t('hero.name') }}</h1>
         <p class="font-(--font-display) text-[clamp(1.25rem,3vw,2rem)] text-white/90 mb-2 opacity-0 animate-fadeInUp [animation-delay:0.6s]">{{ t('hero.tagline') }}</p>
