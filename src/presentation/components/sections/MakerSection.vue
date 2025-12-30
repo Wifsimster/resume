@@ -19,6 +19,17 @@ const handleHoverUnit = (unitId: string | null) => {
   hoveredUnitId.value = unitId
 }
 
+// Convert unit ID (with dashes) to translation key (camelCase)
+const getTranslationKey = (unitId: string | null): string | null => {
+  if (!unitId) return null
+  // Convert dash-separated IDs to camelCase for translation keys
+  const keyMap: Record<string, string> = {
+    'udm-pro': 'udmPro',
+    'silver-1u': 'silver1u'
+  }
+  return keyMap[unitId] || unitId
+}
+
 // Track mouse position for tooltip
 const handleMouseMove = (event: MouseEvent) => {
   mousePosition.value = { x: event.clientX, y: event.clientY }
@@ -97,7 +108,7 @@ onUnmounted(() => {
     
     <!-- Tooltip for server rack units -->
     <div
-      v-if="hoveredUnitId"
+      v-if="hoveredUnitId && getTranslationKey(hoveredUnitId)"
       class="fixed z-50 pointer-events-none transition-opacity duration-200"
       :style="{
         left: `${mousePosition.x + 15}px`,
@@ -107,10 +118,10 @@ onUnmounted(() => {
     >
       <div class="bg-[#0A0A0A]/95 backdrop-blur-md border border-[#B87333]/50 rounded-lg px-4 py-3 shadow-xl max-w-xs">
         <h3 class="text-[var(--color-copper)] font-semibold mb-1 text-sm">
-          {{ t(`maker.rackUnits.${hoveredUnitId}.name`) }}
+          {{ t(`maker.rackUnits.${getTranslationKey(hoveredUnitId)}.name`) }}
         </h3>
         <p class="text-white/70 text-xs leading-relaxed">
-          {{ t(`maker.rackUnits.${hoveredUnitId}.description`) }}
+          {{ t(`maker.rackUnits.${getTranslationKey(hoveredUnitId)}.description`) }}
         </p>
       </div>
     </div>

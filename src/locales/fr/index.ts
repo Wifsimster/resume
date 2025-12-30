@@ -331,6 +331,10 @@ export default {
     title: 'Maker',
     subtitle: 'J\'adore construire et expérimenter, voici quelques uns de mes projets...',
     rackUnits: {
+      freebox: {
+        name: 'Freebox mini 4K',
+        description: 'Routeur et box internet Free mini 4K avec écran LCD jaune-vert et pad directionnel'
+      },
       udmPro: {
         name: 'UniFi Dream Machine Pro',
         description: 'Routeur et contrôleur réseau unifié avec protection intégrée et gestion centralisée'
