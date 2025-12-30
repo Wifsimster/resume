@@ -10,8 +10,8 @@ export interface Section {
 const sections: Section[] = [
   { id: 'hero', name: 'Hero', visited: false },
   { id: 'about', name: 'About', visited: false },
+  { id: 'motivation', name: 'Motivation', visited: false },
   { id: 'experience', name: 'Experience', visited: false },
-  { id: 'leadership', name: 'Leadership', visited: false },
   { id: 'skills', name: 'Skills', visited: false },
   { id: 'maker', name: 'Maker', visited: false },
   { id: 'projects', name: 'Projects', visited: false },
@@ -25,8 +25,109 @@ const visitedSections = ref<Set<string>>(new Set(['hero']))
 const startTime = ref<number | null>(null)
 const sectionVisibility = ref<Map<string, boolean>>(new Map())
 
+// Singleton pattern to ensure scroll listener is only registered once
+let scrollListenerRegistered = false
+let scrollListenerCleanup: (() => void) | null = null
+let unlockAchievement: ((achievementId: string) => void) | null = null
+
+const handleScroll = () => {
+  // Calculate overall scroll progress
+  const scrollTop = window.scrollY
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight
+  scrollProgress.value = (scrollTop / docHeight) * 100
+  
+  // Determine current section based on scroll position
+  const sectionElements = document.querySelectorAll('[data-section]')
+  if (sectionElements.length === 0) return
+  
+  const viewportMiddle = window.innerHeight / 2
+  let bestMatch: { index: number; distance: number } | null = null
+  
+  // Find the section closest to the viewport center
+  sectionElements.forEach((el, index) => {
+    const rect = el.getBoundingClientRect()
+    const sectionCenter = rect.top + rect.height / 2
+    const distance = Math.abs(viewportMiddle - sectionCenter)
+    
+    // Also check if section is significantly visible (at least 30% in viewport)
+    const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)
+    const visibilityRatio = visibleHeight / rect.height
+    
+    if (visibilityRatio >= 0.3) {
+      if (!bestMatch || distance < bestMatch.distance) {
+        bestMatch = { index, distance }
+      }
+    }
+  })
+  
+  // If no section is significantly visible, find the one closest to viewport center
+  if (!bestMatch) {
+    sectionElements.forEach((el, index) => {
+      const rect = el.getBoundingClientRect()
+      const sectionCenter = rect.top + rect.height / 2
+      const distance = Math.abs(viewportMiddle - sectionCenter)
+      
+      if (!bestMatch || distance < bestMatch.distance) {
+        bestMatch = { index, distance }
+      }
+    })
+  }
+  
+  if (bestMatch && currentSectionIndex.value !== bestMatch.index) {
+    currentSectionIndex.value = bestMatch.index
+    const sectionId = sectionElements[bestMatch.index].getAttribute('data-section')
+    if (sectionId) {
+      markSectionVisited(sectionId)
+    }
+  }
+  
+  // Check for speed runner achievement
+  if (startTime.value && scrollProgress.value >= 99 && unlockAchievement) {
+    const elapsed = (Date.now() - startTime.value) / 1000
+    if (elapsed < 30) {
+      unlockAchievement('speedRunner')
+    }
+  }
+}
+
+const markSectionVisited = (sectionId: string) => {
+  if (!visitedSections.value.has(sectionId)) {
+    visitedSections.value.add(sectionId)
+    
+    // Update section object
+    const section = sections.find(s => s.id === sectionId)
+    if (section) {
+      section.visited = true
+    }
+    
+    // Check if all sections visited
+    if (visitedSections.value.size === sections.length && unlockAchievement) {
+      unlockAchievement('explorer')
+    }
+  }
+}
+
+const registerScrollListener = () => {
+  if (scrollListenerRegistered) return
+  
+  startTime.value = Date.now()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  handleScroll() // Initial check
+  
+  scrollListenerRegistered = true
+  scrollListenerCleanup = () => {
+    window.removeEventListener('scroll', handleScroll)
+    scrollListenerRegistered = false
+  }
+}
+
 export function useScrollSection() {
   const { unlock } = useAchievements()
+  
+  // Store unlock function for use in scroll handler
+  if (!unlockAchievement) {
+    unlockAchievement = unlock
+  }
   
   const currentSection = computed(() => sections[currentSectionIndex.value])
   const totalSections = computed(() => sections.length)
@@ -34,56 +135,6 @@ export function useScrollSection() {
   const progressPercent = computed(() => {
     return ((currentSectionIndex.value + 1) / totalSections.value) * 100
   })
-  
-  const handleScroll = () => {
-    // Calculate overall scroll progress
-    const scrollTop = window.scrollY
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight
-    scrollProgress.value = (scrollTop / docHeight) * 100
-    
-    // Determine current section based on scroll position
-    const sectionElements = document.querySelectorAll('[data-section]')
-    const viewportMiddle = scrollTop + window.innerHeight / 2
-    
-    sectionElements.forEach((el, index) => {
-      const rect = el.getBoundingClientRect()
-      const sectionTop = scrollTop + rect.top
-      const sectionBottom = sectionTop + rect.height
-      
-      if (viewportMiddle >= sectionTop && viewportMiddle < sectionBottom) {
-        currentSectionIndex.value = index
-        const sectionId = el.getAttribute('data-section')
-        if (sectionId) {
-          markSectionVisited(sectionId)
-        }
-      }
-    })
-    
-    // Check for speed runner achievement
-    if (startTime.value && scrollProgress.value >= 99) {
-      const elapsed = (Date.now() - startTime.value) / 1000
-      if (elapsed < 30) {
-        unlock('speedRunner')
-      }
-    }
-  }
-  
-  const markSectionVisited = (sectionId: string) => {
-    if (!visitedSections.value.has(sectionId)) {
-      visitedSections.value.add(sectionId)
-      
-      // Update section object
-      const section = sections.find(s => s.id === sectionId)
-      if (section) {
-        section.visited = true
-      }
-      
-      // Check if all sections visited
-      if (visitedSections.value.size === sections.length) {
-        unlock('explorer')
-      }
-    }
-  }
   
   const scrollToSection = (sectionId: string) => {
     const element = document.querySelector(`[data-section="${sectionId}"]`)
@@ -140,16 +191,12 @@ export function useScrollSection() {
     return sectionVisibility.value.get(sectionId) ?? false
   }
   
-  // Only register lifecycle hooks if we're in a valid component setup context
-  // Check if scope is active (not detached) before registering hooks
+  // Register scroll listener when component mounts
+  // Use a simpler approach that always works
   const instance = getCurrentInstance()
-  const scope = instance ? (instance as any).scope : null
-  const hasValidContext = scope && !scope.detached && scope._active
-  if (hasValidContext) {
+  if (instance) {
     onMounted(() => {
-      startTime.value = Date.now()
-      window.addEventListener('scroll', handleScroll, { passive: true })
-      handleScroll() // Initial check
+      registerScrollListener()
       
       // Setup visibility observer after a short delay to ensure DOM is ready
       setTimeout(() => {
@@ -158,12 +205,21 @@ export function useScrollSection() {
     })
     
     onUnmounted(() => {
-      window.removeEventListener('scroll', handleScroll)
+      if (scrollListenerCleanup) {
+        scrollListenerCleanup()
+        scrollListenerCleanup = null
+      }
       if (intersectionObserver) {
         intersectionObserver.disconnect()
         intersectionObserver = null
       }
     })
+  } else {
+    // Fallback: register immediately if not in component context
+    // This ensures it works even if called outside a component
+    if (typeof window !== 'undefined') {
+      registerScrollListener()
+    }
   }
   
   return {

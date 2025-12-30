@@ -154,7 +154,7 @@ export const resumeData: ResumeData = {
     { id: 'copilot', name: 'GitHub Copilot', category: 'devops', icon: '🤖', url: 'https://github.com/features/copilot' },
 
     // Soft Skills
-    { id: 'leadership', name: 'Leadership', category: 'soft', icon: '👑' },
+    { id: 'motivation', name: 'Motivation', category: 'soft', icon: '💪' },
     { id: 'mentoring', name: 'Mentoring', category: 'soft', icon: '🎓' },
     { id: 'craftsmanship', name: 'Craftsmanship', category: 'soft', icon: '🛠️' },
     { id: 'cleanarchitecture', name: 'Clean Architecture', category: 'soft', icon: '🏗️' }
@@ -162,52 +162,12 @@ export const resumeData: ResumeData = {
 
   projects: [
     {
-      id: 'adalight',
-      name: 'adalight_ws2812',
-      stars: 168,
-      tech: 'Arduino',
-      url: 'https://github.com/Wifsimster/adalight_ws2812',
-      icon: '💡'
-    },
-    {
-      id: 'rtsp',
-      name: 'node-rtsp-stream-es6',
-      stars: 101,
-      tech: 'Node.js',
-      url: 'https://github.com/Wifsimster/node-rtsp-stream-es6',
-      icon: '📹'
-    },
-    {
-      id: 'pavie',
-      name: 'pavie',
-      stars: 26,
-      tech: 'Node.js',
-      url: 'https://github.com/Wifsimster/pavie',
-      icon: '📟'
-    },
-    {
-      id: 'overwatch',
-      name: 'overwatch',
-      stars: 10,
-      tech: 'Vue.js',
-      url: 'https://github.com/Wifsimster/overwatch',
-      icon: '🏠'
-    },
-    {
-      id: 'bordeaux',
-      name: 'bordeaux',
-      stars: 10,
-      tech: 'JavaScript',
-      url: 'https://github.com/Wifsimster/bordeaux',
-      icon: '📺'
-    },
-    {
-      id: 'pir',
-      name: 'pir-mqtt',
-      stars: 4,
-      tech: 'Lua/ESP',
-      url: 'https://github.com/Wifsimster/pir-mqtt',
-      icon: '👁️'
+      id: 'blog',
+      name: 'Blog personnel',
+      tech: 'Projets DIY',
+      url: 'https://wifsimster.github.io/',
+      icon: '📝',
+      type: 'blog'
     }
   ],
 

@@ -9,19 +9,20 @@ import { resumeData } from '@domain/data/resume'
 const { t } = useI18n()
 const { quality, renderSettings } = useQuality()
 
-// Group skills by category
+// Group skills by category, preserving the intentional order from the data file
+// The order groups related items together (e.g., DevOps tools, then Testing, then IDE/AI tools)
 const skillsByCategory = computed(() => {
   const categories = ['frontend', 'backend', 'devops', 'soft'] as const
   return categories.map(cat => ({
     id: cat,
     name: t(`skills.${cat}`),
-    skills: resumeData.skills.filter(s => s.category === cat)
+    skills: resumeData.skills.filter(s => s.category === cat) // filter preserves order
   }))
 })
 </script>
 
 <template>
-  <section id="skills" class="section bg-transparent" data-section="skills">
+  <section id="skills" class="section bg-transparent p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="skills">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas
@@ -38,19 +39,19 @@ const skillsByCategory = computed(() => {
     <!-- Content -->
     <div class="section-content">
       <div class="text-center mb-8">
-        <h2 class="text-(--color-growth-yellow) mb-2">{{ t('skills.title') }}</h2>
+        <h2 class="text-[var(--color-growth-yellow)] mb-2">{{ t('skills.title') }}</h2>
         <p class="font-(--font-display) text-2xl text-white/70">{{ t('skills.subtitle') }}</p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4 max-w-[1200px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-[900px] xl:max-w-[1000px] 2xl:max-w-[1100px] mx-auto justify-items-center lg:justify-items-stretch">
         <div 
           v-for="category in skillsByCategory" 
           :key="category.id"
-          class="glass p-3"
+          class="glass p-3 w-full max-w-[230px] sm:max-w-none lg:w-full flex flex-col"
         >
-          <h3 class="font-(--font-display) text-xs text-(--color-terminal-green) mb-1.5 pb-0.5 border-b border-green-500/20">{{ category.name }}</h3>
+          <h3 class="font-(--font-display) text-sm text-[var(--color-terminal-green)] mb-1.5 pb-0.5 border-b border-green-500/20">{{ category.name }}</h3>
           
-          <div class="flex flex-col gap-1.5">
+          <div class="flex flex-col gap-1.5 flex-1">
             <component
               :is="skill.url ? 'a' : 'div'"
               v-for="skill in category.skills" 
@@ -62,7 +63,7 @@ const skillsByCategory = computed(() => {
               :class="{ 'cursor-pointer': skill.url }"
             >
               <span v-if="skill.icon" class="text-lg">{{ skill.icon }}</span>
-              <span class="text-[0.875rem] text-(--color-paper-cream)">{{ skill.name }}</span>
+              <span class="text-sm text-[var(--color-paper-cream)]">{{ skill.name }}</span>
               <span v-if="skill.url" class="ml-auto text-white/30 text-xs">↗</span>
             </component>
           </div>

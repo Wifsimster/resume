@@ -49,12 +49,12 @@ const hasHint = (id: string) => {
 <template>
   <div class="relative">
     <button 
-      class="flex items-center gap-1.5 py-1.5 px-3 bg-[#1E1E1E]/80 backdrop-blur-md border border-(--color-border) rounded-lg cursor-pointer transition-all duration-150 hover:border-(--color-achievement-gold) hover:shadow-[0_0_15px_rgba(251,191,36,0.3)]"
+      class="flex items-center gap-1.5 py-1.5 px-3 bg-[#1E1E1E]/80 backdrop-blur-md border border-[var(--color-border)] rounded-lg cursor-pointer transition-all duration-150 hover:border-[var(--color-achievement-gold)] hover:shadow-[0_0_15px_rgba(251,191,36,0.3)]"
       @click="togglePanel"
       :title="t('achievements.viewAll')"
     >
       <span class="text-base animate-trophy-shine">🏆</span>
-      <span class="font-(--font-code) text-xs text-(--color-text-secondary)">{{ unlockedCount }}/{{ totalCount }}</span>
+      <span class="font-(--font-code) text-xs text-[var(--color-text-secondary)]">{{ unlockedCount }}/{{ totalCount }}</span>
     </button>
 
     <Teleport to="body">
@@ -65,26 +65,26 @@ const hasHint = (id: string) => {
           @click="closePanel"
         >
           <div 
-            class="achievements-panel bg-gradient-to-br from-(--color-bg-tertiary) to-(--color-bg-primary) border-2 border-(--color-border) rounded-2xl sm:rounded-xl w-full max-w-[420px] max-h-[80vh] sm:max-h-[90vh] overflow-hidden flex flex-col shadow-[0_0_60px_rgba(124,58,237,0.2),0_20px_60px_rgba(0,0,0,0.6)]"
+            class="achievements-panel bg-gradient-to-br from-[var(--color-bg-tertiary)] to-[var(--color-bg-primary)] border-2 border-[var(--color-border)] rounded-2xl sm:rounded-xl w-full max-w-[420px] max-h-[80vh] sm:max-h-[90vh] overflow-hidden flex flex-col shadow-[0_0_60px_rgba(124,58,237,0.2),0_20px_60px_rgba(0,0,0,0.6)]"
             @click.stop
           >
-            <div class="flex items-center justify-between py-4 px-5 border-b border-(--color-border) bg-black/30">
-              <h3 class="font-(--font-display) text-xl font-bold text-(--color-achievement-gold) flex items-center gap-2 before:content-['🏆']">{{ t('achievements.title') }}</h3>
+            <div class="flex items-center justify-between py-4 px-5 border-b border-[var(--color-border)] bg-black/30">
+              <h3 class="font-(--font-display) text-xl font-bold text-[var(--color-achievement-gold)] flex items-center gap-2 before:content-['🏆']">{{ t('achievements.title') }}</h3>
               <button 
-                class="bg-transparent border-none text-(--color-text-secondary) text-2xl cursor-pointer p-0 w-8 h-8 flex items-center justify-center rounded-md transition-all duration-150 hover:bg-white/10 hover:text-(--color-text-primary)"
+                class="bg-transparent border-none text-[var(--color-text-secondary)] text-2xl cursor-pointer p-0 w-8 h-8 flex items-center justify-center rounded-md transition-all duration-150 hover:bg-white/10 hover:text-[var(--color-text-primary)]"
                 @click="closePanel" 
                 aria-label="Close"
               >×</button>
             </div>
 
-            <div class="py-4 px-5 flex items-center gap-4 border-b border-(--color-border)">
+            <div class="py-4 px-5 flex items-center gap-4 border-b border-[var(--color-border)]">
               <div class="flex-1 h-2 bg-white/10 rounded overflow-hidden">
                 <div 
-                  class="h-full bg-gradient-to-r from-(--color-achievement-gold) to-amber-500 rounded transition-[width] duration-500 ease-out shadow-[0_0_10px_rgba(251,191,36,0.5)]"
+                  class="h-full bg-gradient-to-r from-[var(--color-achievement-gold)] to-amber-500 rounded transition-[width] duration-500 ease-out shadow-[0_0_10px_rgba(251,191,36,0.5)]"
                   :style="{ width: `${progress}%` }"
                 />
               </div>
-              <span class="font-(--font-code) text-sm text-(--color-achievement-gold) font-semibold min-w-[50px] text-right">{{ unlockedCount }} / {{ totalCount }}</span>
+              <span class="font-(--font-code) text-sm text-[var(--color-achievement-gold)] font-semibold min-w-[50px] text-right">{{ unlockedCount }} / {{ totalCount }}</span>
             </div>
 
             <div class="p-3 overflow-y-auto flex-1">
@@ -102,18 +102,18 @@ const hasHint = (id: string) => {
                 >{{ achievement.unlocked ? achievement.icon : (hasHint(achievement.id) ? achievement.icon : '🔒') }}</div>
                 <div class="flex-1 min-w-0 flex flex-col gap-0.5">
                   <span 
-                    class="font-(--font-display) text-[0.95rem] font-semibold"
-                    :class="achievement.unlocked ? 'text-(--color-achievement-gold)' : hasHint(achievement.id) ? 'text-purple-400/70' : 'text-(--color-text-primary)'"
+                    class="font-(--font-display) text-sm font-semibold"
+                    :class="achievement.unlocked ? 'text-[var(--color-achievement-gold)]' : hasHint(achievement.id) ? 'text-purple-400/70' : 'text-[var(--color-text-primary)]'"
                   >
                     {{ achievement.unlocked ? t(`achievements.${achievement.id}.name`) : (hasHint(achievement.id) ? t(`achievements.${achievement.id}.name`) : '???') }}
                   </span>
-                  <span class="text-xs text-(--color-text-muted) leading-tight">
+                  <span class="text-xs text-[var(--color-text-muted)] leading-tight">
                     {{ achievement.unlocked ? t(`achievements.${achievement.id}.desc`) : (hasHint(achievement.id) ? t(`achievements.${achievement.id}.hint`) : t('achievements.locked')) }}
                   </span>
                 </div>
                 <div 
                   v-if="achievement.unlocked" 
-                  class="w-6 h-6 bg-(--color-achievement-gold) text-(--color-bg-primary) rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                  class="w-6 h-6 bg-[var(--color-achievement-gold)] text-[var(--color-bg-primary)] rounded-full flex items-center justify-center text-xs font-bold shrink-0"
                 >✓</div>
               </div>
             </div>

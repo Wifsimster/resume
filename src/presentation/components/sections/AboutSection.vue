@@ -10,7 +10,7 @@ const { quality, renderSettings } = useQuality()
 </script>
 
 <template>
-  <section id="about" class="section bg-transparent" data-section="about">
+  <section id="about" class="section bg-transparent p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="about">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas :clear-color="'#0A0A0A'" :alpha="true" :dpr="renderSettings.dpr" :antialias="renderSettings.antialias"
@@ -22,7 +22,7 @@ const { quality, renderSettings } = useQuality()
     <!-- Content -->
     <div class="section-content flex flex-col justify-center items-center h-full">
       <div class="mb-4 text-center w-full">
-        <h2 class="text-(--color-terminal-green) mb-2">{{ t('about.title') }}</h2>
+        <h2 class="text-[var(--color-terminal-green)] mb-2">{{ t('about.title') }}</h2>
         <p class="font-(--font-display) text-3xl text-white/70">{{ t('about.subtitle') }}</p>
       </div>
 

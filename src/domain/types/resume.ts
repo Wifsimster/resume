@@ -32,10 +32,11 @@ export interface Skill {
 export interface Project {
   id: string
   name: string
-  stars: number
+  stars?: number
   tech: string
   url: string
   icon?: string
+  type?: 'github' | 'blog'
 }
 
 export interface Book {

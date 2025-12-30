@@ -36,7 +36,7 @@ const handleCycle = () => {
 
 <template>
   <button
-    class="flex items-center gap-1.5 py-2 px-3 bg-[#1E1E1E]/80 backdrop-blur-md border border-(--color-border) rounded-lg cursor-pointer transition-all duration-150 font-(--font-code) text-xs text-(--color-text-primary) hover:border-(--color-accent-primary) hover:shadow-[var(--shadow-glow-green)] sm:p-2 sm:min-w-10 sm:min-h-10 sm:justify-center"
+    class="flex items-center gap-1.5 py-2 px-3 bg-[#1E1E1E]/80 backdrop-blur-md border border-[var(--color-border)] rounded-lg cursor-pointer transition-all duration-150 font-(--font-code) text-xs text-[var(--color-text-primary)] hover:border-[var(--color-accent-primary)] hover:shadow-[var(--shadow-glow-green)] sm:p-2 sm:min-w-10 sm:min-h-10 sm:justify-center"
     @click="handleCycle"
     :title="qualityTitle"
     :aria-label="qualityTitle"

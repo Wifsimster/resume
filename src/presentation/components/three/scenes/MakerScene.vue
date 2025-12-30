@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
+import { Raycaster, Vector2 } from 'three'
+import { useTres } from '@tresjs/core'
 import type { QualityLevel } from '@application/composables/useQuality'
 import { useAnimationController } from '@application/composables/useAnimationController'
 
 const props = defineProps<{
   quality: QualityLevel
+}>()
+
+const emit = defineEmits<{
+  hoverUnit: [unitId: string | null]
 }>()
 
 // Get section element for visibility detection
@@ -14,6 +20,103 @@ const sectionElement = ref<HTMLElement | null>(null)
 const animationController = useAnimationController(sectionElement)
 
 const sceneRef = ref()
+const { camera, renderer } = useTres()
+
+// Mouse position for raycasting
+const mouse = new Vector2()
+const raycasterInstance = new Raycaster()
+
+// Server unit data structure
+interface ServerUnit {
+  id: string
+  name: string
+  description: string
+  y: number
+  height: number
+  color: string
+  type: 'udm-pro' | 'switch' | 'ap' | 'silver-1u' | 'pdu' | 'nas' | 'enclosure' | 'ups'
+  meshRef?: any
+}
+
+// Server rack units matching actual equipment
+const rackUnits: ServerUnit[] = [
+  {
+    id: 'udm-pro',
+    name: 'maker.rackUnits.udmPro.name',
+    description: 'maker.rackUnits.udmPro.description',
+    y: 3.2,
+    height: 0.45,
+    color: '#FFFFFF',
+    type: 'udm-pro'
+  },
+  {
+    id: 'switch',
+    name: 'maker.rackUnits.switch.name',
+    description: 'maker.rackUnits.switch.description',
+    y: 2.6,
+    height: 0.45,
+    color: '#FFFFFF',
+    type: 'switch'
+  },
+  {
+    id: 'ap',
+    name: 'maker.rackUnits.ap.name',
+    description: 'maker.rackUnits.ap.description',
+    y: 2.2,
+    height: 0.3,
+    color: '#FFFFFF',
+    type: 'ap'
+  },
+  {
+    id: 'silver-1u',
+    name: 'maker.rackUnits.silver1u.name',
+    description: 'maker.rackUnits.silver1u.description',
+    y: 1.7,
+    height: 0.45,
+    color: '#C0C0C0',
+    type: 'silver-1u'
+  },
+  {
+    id: 'pdu',
+    name: 'maker.rackUnits.pdu.name',
+    description: 'maker.rackUnits.pdu.description',
+    y: 1.1,
+    height: 0.5,
+    color: '#1A1A1A',
+    type: 'pdu'
+  },
+  {
+    id: 'nas',
+    name: 'maker.rackUnits.nas.name',
+    description: 'maker.rackUnits.nas.description',
+    y: 0.4,
+    height: 0.6,
+    color: '#1A1A1A',
+    type: 'nas'
+  },
+  {
+    id: 'enclosure',
+    name: 'maker.rackUnits.enclosure.name',
+    description: 'maker.rackUnits.enclosure.description',
+    y: -0.3,
+    height: 0.5,
+    color: '#1A1A1A',
+    type: 'enclosure'
+  },
+  {
+    id: 'ups',
+    name: 'maker.rackUnits.ups.name',
+    description: 'maker.rackUnits.ups.description',
+    y: -0.8,
+    height: 0.5,
+    color: '#1A1A1A',
+    type: 'ups'
+  }
+]
+
+// Hovered unit state
+const hoveredUnitId = ref<string | null>(null)
+const serverUnitMeshes = ref<Map<string, any>>(new Map())
 
 // Theme colors
 const colors = {
@@ -41,15 +144,9 @@ const anim = reactive({
   screenFlicker: [1, 1, 1] as number[]
 })
 
-// Server rack configuration
-const serverCount = computed(() => props.quality === 'high' ? 8 : 5)
-const serverUnits = computed(() => 
-  Array.from({ length: serverCount.value }, (_, i) => ({
-    y: 2.8 - i * 0.55,
-    ledCount: 4 + Math.floor(Math.random() * 3),
-    hasHdd: i % 2 === 0,
-    type: i === 0 ? 'network' : i === 1 ? 'storage' : 'compute'
-  }))
+// Server rack configuration - using actual rack units
+const visibleRackUnits = computed(() => 
+  props.quality === 'high' ? rackUnits : rackUnits.slice(0, 5)
 )
 
 // LED strip configuration
@@ -85,8 +182,8 @@ const updateAnimations = (elapsed: number, _delta: number) => {
   // LED rainbow flow
   anim.ledPhase = elapsed * 45
   
-  // Server LEDs blinking pattern
-  anim.serverLeds = serverUnits.value.map((_, i) => {
+  // Server LEDs blinking pattern (kept for compatibility)
+  anim.serverLeds = visibleRackUnits.value.map((_, i) => {
     return Math.sin(elapsed * (2 + i * 0.5) + i * 1.5) > 0.2 ? 1 : 0.15
   })
   
@@ -132,6 +229,60 @@ const getDustPos = (particle: typeof dustParticles.value[0]) => {
   }
 }
 
+// Mouse move handler for raycasting
+const handleMouseMove = (event: MouseEvent) => {
+  if (!camera.value || !renderer.value || !sceneRef.value) return
+  
+  const canvas = renderer.value.domElement
+  const rect = canvas.getBoundingClientRect()
+  
+  // Calculate normalized device coordinates
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
+  
+  // Update raycaster
+  raycasterInstance.setFromCamera(mouse, camera.value)
+  
+  // Find intersections with server unit meshes
+  const meshes = Array.from(serverUnitMeshes.value.values())
+    .map(mesh => {
+      // Get the actual Three.js object from TresJS ref
+      return mesh?.value || mesh
+    })
+    .filter(Boolean)
+  
+  if (meshes.length === 0) return
+  
+  const intersects = raycasterInstance.intersectObjects(meshes, true)
+  
+  if (intersects.length > 0) {
+    const intersectedObject = intersects[0].object
+    // Traverse up to find the parent group
+    let current = intersectedObject
+    let unitId: string | null = null
+    
+    // Check if this object or any parent is in our map
+    while (current && !unitId) {
+      unitId = Array.from(serverUnitMeshes.value.entries())
+        .find(([_, mesh]) => {
+          const meshObj = mesh?.value || mesh
+          return meshObj === current || (meshObj && meshObj.children && meshObj.children.includes(current))
+        })?.[0] || null
+      current = current.parent
+    }
+    
+    if (unitId && unitId !== hoveredUnitId.value) {
+      hoveredUnitId.value = unitId
+      emit('hoverUnit', unitId)
+    }
+  } else {
+    if (hoveredUnitId.value !== null) {
+      hoveredUnitId.value = null
+      emit('hoverUnit', null)
+    }
+  }
+}
+
 onMounted(() => {
   // Find the parent section element
   const canvas = document.querySelector('[data-section="maker"]')
@@ -146,29 +297,37 @@ onMounted(() => {
     const totalElapsed = (Date.now() - startTime) / 1000
     updateAnimations(totalElapsed, delta)
   })
+  
+  // Add mouse move listener for raycasting
+  window.addEventListener('mousemove', handleMouseMove)
 })
 
 onUnmounted(() => {
   animationController.stop()
+  window.removeEventListener('mousemove', handleMouseMove)
 })
 </script>
 
 <template>
-  <TresPerspectiveCamera :position="[0.5, 2, 6]" :look-at="[0.5, 1, -0.3]" />
+  <TresPerspectiveCamera :position="[1.5, 2.2, 7]" :look-at="[1.2, 1.5, 0]" />
   
   <!-- Enhanced Lighting -->
-  <TresAmbientLight :intensity="0.9" />
-  <TresPointLight :position="[0, 6, 5]" :intensity="4" color="#FFFFFF" />
-  <TresPointLight :position="[-4, 4, 3]" :intensity="2" :color="colors.screenGlow" />
-  <TresPointLight :position="[4, 3, 3]" :intensity="2.5" :color="colors.serverBlue" />
-  <TresPointLight :position="[3, 1, 2]" :intensity="1.5" :color="colors.serverGreen" />
+  <TresAmbientLight :intensity="1.0" />
+  <TresPointLight :position="[0, 6, 5]" :intensity="4.5" color="#FFFFFF" />
+  <!-- Monitor area lighting -->
+  <TresPointLight :position="[-2, 2.5, 0]" :intensity="2.5" :color="colors.screenGlow" />
+  <TresPointLight :position="[-1, 2.5, -0.5]" :intensity="2" color="#FFFFFF" />
+  <TresPointLight :position="[1, 2.5, -0.5]" :intensity="2" color="#FFFFFF" />
+  <!-- Server rack lighting -->
+  <TresPointLight :position="[3.5, 2, 0]" :intensity="3" :color="colors.serverBlue" />
+  <TresPointLight :position="[3, 1, 1]" :intensity="2" :color="colors.serverGreen" />
+  <TresPointLight :position="[4, 3, 0]" :intensity="2" color="#FFFFFF" />
+  <!-- General fill lights -->
   <TresPointLight :position="[0, 3, 2]" :intensity="1.5" :color="colors.wifi" />
   <TresPointLight :position="[-2, 1, 3]" :intensity="1.5" color="#FFFFFF" />
-  <TresPointLight :position="[3, 4, -1]" :intensity="1.5" color="#FFFFFF" />
-  <TresPointLight :position="[-3, 2, 0]" :intensity="1.2" color="#FFFFFF" />
-  <TresPointLight :position="[0, 0.5, 2]" :intensity="1" color="#FFFFFF" />
-  <TresDirectionalLight :position="[2, 10, 5]" :intensity="2" color="#FFFFFF" />
-  <TresDirectionalLight :position="[-3, 8, 3]" :intensity="1.5" color="#FFFFFF" />
+  <TresPointLight :position="[0, 0.5, 2]" :intensity="1.2" color="#FFFFFF" />
+  <TresDirectionalLight :position="[2, 10, 5]" :intensity="2.5" color="#FFFFFF" />
+  <TresDirectionalLight :position="[-3, 8, 3]" :intensity="2" color="#FFFFFF" />
   
   <TresGroup ref="sceneRef">
     
@@ -613,75 +772,211 @@ onUnmounted(() => {
         <TresMeshBasicMaterial :color="'#0A0A0A'" />
       </TresMesh>
       
-      <!-- Server units -->
+      <!-- Server units - Actual equipment -->
       <TresGroup 
-        v-for="(server, si) in serverUnits" 
-        :key="`server-${si}`"
-        :position="[0, server.y, 0.4]"
+        v-for="(unit, ui) in visibleRackUnits" 
+        :key="`unit-${unit.id}`"
+        :position="[0, unit.y, 0.4]"
+        :ref="(el: any) => { 
+          if (el && el.value) {
+            serverUnitMeshes.set(unit.id, el.value)
+          } else if (el) {
+            serverUnitMeshes.set(unit.id, el)
+          }
+        }"
       >
-        <!-- Server chassis -->
+        <!-- Unit chassis with hover effect -->
         <TresMesh>
-          <TresBoxGeometry :args="[1.5, 0.4, 0.7]" />
+          <TresBoxGeometry :args="[1.5, unit.height, 0.7]" />
           <TresMeshStandardMaterial 
-            :color="si === 0 ? '#1565C0' : si === 1 ? '#2E7D32' : '#37474F'" 
+            :color="hoveredUnitId === unit.id ? '#B87333' : unit.color" 
             :roughness="0.35"
-            :metalness="0.6"
+            :metalness="unit.type === 'silver-1u' ? 0.8 : 0.6"
+            :emissive="hoveredUnitId === unit.id ? '#B87333' : '#000000'"
+            :emissive-intensity="hoveredUnitId === unit.id ? 0.2 : 0"
           />
         </TresMesh>
         
-        <!-- Server front plate -->
+        <!-- Unit front plate -->
         <TresMesh :position="[0, 0, 0.36]">
-          <TresBoxGeometry :args="[1.45, 0.35, 0.02]" />
+          <TresBoxGeometry :args="[1.45, unit.height - 0.1, 0.02]" />
           <TresMeshStandardMaterial 
-            :color="'#1A1A1A'" 
+            :color="unit.type === 'pdu' ? '#1A1A1A' : unit.color === '#FFFFFF' ? '#F5F5F5' : '#1A1A1A'" 
             :roughness="0.25"
             :metalness="0.8"
           />
         </TresMesh>
         
-        <!-- Status LEDs -->
-        <TresMesh 
-          v-for="led in server.ledCount" 
-          :key="`server-led-${si}-${led}`"
-          :position="[-0.55 + led * 0.12, 0.08, 0.38]"
-        >
-          <TresSphereGeometry :args="[0.025, 6, 6]" />
-          <TresMeshBasicMaterial 
-            :color="led === 1 ? colors.serverGreen : led === 2 ? colors.wifi : led % 2 === 0 ? colors.serverGreen : colors.serverRed"
-            :opacity="getServerLedState(si, led)"
-            :transparent="true"
-          />
-        </TresMesh>
+        <!-- UDM Pro specific details -->
+        <template v-if="unit.type === 'udm-pro'">
+          <!-- Status LED -->
+          <TresMesh :position="[0.6, 0.1, 0.38]">
+            <TresSphereGeometry :args="[0.03, 8, 8]" />
+            <TresMeshBasicMaterial 
+              :color="colors.serverGreen"
+              :opacity="0.9"
+              :transparent="true"
+            />
+          </TresMesh>
+          <!-- Small display area -->
+          <TresMesh :position="[-0.3, 0, 0.37]">
+            <TresPlaneGeometry :args="[0.4, 0.15]" />
+            <TresMeshBasicMaterial :color="'#0A0A0A'" />
+          </TresMesh>
+        </template>
         
-        <!-- Power button -->
-        <TresMesh :position="[0.6, 0.08, 0.38]">
-          <TresCircleGeometry :args="[0.03, 12]" />
-          <TresMeshBasicMaterial 
-            :color="colors.serverGreen"
-            :opacity="0.9"
-            :transparent="true"
-          />
-        </TresMesh>
+        <!-- Switch specific details -->
+        <template v-if="unit.type === 'switch'">
+          <!-- Ethernet ports with indicator lights -->
+          <TresMesh 
+            v-for="port in 12" 
+            :key="`port-${port}`"
+            :position="[-0.6 + (port % 6) * 0.2, -0.15 + Math.floor(port / 6) * 0.3, 0.37]"
+          >
+            <TresBoxGeometry :args="[0.08, 0.06, 0.02]" />
+            <TresMeshStandardMaterial :color="'#0A0A0A'" />
+          </TresMesh>
+          <!-- Port indicator lights -->
+          <TresMesh 
+            v-for="led in 12" 
+            :key="`switch-led-${led}`"
+            :position="[-0.6 + (led % 6) * 0.2, -0.12 + Math.floor(led / 6) * 0.3, 0.38]"
+          >
+            <TresSphereGeometry :args="[0.015, 6, 6]" />
+            <TresMeshBasicMaterial 
+              :color="led % 3 === 0 ? colors.serverGreen : colors.wifi"
+              :opacity="Math.sin(anim.time * (2 + led * 0.3) + led) > 0.3 ? 1 : 0.3"
+              :transparent="true"
+            />
+          </TresMesh>
+        </template>
         
-        <!-- HDD activity LED -->
-        <TresMesh v-if="server.hasHdd" :position="[0.5, 0.08, 0.38]">
-          <TresSphereGeometry :args="[0.02, 6, 6]" />
-          <TresMeshBasicMaterial 
-            :color="colors.led"
-            :opacity="anim.hddActivity"
-            :transparent="true"
-          />
-        </TresMesh>
+        <!-- Access Point specific details -->
+        <template v-if="unit.type === 'ap'">
+          <!-- Circular AP design -->
+          <TresMesh :position="[0, 0, 0.36]">
+            <TresCylinderGeometry :args="[0.3, 0.3, 0.02, 32]" />
+            <TresMeshStandardMaterial :color="'#FFFFFF'" :roughness="0.3" />
+          </TresMesh>
+          <!-- Status LED -->
+          <TresMesh :position="[0, 0.1, 0.38]">
+            <TresSphereGeometry :args="[0.02, 8, 8]" />
+            <TresMeshBasicMaterial 
+              :color="colors.wifi"
+              :opacity="0.9"
+              :transparent="true"
+            />
+          </TresMesh>
+        </template>
         
-        <!-- Drive bays -->
-        <TresMesh 
-          v-for="bay in 3" 
-          :key="`bay-${si}-${bay}`"
-          :position="[-0.4 + bay * 0.25, -0.08, 0.37]"
-        >
-          <TresBoxGeometry :args="[0.18, 0.12, 0.02]" />
-          <TresMeshStandardMaterial :color="'#2D2D2D'" :metalness="0.5" />
-        </TresMesh>
+        <!-- Silver 1U device -->
+        <template v-if="unit.type === 'silver-1u'">
+          <!-- Status LEDs -->
+          <TresMesh :position="[0.5, 0.08, 0.38]">
+            <TresSphereGeometry :args="[0.02, 6, 6]" />
+            <TresMeshBasicMaterial 
+              :color="colors.serverGreen"
+              :opacity="0.9"
+              :transparent="true"
+            />
+          </TresMesh>
+        </template>
+        
+        <!-- PDU specific details -->
+        <template v-if="unit.type === 'pdu'">
+          <!-- 8 red illuminated rocker switches -->
+          <TresMesh 
+            v-for="switchNum in 8" 
+            :key="`pdu-switch-${switchNum}`"
+            :position="[-0.6 + switchNum * 0.15, 0, 0.37]"
+          >
+            <TresBoxGeometry :args="[0.1, 0.08, 0.02]" />
+            <TresMeshStandardMaterial :color="'#1A1A1A'" />
+          </TresMesh>
+          <!-- Red illuminated switches -->
+          <TresMesh 
+            v-for="switchNum in 8" 
+            :key="`pdu-led-${switchNum}`"
+            :position="[-0.6 + switchNum * 0.15, 0.05, 0.38]"
+          >
+            <TresSphereGeometry :args="[0.02, 6, 6]" />
+            <TresMeshBasicMaterial 
+              :color="'#F44336'"
+              :opacity="0.9"
+              :transparent="true"
+            />
+          </TresMesh>
+        </template>
+        
+        <!-- NAS (SilverStone) specific details -->
+        <template v-if="unit.type === 'nas'">
+          <!-- SilverStone logo area -->
+          <TresMesh :position="[0.5, 0, 0.37]">
+            <TresPlaneGeometry :args="[0.2, 0.1]" />
+            <TresMeshBasicMaterial :color="'#2D2D2D'" />
+          </TresMesh>
+          <!-- Blue LED indicators -->
+          <TresMesh 
+            v-for="led in 4" 
+            :key="`nas-led-${led}`"
+            :position="[-0.5 + led * 0.25, 0.15, 0.38]"
+          >
+            <TresSphereGeometry :args="[0.02, 6, 6]" />
+            <TresMeshBasicMaterial 
+              :color="colors.serverBlue"
+              :opacity="Math.sin(anim.time * (2 + led) + led) > 0.3 ? 1 : 0.4"
+              :transparent="true"
+            />
+          </TresMesh>
+          <!-- Drive bays -->
+          <TresMesh 
+            v-for="bay in 4" 
+            :key="`nas-bay-${bay}`"
+            :position="[-0.5 + bay * 0.25, -0.15, 0.37]"
+          >
+            <TresBoxGeometry :args="[0.18, 0.12, 0.02]" />
+            <TresMeshStandardMaterial :color="'#2D2D2D'" :metalness="0.5" />
+          </TresMesh>
+        </template>
+        
+        <!-- Enclosure specific details -->
+        <template v-if="unit.type === 'enclosure'">
+          <!-- Blue indicator lights in two rows -->
+          <TresMesh 
+            v-for="led in 8" 
+            :key="`enclosure-led-${led}`"
+            :position="[-0.4 + (led % 4) * 0.25, 0.1 - Math.floor(led / 4) * 0.2, 0.38]"
+          >
+            <TresSphereGeometry :args="[0.02, 6, 6]" />
+            <TresMeshBasicMaterial 
+              :color="colors.serverBlue"
+              :opacity="Math.sin(anim.time * (1.5 + led * 0.2) + led) > 0.3 ? 1 : 0.3"
+              :transparent="true"
+            />
+          </TresMesh>
+        </template>
+        
+        <!-- UPS specific details -->
+        <template v-if="unit.type === 'ups'">
+          <!-- Status display -->
+          <TresMesh :position="[0, 0.1, 0.37]">
+            <TresPlaneGeometry :args="[0.4, 0.15]" />
+            <TresMeshBasicMaterial :color="colors.serverGreen" :opacity="0.8" :transparent="true" />
+          </TresMesh>
+          <!-- Battery status LEDs -->
+          <TresMesh 
+            v-for="bat in 5" 
+            :key="`ups-bat-${bat}`"
+            :position="[-0.5 + bat * 0.12, -0.1, 0.38]"
+          >
+            <TresSphereGeometry :args="[0.02, 6, 6]" />
+            <TresMeshBasicMaterial 
+              :color="bat < 4 ? colors.serverGreen : colors.led"
+              :opacity="bat < 4 ? 0.9 : 0.3"
+              :transparent="true"
+            />
+          </TresMesh>
+        </template>
       </TresGroup>
       
       <!-- Rack rails -->

@@ -64,16 +64,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <section id="contact" class="section bg-transparent min-h-screen" data-section="contact">
+  <section id="contact" class="section bg-transparent min-h-screen p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="contact">
     <!-- Content -->
     <div class="section-content flex flex-col justify-center items-center h-full">
       <div class="text-center mb-12">
-        <h2 class="text-(--color-terminal-green) mb-2">{{ t('contact.title') }}</h2>
+        <h2 class="text-[var(--color-terminal-green)] mb-2">{{ t('contact.title') }}</h2>
         <p class="font-(--font-display) text-2xl text-white/70">{{ t('contact.subtitle') }}</p>
       </div>
 
       <div
-        class="glass max-w-[400px] xl:max-w-[500px] 2xl:max-w-[600px] mx-auto mb-12 md:mx-4 sm:mx-2 sm:mb-8 p-8 sm:p-6 flex flex-col items-center gap-6 cursor-pointer transition-all duration-150 border-2 border-transparent hover:border-(--color-terminal-green) hover:-translate-y-1 hover:shadow-[var(--shadow-glow-green)]"
+        class="glass max-w-[400px] xl:max-w-[500px] 2xl:max-w-[600px] mx-auto mb-12 md:mx-4 sm:mx-2 sm:mb-8 p-8 sm:p-6 flex flex-col items-center gap-6 cursor-pointer transition-all duration-150 border-2 border-transparent hover:border-[var(--color-terminal-green)] hover:-translate-y-1 hover:shadow-[var(--shadow-glow-green)]"
         @click="openLinkedIn">
         <div class="p-4 sm:p-3 bg-white rounded-xl">
           <img :src="qrCodeUrl" alt="LinkedIn QR Code"
@@ -81,10 +81,10 @@ onMounted(() => {
         </div>
         <div class="text-center flex flex-col items-center gap-2">
           <span class="text-4xl sm:text-3xl">💼</span>
-          <h3 class="font-(--font-display) text-2xl sm:text-xl text-(--color-terminal-green) m-0">{{ t('contact.cta') }}
+          <h3 class="font-(--font-display) text-2xl sm:text-xl text-[var(--color-terminal-green)] m-0">{{ t('contact.cta') }}
           </h3>
-          <p class="text-lg text-(--color-paper-cream) m-0">Damien Battistella</p>
-          <span class="font-(--font-code) text-sm text-(--color-frontend-blue) mt-2">{{ t('contact.linkedin') }}
+          <p class="text-lg text-[var(--color-paper-cream)] m-0">Damien Battistella</p>
+          <span class="font-(--font-code) text-sm text-[var(--color-frontend-blue)] mt-2">{{ t('contact.linkedin') }}
             →</span>
         </div>
       </div>
@@ -92,7 +92,7 @@ onMounted(() => {
       <!-- Locked Achievements Preview -->
       <div v-if="lockedAchievementsPreview.length > 0" class="w-full max-w-[600px] xl:max-w-[800px] 2xl:max-w-[1000px] mx-auto mb-8 px-4">
         <div class="glass p-6 sm:p-4 rounded-xl border border-white/10">
-          <h3 class="text-center font-(--font-display) text-lg text-(--color-terminal-green) mb-4">
+          <h3 class="text-center font-(--font-display) text-lg text-[var(--color-terminal-green)] mb-4">
             {{ t('contact.achievementsPreview') }}
           </h3>
           <div class="grid grid-cols-3 gap-4 sm:gap-2">

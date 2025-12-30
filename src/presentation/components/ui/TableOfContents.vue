@@ -32,7 +32,7 @@ const getSectionLabel = (sectionId: string): string => {
     hero: t('toc.hero'),
     about: t('toc.about'),
     experience: t('toc.experience'),
-    leadership: t('toc.leadership'),
+    motivation: t('toc.motivation'),
     skills: t('toc.skills'),
     maker: t('toc.maker'),
     projects: t('toc.projects'),
@@ -151,21 +151,33 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <nav ref="navRef" class="table-of-contents" :style="{ transform: sidebarTransform }">
-    <ul ref="tocListRef" class="toc-list">
+  <nav ref="navRef" class="table-of-contents fixed left-6 top-1/2 z-50 hidden lg:block transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" :style="{ transform: sidebarTransform }">
+    <ul ref="tocListRef" class="toc-list list-none m-0 p-0 flex flex-col gap-1.5">
       <li
         v-for="(section, index) in sections"
         :key="section.id"
-        class="toc-item"
+        class="toc-item relative group"
         :class="{ 'toc-item-active': index === activeSectionIndex }"
       >
         <button
-          class="toc-link"
+          class="toc-link flex items-center gap-2.5 px-2 py-1.5 bg-transparent border-none cursor-pointer transition-all duration-150 font-(--font-code) text-[0.7rem] uppercase tracking-widest relative rounded hover:bg-[rgba(124,58,237,0.05)]"
+          :class="{
+            'text-[var(--color-accent-primary)]': index === activeSectionIndex,
+            'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]': index !== activeSectionIndex
+          }"
           :aria-label="getSectionLabel(section.id)"
           @click="handleSectionClick(section.id)"
         >
-          <span class="toc-dot" />
-          <span class="toc-label">{{ getSectionLabel(section.id) }}</span>
+          <span class="toc-dot w-1.5 h-1.5 rounded-full transition-all duration-150 shrink-0" 
+            :class="{
+              'bg-[var(--color-accent-primary)] shadow-[0_0_6px_rgba(124,58,237,0.5)] scale-[1.4] opacity-100': index === activeSectionIndex,
+              'bg-[var(--color-text-muted)] opacity-60 group-hover:bg-[var(--color-text-secondary)] group-hover:opacity-80': index !== activeSectionIndex
+            }" />
+          <span class="toc-label transition-all duration-300 whitespace-nowrap font-medium"
+            :class="{
+              'opacity-100': index === activeSectionIndex,
+              'opacity-70 group-hover:opacity-100': index !== activeSectionIndex
+            }">{{ getSectionLabel(section.id) }}</span>
         </button>
       </li>
     </ul>
@@ -173,101 +185,18 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.table-of-contents {
-  position: fixed;
-  left: 1.5rem;
-  top: 50%;
-  z-index: 50;
-  display: none;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@media (min-width: 1024px) {
-  .table-of-contents {
-    display: block;
-  }
-}
-
-.toc-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.toc-item {
-  position: relative;
-}
+/* Layout styles kept in CSS for complex positioning and responsive display */
 
 .toc-link {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.375rem 0.5rem;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  font-family: var(--font-code);
-  font-size: 0.7rem;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  position: relative;
-  border-radius: 4px;
-}
-
-.toc-link:hover {
-  color: var(--color-text-secondary);
-  background: rgba(124, 58, 237, 0.05);
-}
-
-.toc-item-active .toc-link {
-  color: var(--color-accent-primary);
+  /* Padding, font-size, and colors handled by Tailwind utilities */
 }
 
 .toc-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--color-text-muted);
-  transition: all var(--transition-fast);
-  flex-shrink: 0;
-  opacity: 0.6;
-}
-
-.toc-item-active .toc-dot {
-  background: var(--color-accent-primary);
-  box-shadow: 0 0 6px rgba(124, 58, 237, 0.5);
-  transform: scale(1.4);
-  opacity: 1;
-}
-
-.toc-link:hover .toc-dot {
-  background: var(--color-text-secondary);
-  opacity: 0.8;
-}
-
-.toc-item-active .toc-link:hover .toc-dot {
-  background: var(--color-accent-secondary);
-  box-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+  /* Width, height, border-radius, background, transition, flex-shrink, opacity handled by Tailwind utilities */
 }
 
 .toc-label {
-  opacity: 0.7;
-  transition: all var(--transition-normal);
-  white-space: nowrap;
-  font-weight: 500;
-}
-
-.toc-item:hover .toc-label {
-  opacity: 1;
-}
-
-.toc-item-active .toc-label {
-  opacity: 1;
+  /* Opacity, transition, white-space, font-weight handled by Tailwind utilities */
 }
 
 /* Connector line between items */

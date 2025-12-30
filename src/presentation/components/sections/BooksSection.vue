@@ -28,7 +28,7 @@ const openBook = (url: string, status?: string) => {
 </script>
 
 <template>
-  <section id="books" class="section bg-transparent" data-section="books">
+  <section id="books" class="section bg-transparent p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="books">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas
@@ -43,17 +43,17 @@ const openBook = (url: string, status?: string) => {
     </div>
 
     <!-- Content -->
-    <div class="section-content">
+    <div class="section-content mx-auto">
       <div class="text-center mb-12">
-        <h2 class="text-(--color-book-amber) mb-2">{{ t('books.title') }}</h2>
+        <h2 class="text-[var(--color-book-amber)] mb-2">{{ t('books.title') }}</h2>
         <p class="font-(--font-display) text-2xl text-white/70">{{ t('books.subtitle') }}</p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-[1200px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto mt-48">
+      <div class="mt-8 md:mt-12 w-full flex justify-center">
+        <div class="flex flex-wrap justify-center gap-4 max-w-[1200px] xl:max-w-[1400px] 2xl:max-w-[1600px]">
         <!-- Read Books -->
-        <div class="glass p-4">
-          <h3 class="font-(--font-display) text-xl text-(--color-paper-cream) mb-3 flex items-center gap-2">
-            <span class="text-lg">✓</span>
+        <div class="glass p-4 w-[280px] md:w-[300px]">
+          <h3 class="font-(--font-display) text-xl text-[var(--color-paper-cream)] mb-3">
             {{ t('books.read') }}
           </h3>
           <div class="flex flex-col gap-2">
@@ -65,7 +65,7 @@ const openBook = (url: string, status?: string) => {
             >
               <div class="text-2xl w-[40px] h-[48px] flex items-center justify-center bg-white/3 rounded">📗</div>
               <div class="flex flex-col justify-center gap-0.5">
-                <span class="text-xs text-(--color-paper-cream) leading-tight">{{ book.title }}</span>
+                <span class="text-xs text-[var(--color-paper-cream)] leading-tight">{{ book.title }}</span>
                 <span class="text-[10px] text-white/50">{{ book.author }}</span>
               </div>
             </div>
@@ -73,9 +73,8 @@ const openBook = (url: string, status?: string) => {
         </div>
 
         <!-- To Read Books -->
-        <div class="glass p-4 border-amber-400/30">
-          <h3 class="font-(--font-display) text-xl text-(--color-paper-cream) mb-3 flex items-center gap-2">
-            <span class="text-lg">📖</span>
+        <div class="glass p-4 border-amber-400/30 w-[280px] md:w-[300px]">
+          <h3 class="font-(--font-display) text-xl text-[var(--color-paper-cream)] mb-3">
             {{ t('books.toRead') }}
           </h3>
           <div class="flex flex-col gap-2">
@@ -87,7 +86,7 @@ const openBook = (url: string, status?: string) => {
             >
               <div class="text-2xl w-[40px] h-[48px] flex items-center justify-center bg-white/3 rounded">📕</div>
               <div class="flex flex-col justify-center gap-0.5">
-                <span class="text-xs text-(--color-paper-cream) leading-tight">{{ book.title }}</span>
+                <span class="text-xs text-[var(--color-paper-cream)] leading-tight">{{ book.title }}</span>
                 <span class="text-[10px] text-white/50">{{ book.author }}</span>
               </div>
             </div>
@@ -95,9 +94,8 @@ const openBook = (url: string, status?: string) => {
         </div>
 
         <!-- To Buy Books -->
-        <div class="glass p-4 border-green-400/30">
-          <h3 class="font-(--font-display) text-xl text-(--color-paper-cream) mb-3 flex items-center gap-2">
-            <span class="text-lg">🛒</span>
+        <div class="glass p-4 border-green-400/30 w-[280px] md:w-[300px]">
+          <h3 class="font-(--font-display) text-xl text-[var(--color-paper-cream)] mb-3">
             {{ t('books.toBuy') }}
           </h3>
           <div class="flex flex-col gap-2">
@@ -109,11 +107,12 @@ const openBook = (url: string, status?: string) => {
             >
               <div class="text-2xl w-[40px] h-[48px] flex items-center justify-center bg-white/3 rounded">📘</div>
               <div class="flex flex-col justify-center gap-0.5">
-                <span class="text-xs text-(--color-paper-cream) leading-tight">{{ book.title }}</span>
+                <span class="text-xs text-[var(--color-paper-cream)] leading-tight">{{ book.title }}</span>
                 <span class="text-[10px] text-white/50">{{ book.author }}</span>
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

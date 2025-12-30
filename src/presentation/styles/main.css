@@ -148,8 +148,8 @@ code, pre {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
   overflow: hidden;
+  /* Padding handled by Tailwind utilities: p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16 */
 }
 
 .section-content {
@@ -170,19 +170,11 @@ code, pre {
   .section-content {
     max-width: 1600px;
   }
-  
-  .section {
-    padding: 3rem;
-  }
 }
 
 @media (min-width: 2560px) {
   .section-content {
     max-width: 2000px;
-  }
-  
-  .section {
-    padding: 4rem;
   }
 }
 
@@ -260,12 +252,12 @@ code, pre {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
+  /* Padding handled by Tailwind utilities: px-2 py-1 */
+  /* Font-size handled by Tailwind utilities: text-xs */
   background: var(--color-wood-medium);
   border: 1px solid var(--color-terminal-green);
   border-radius: 4px;
   font-family: var(--font-code);
-  font-size: 0.75rem;
   color: var(--color-terminal-green);
 }
 
@@ -278,10 +270,10 @@ code, pre {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  /* Padding handled by Tailwind utilities: px-6 py-3 */
+  /* Font-size handled by Tailwind utilities: text-base */
   font-family: var(--font-body);
   font-weight: 600;
-  font-size: 1rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -549,10 +541,6 @@ code, pre {
    ============================================ */
 
 @media (max-width: 768px) {
-  .section {
-    padding: 1rem;
-  }
-  
   .fixed-header {
     top: 0.5rem;
     right: 0.5rem;
@@ -568,10 +556,6 @@ code, pre {
 
 /* Small mobile devices */
 @media (max-width: 480px) {
-  .section {
-    padding: 0.75rem;
-  }
-  
   h1 {
     font-size: clamp(2rem, 10vw, 3rem);
   }

@@ -163,7 +163,7 @@ const updateAnimations = (elapsed: number, _delta: number) => {
 
 onMounted(() => {
   // Find the parent section element
-  const canvas = document.querySelector('[data-section="leadership"]')
+  const canvas = document.querySelector('[data-section="motivation"]')
   if (canvas) {
     sectionElement.value = canvas as HTMLElement
   }

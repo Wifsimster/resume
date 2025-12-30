@@ -10,7 +10,7 @@ export default {
     hero: 'Accueil',
     about: 'À propos',
     experience: 'Expérience',
-    leadership: 'Leadership',
+    motivation: 'Motivation',
     skills: 'Compétences',
     maker: 'Maker',
     projects: 'Projets',
@@ -233,7 +233,7 @@ export default {
   },
   experience: {
     title: 'Expérience',
-    subtitle: 'L\'évolution',
+    subtitle: 'De développeur à tech lead manager',
     current: 'Poste actuel',
     years: 'ans',
     achievements: 'Réalisations clés',
@@ -270,18 +270,53 @@ export default {
       ]
     }
   },
-  leadership: {
-    title: 'Leadership',
-    subtitle: 'Développer les talents & partager les savoirs',
-    presentations: 'Rituels',
-    conferences: 'Conférences',
-    mentoring: 'Construction d\'équipe',
-    recruited: 'Développeurs recrutés',
-    interns: 'Stagiaires encadrés',
-    apprentices: 'Alternant encadré',
-    monthlyPresentations: 'Présentation tech mensuelle pour l\'ensemble des développeurs de la business unit',
-    architectureMeetings: 'Réunion mensuelle entre architectes',
-    dailyMeeting: 'Daily avec le PO et les équipes dev'
+  motivation: {
+    title: 'Mes motivations',
+    subtitle: 'La culture dans laquelle je m\'épanouis',
+    culture: {
+      title: 'La culture dans laquelle je m\'épanouis',
+      idealEnvironment: {
+        title: 'Mon environnement idéal',
+        description: 'Je recherche un environnement dynamique et orienté résultats, qui valorise l\'innovation et offre une approche flexible du travail. J\'ai besoin de liberté dans mes méthodes, d\'un cadre qui évolue régulièrement et qui me stimule sans routine. Enfin, peu de règles et une culture qui valorise les accomplissements.'
+      }
+    },
+    managementStyle: {
+      adopts: {
+        title: 'Mon style de management',
+        implication: {
+          title: 'Ce que cela implique',
+          description: 'Je suis un manager qui apporte une vision et qui se montre inspirant. Je motive mes collaborateurs autour d\'objectifs clairs et partagés. Animé par le sens du résultat et valorisant les résultats accomplis, je demande à chacun de se dépasser pour accomplir l\'objectif collectif.'
+        },
+        styles: {
+          visionnaire: {
+            label: 'Visionnaire',
+            percentage: 66,
+            tagline: 'Venez avec moi'
+          },
+          gagneur: {
+            label: 'Gagneur',
+            percentage: 63,
+            tagline: 'Regardez-moi et faites comme moi'
+          }
+        }
+      },
+      seeks: {
+        title: 'Le style de management que je recherche',
+        description: 'J\'attends d\'un manager qu\'il soit inspirant et qu\'il me fasse progresser sur le plan personnel. J\'ai besoin d\'être guidé dans mon travail par quelqu\'un qui a un plan d\'action pour moi. Je cherche un mentor en qui je puisse avoir confiance. Je suis motivé par un leader qui m\'entraîne vers un objectif collectif, mais qui se montre capable de prendre en compte les singularités de chacun.',
+        styles: {
+          coach: {
+            label: 'Coach',
+            percentage: 80,
+            tagline: 'Essayez ça'
+          },
+          visionnaire: {
+            label: 'Visionnaire',
+            percentage: 75,
+            tagline: 'Venez avec moi'
+          }
+        }
+      }
+    }
   },
   skills: {
     title: 'Compétences',
@@ -294,29 +329,53 @@ export default {
   },
   maker: {
     title: 'Maker',
-    subtitle: 'J\'adore construire et expérimenter, voici quelques uns de mes projets...'
+    subtitle: 'J\'adore construire et expérimenter, voici quelques uns de mes projets...',
+    rackUnits: {
+      udmPro: {
+        name: 'UniFi Dream Machine Pro',
+        description: 'Routeur et contrôleur réseau unifié avec protection intégrée et gestion centralisée'
+      },
+      switch: {
+        name: 'UniFi Switch',
+        description: 'Commutateur réseau avec ports Ethernet multiples pour la distribution réseau'
+      },
+      ap: {
+        name: 'Point d\'accès Wi-Fi',
+        description: 'Point d\'accès sans fil pour la couverture réseau dans toute la maison'
+      },
+      silver1u: {
+        name: 'Appareil 1U argenté',
+        description: 'Équipement rackmount 1U pour services réseau ou serveur'
+      },
+      pdu: {
+        name: 'PDU (Power Distribution Unit)',
+        description: 'Unité de distribution d\'alimentation avec 8 interrupteurs à bascule pour contrôle individuel'
+      },
+      nas: {
+        name: 'NAS SilverStone',
+        description: 'Serveur de stockage en réseau pour sauvegarde et partage de fichiers'
+      },
+      enclosure: {
+        name: 'Boîtier rackmount',
+        description: 'Enceinte serveur avec indicateurs d\'activité pour hébergement d\'équipements'
+      },
+      ups: {
+        name: 'UPS (Uninterruptible Power Supply)',
+        description: 'Alimentation sans interruption pour protection contre les coupures de courant'
+      }
+    }
   },
   projects: {
     title: 'Projets',
-    subtitle: 'Galerie Open Source',
+    subtitle: 'Projets personnels et réalisations',
     repositories: 'repositories',
-    adalight: {
-      desc: 'Rétroéclairage TV ambiant avec LEDs WS2812 qui synchronise les couleurs avec l\'écran en temps réel via Prismatik'
+    blog: {
+      desc: 'Découvrez mes projets DIY : bureau sur mesure, rénovation maison, projets électroniques ESP8266, systèmes ambilight et bien plus encore'
     },
-    rtsp: {
-      desc: 'Diffusion vidéo en direct depuis caméras IP (RTSP) vers navigateurs via WebSocket, idéal pour dashboards de surveillance'
-    },
-    pavie: {
-      desc: 'SDK Node.js pour interagir avec Plex Media Server : parcourir les bibliothèques, contrôler la lecture et automatiser son media center'
-    },
-    overwatch: {
-      desc: 'Dashboard domotique Vue.js avec mises à jour WebSocket temps réel pour monitorer capteurs, caméras et objets connectés'
-    },
-    bordeaux: {
-      desc: 'Téléchargeur automatique de séries TV qui suit les épisodes via Trakt, télécharge via Transmission et organise les médias pour Plex'
-    },
-    pir: {
-      desc: 'Firmware ESP8266 pour capteurs de mouvement PIR publiant vers MQTT, permettant des automatisations domotiques'
+    github: {
+      title: 'Projets Open Source',
+      tech: 'GitHub',
+      desc: 'Résumé de mes {count} repositories GitHub : librairies, outils, projets personnels et contributions open source'
     }
   },
   books: {

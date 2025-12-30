@@ -10,7 +10,7 @@ export default {
     hero: 'Home',
     about: 'About',
     experience: 'Experience',
-    leadership: 'Leadership',
+    motivation: 'Motivation',
     skills: 'Skills',
     maker: 'Maker',
     projects: 'Projects',
@@ -233,7 +233,7 @@ export default {
   },
   experience: {
     title: 'Experience',
-    subtitle: 'The Evolution',
+    subtitle: 'From developer to tech lead manager',
     current: 'Current position',
     years: 'years',
     achievements: 'Key achievements',
@@ -270,18 +270,53 @@ export default {
       ]
     }
   },
-  leadership: {
-    title: 'Leadership',
-    subtitle: 'Growing Teams & Sharing Knowledge',
-    presentations: 'Team Rituals',
-    conferences: 'Conferences',
-    mentoring: 'Team Building',
-    recruited: 'Developers recruited',
-    interns: 'Interns mentored',
-    apprentices: 'Apprentice mentored',
-    monthlyPresentations: 'Monthly tech presentation for all business unit developers',
-    architectureMeetings: 'Architecture meeting',
-    dailyMeeting: 'Daily with PO and dev teams'
+  motivation: {
+    title: 'My Motivations',
+    subtitle: 'The culture in which I thrive',
+    culture: {
+      title: 'The culture in which I thrive',
+      idealEnvironment: {
+        title: 'My ideal environment',
+        description: 'I seek a dynamic, results-oriented environment that values innovation and offers a flexible approach to work. I need freedom in my methods, a framework that evolves regularly and stimulates me without routine. Finally, few rules and a culture that values accomplishments.'
+      }
+    },
+    managementStyle: {
+      adopts: {
+        title: 'My management style',
+        implication: {
+          title: 'What this implies',
+          description: 'I am a manager who brings a vision and is inspiring. I motivate my collaborators around clear and shared objectives. Driven by a sense of results and valuing accomplished results, I ask everyone to surpass themselves to achieve the collective objective.'
+        },
+        styles: {
+          visionnaire: {
+            label: 'Visionary',
+            percentage: 66,
+            tagline: 'Come with me'
+          },
+          gagneur: {
+            label: 'Winner',
+            percentage: 63,
+            tagline: 'Watch me and do as I do'
+          }
+        }
+      },
+      seeks: {
+        title: 'The management style I seek',
+        description: 'I expect a manager to be inspiring and to help me progress personally. I need to be guided in my work by someone who has an action plan for me. I seek a mentor I can trust. I am motivated by a leader who guides me towards a collective goal, but who is also capable of taking into account the individual specificities of each person.',
+        styles: {
+          coach: {
+            label: 'Coach',
+            percentage: 80,
+            tagline: 'Try this'
+          },
+          visionnaire: {
+            label: 'Visionary',
+            percentage: 75,
+            tagline: 'Come with me'
+          }
+        }
+      }
+    }
   },
   skills: {
     title: 'Skills',
@@ -298,25 +333,15 @@ export default {
   },
   projects: {
     title: 'Projects',
-    subtitle: 'Open Source Gallery',
+    subtitle: 'Personal projects and achievements',
     repositories: 'repositories',
-    adalight: {
-      desc: 'Arduino-based ambient TV backlight using WS2812 LEDs that sync colors with your screen in real-time via Prismatik'
+    blog: {
+      desc: 'Discover my DIY projects: custom desk, home renovation, ESP8266 electronics projects, ambilight systems and much more'
     },
-    rtsp: {
-      desc: 'Stream live video from IP cameras (RTSP) directly to browsers via WebSocket, perfect for home surveillance dashboards'
-    },
-    pavie: {
-      desc: 'Node.js SDK to interact with Plex Media Server: browse libraries, control playback, and automate your media center'
-    },
-    overwatch: {
-      desc: 'Vue.js home automation dashboard with real-time WebSocket updates for monitoring sensors, cameras, and smart devices'
-    },
-    bordeaux: {
-      desc: 'Automated TV show downloader that tracks episodes via Trakt, downloads via Transmission, and organizes media for Plex'
-    },
-    pir: {
-      desc: 'Tiny ESP8266 firmware for PIR motion sensors publishing to MQTT, enabling smart home automation triggers'
+    github: {
+      title: 'Open Source Projects',
+      tech: 'GitHub',
+      desc: 'Summary of my {count} GitHub repositories: libraries, tools, personal projects and open source contributions'
     }
   },
   books: {
