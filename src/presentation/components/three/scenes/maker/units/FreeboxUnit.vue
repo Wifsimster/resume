@@ -21,12 +21,12 @@ defineProps<Props>()
 <template>
     <BaseServerUnit :unit="unit" :is-hovered="isHovered" :colors="colors">
         <!-- LCD display on the left showing "13 37" in yellow-green -->
-        <TresMesh :position="[-0.6, 0, 0.37]">
+        <TresMesh :position="[-0.362, 0, 0.37]">
             <TresPlaneGeometry :args="[0.25, 0.25]" />
             <TresMeshBasicMaterial :color="'#0A0A0A'" />
         </TresMesh>
         <!-- LCD numbers background (yellow-green glow for "13 37") -->
-        <TresMesh :position="[-0.6, 0.05, 0.371]">
+        <TresMesh :position="[-0.362, 0.05, 0.371]">
             <TresPlaneGeometry :args="[0.2, 0.15]" />
             <TresMeshBasicMaterial :color="'#ADFF2F'" :opacity="0.4" :transparent="true" />
         </TresMesh>
@@ -65,7 +65,7 @@ defineProps<Props>()
         </TresMesh>
 
         <!-- Freebox logo text on the far right -->
-        <TresMesh :position="[0.5, 0, 0.37]">
+        <TresMesh :position="[0.302, 0, 0.37]">
             <TresPlaneGeometry :args="[0.25, 0.08]" />
             <TresMeshBasicMaterial :color="'#FFFFFF'" :opacity="0.9" :transparent="true" />
         </TresMesh>

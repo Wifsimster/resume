@@ -21,18 +21,18 @@ const props = defineProps<Props>()
 <template>
     <BaseServerUnit :unit="unit" :is-hovered="isHovered" :colors="colors">
         <!-- SilverStone logo area -->
-        <TresMesh :position="[0.5, 0, 0.37]">
+        <TresMesh :position="[0.302, 0, 0.37]">
             <TresPlaneGeometry :args="[0.2, 0.1]" />
             <TresMeshBasicMaterial :color="'#2D2D2D'" />
         </TresMesh>
         <!-- Blue LED indicators -->
-        <TresMesh v-for="led in 4" :key="`nas-led-${led}`" :position="[-0.5 + led * 0.25, 0.15, 0.38]">
+        <TresMesh v-for="led in 4" :key="`nas-led-${led}`" :position="[-0.302 + led * 0.151, 0.15, 0.38]">
             <TresSphereGeometry :args="[0.02, 6, 6]" />
             <TresMeshBasicMaterial :color="colors.serverBlue"
                 :opacity="Math.sin(anim.time * (2 + led) + led) > 0.3 ? 1 : 0.4" :transparent="true" />
         </TresMesh>
         <!-- Drive bays -->
-        <TresMesh v-for="bay in 4" :key="`nas-bay-${bay}`" :position="[-0.5 + bay * 0.25, -0.15, 0.37]">
+        <TresMesh v-for="bay in 4" :key="`nas-bay-${bay}`" :position="[-0.302 + bay * 0.151, -0.15, 0.37]">
             <TresBoxGeometry :args="[0.18, 0.12, 0.02]" />
             <TresMeshStandardMaterial :color="'#2D2D2D'" :metalness="0.5" />
         </TresMesh>

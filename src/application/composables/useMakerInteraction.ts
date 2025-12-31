@@ -13,7 +13,9 @@ export function useMakerInteraction(
   sceneRef: Ref<any>,
   cameraOffset: CameraOffset,
   serverUnitMeshes: Ref<Map<string, any>>,
-  onHoverChange: (unitId: string | null) => void
+  onHoverChange: (unitId: string | null) => void,
+  rackMeshRef: Ref<any> | null = null,
+  onRackClick: (() => void) | null = null
 ) {
   const hoveredUnitId = ref<string | null>(null)
   const { camera, renderer } = useTres()
@@ -83,12 +85,61 @@ export function useMakerInteraction(
     }
   }
 
+  const handleClick = (event: MouseEvent) => {
+    const rendererInstance = (renderer as any).value
+    if (!camera.value || !rendererInstance || !sceneRef.value || !rackMeshRef?.value || !onRackClick) return
+
+    // Access renderer's domElement (TresJS compatibility)
+    const canvas = rendererInstance.domElement
+    const rect = canvas.getBoundingClientRect()
+
+    // Calculate normalized device coordinates
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
+
+    // Update raycaster
+    raycasterInstance.setFromCamera(mouse, camera.value)
+
+    // Get the rack mesh object
+    const rackMesh = rackMeshRef.value?.value || rackMeshRef.value
+    if (!rackMesh) return
+
+    // Check for intersection with rack (including all children)
+    const intersects = raycasterInstance.intersectObject(rackMesh, true)
+
+    if (intersects.length > 0) {
+      // Check if we clicked on a server unit (don't toggle if clicking on units)
+      const clickedObject = intersects[0].object
+      const unitMeshes = Array.from(serverUnitMeshes.value.values())
+        .map(mesh => mesh?.value || mesh)
+        .filter(Boolean)
+
+      // Check if the clicked object is part of a server unit
+      let isUnit = false
+      let current = clickedObject
+      while (current && !isUnit) {
+        isUnit = unitMeshes.some(unitMesh => {
+          return unitMesh === current || (unitMesh.children && unitMesh.children.includes(current))
+        })
+        // @ts-expect-error - parent can be null, but while loop handles it
+        current = current.parent
+      }
+
+      // Only toggle if we clicked on the rack itself, not on a unit
+      if (!isUnit) {
+        onRackClick()
+      }
+    }
+  }
+
   onMounted(() => {
     window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('click', handleClick)
   })
 
   onUnmounted(() => {
     window.removeEventListener('mousemove', handleMouseMove)
+    window.removeEventListener('click', handleClick)
   })
 
   return {

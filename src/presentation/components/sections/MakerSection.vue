@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { TresCanvas } from '@tresjs/core'
 import MakerScene from '@presentation/components/three/scenes/MakerScene.vue'
 import { useQuality } from '@application/composables/useQuality'
 import { useAchievements } from '@application/composables/useAchievements'
+import type { CameraMode } from '@application/composables/useMakerCamera'
+import RackLegend from '@presentation/components/ui/RackLegend.vue'
+import { rackUnits } from '@domain/data/makerRack'
 
 const { t } = useI18n()
 const { quality, renderSettings } = useQuality()
@@ -13,6 +16,25 @@ const { unlock } = useAchievements()
 // Tooltip state
 const hoveredUnitId = ref<string | null>(null)
 const mousePosition = ref({ x: 0, y: 0 })
+
+// MakerScene ref for camera controls
+const makerSceneRef = ref<InstanceType<typeof MakerScene> | null>(null)
+
+// Camera mode state
+const cameraMode = ref<CameraMode>('desk')
+
+// Handle camera mode changes from MakerScene
+const handleCameraModeChange = (mode: CameraMode) => {
+  cameraMode.value = mode
+}
+
+// Toggle camera mode
+const handleToggleCamera = () => {
+  makerSceneRef.value?.toggleMode()
+}
+
+// Check if desk mode is active
+const isDeskMode = computed(() => cameraMode.value === 'desk')
 
 // Handle hover events from MakerScene
 const handleHoverUnit = (unitId: string | null) => {
@@ -85,6 +107,28 @@ onUnmounted(() => {
 
 <template>
   <section id="maker" class="section bg-transparent relative p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="maker">
+    <!-- Camera View Toggle Switch -->
+    <div class="absolute top-0 left-0 right-0 z-50 p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16">
+      <div class="sticky top-0 flex justify-center">
+        <button
+          class="flex items-center justify-between w-[90px] h-9 p-0.5 bg-[#1E1E1E]/80 backdrop-blur-md border border-white/10 rounded-2xl cursor-pointer transition-all duration-200 hover:border-white/20 sm:w-20 sm:h-10"
+          @click="handleToggleCamera"
+          :aria-label="isDeskMode ? t('maker.cameraViewRack') : t('maker.cameraViewDesk')"
+        >
+      <span 
+        class="flex items-center justify-center w-8 h-8 text-lg rounded-full transition-all duration-200 select-none sm:w-9 sm:h-9 sm:text-xl"
+        :class="isDeskMode ? 'opacity-100 bg-white/10' : 'opacity-50'"
+        :title="t('maker.cameraViewDesk')"
+      >🖥️</span>
+      <span 
+        class="flex items-center justify-center w-8 h-8 text-lg rounded-full transition-all duration-200 select-none sm:w-9 sm:h-9 sm:text-xl"
+        :class="!isDeskMode ? 'opacity-100 bg-white/10' : 'opacity-50'"
+        :title="t('maker.cameraViewRack')"
+      >🗄️</span>
+        </button>
+      </div>
+    </div>
+
     <!-- 3D Canvas - Full background -->
     <div class="section-canvas">
       <TresCanvas
@@ -95,12 +139,14 @@ onUnmounted(() => {
         :power-preference="renderSettings.powerPreference"
       >
         <MakerScene 
+          ref="makerSceneRef"
           :quality="quality" 
           :projects="projects"
           :tech-stack="techStack"
           :title="t('maker.title')"
           :subtitle="t('maker.subtitle')"
-          @hover-unit="handleHoverUnit" 
+          @hover-unit="handleHoverUnit"
+          @camera-mode-change="handleCameraModeChange"
         />
       </TresCanvas>
     </div>
@@ -125,5 +171,11 @@ onUnmounted(() => {
         </p>
       </div>
     </div>
+
+    <!-- Rack Legend - Hand-drawn annotations -->
+    <RackLegend
+      :visible="!isDeskMode"
+      :rack-units="rackUnits"
+    />
   </section>
 </template>

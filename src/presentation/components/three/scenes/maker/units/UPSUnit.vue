@@ -26,7 +26,7 @@ defineProps<Props>()
             <TresMeshBasicMaterial :color="colors.serverGreen" :opacity="0.8" :transparent="true" />
         </TresMesh>
         <!-- Battery status LEDs -->
-        <TresMesh v-for="bat in 5" :key="`ups-bat-${bat}`" :position="[-0.5 + bat * 0.12, -0.1, 0.38]">
+        <TresMesh v-for="bat in 5" :key="`ups-bat-${bat}`" :position="[-0.302 + bat * 0.072, -0.1, 0.38]">
             <TresSphereGeometry :args="[0.02, 6, 6]" />
             <TresMeshBasicMaterial :color="bat < 4 ? colors.serverGreen : colors.led"
                 :opacity="bat < 4 ? 0.9 : 0.3" :transparent="true" />

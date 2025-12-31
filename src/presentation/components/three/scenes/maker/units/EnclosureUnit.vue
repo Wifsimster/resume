@@ -22,7 +22,7 @@ const props = defineProps<Props>()
     <BaseServerUnit :unit="unit" :is-hovered="isHovered" :colors="colors">
         <!-- Blue indicator lights in two rows -->
         <TresMesh v-for="led in 8" :key="`enclosure-led-${led}`"
-            :position="[-0.4 + (led % 4) * 0.25, 0.1 - Math.floor(led / 4) * 0.2, 0.38]">
+            :position="[-0.241 + (led % 4) * 0.151, 0.1 - Math.floor(led / 4) * 0.2, 0.38]">
             <TresSphereGeometry :args="[0.02, 6, 6]" />
             <TresMeshBasicMaterial :color="colors.serverBlue"
                 :opacity="Math.sin(anim.time * (1.5 + led * 0.2) + led) > 0.3 ? 1 : 0.3" :transparent="true" />

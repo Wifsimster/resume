@@ -5,8 +5,8 @@ export const rackUnits: ServerUnit[] = [
     id: 'freebox',
     name: 'maker.rackUnits.freebox.name',
     description: 'maker.rackUnits.freebox.description',
-    y: 3.65,
-    height: 0.45,
+    y: 3.25,
+    height: 0.1,
     color: '#1A1A1A',
     type: 'freebox'
   },
@@ -14,8 +14,8 @@ export const rackUnits: ServerUnit[] = [
     id: 'udm-pro',
     name: 'maker.rackUnits.udmPro.name',
     description: 'maker.rackUnits.udmPro.description',
-    y: 3.2,
-    height: 0.45,
+    y: 3.15,
+    height: 0.1,
     color: '#FFFFFF',
     type: 'udm-pro'
   },
@@ -23,8 +23,8 @@ export const rackUnits: ServerUnit[] = [
     id: 'switch',
     name: 'maker.rackUnits.switch.name',
     description: 'maker.rackUnits.switch.description',
-    y: 2.6,
-    height: 0.45,
+    y: 3.05,
+    height: 0.1,
     color: '#FFFFFF',
     type: 'switch'
   },
@@ -32,8 +32,8 @@ export const rackUnits: ServerUnit[] = [
     id: 'ap',
     name: 'maker.rackUnits.ap.name',
     description: 'maker.rackUnits.ap.description',
-    y: 2.2,
-    height: 0.3,
+    y: 2.95,
+    height: 0.1,
     color: '#FFFFFF',
     type: 'ap'
   },
@@ -41,8 +41,8 @@ export const rackUnits: ServerUnit[] = [
     id: 'silver-1u',
     name: 'maker.rackUnits.silver1u.name',
     description: 'maker.rackUnits.silver1u.description',
-    y: 1.7,
-    height: 0.45,
+    y: 2.85,
+    height: 0.1,
     color: '#C0C0C0',
     type: 'silver-1u'
   },
@@ -50,8 +50,8 @@ export const rackUnits: ServerUnit[] = [
     id: 'pdu',
     name: 'maker.rackUnits.pdu.name',
     description: 'maker.rackUnits.pdu.description',
-    y: 1.1,
-    height: 0.5,
+    y: 2.7,
+    height: 0.2,
     color: '#1A1A1A',
     type: 'pdu'
   },
@@ -59,8 +59,8 @@ export const rackUnits: ServerUnit[] = [
     id: 'nas',
     name: 'maker.rackUnits.nas.name',
     description: 'maker.rackUnits.nas.description',
-    y: 0.4,
-    height: 0.6,
+    y: 2.5,
+    height: 0.2,
     color: '#1A1A1A',
     type: 'nas'
   },
@@ -68,8 +68,8 @@ export const rackUnits: ServerUnit[] = [
     id: 'enclosure',
     name: 'maker.rackUnits.enclosure.name',
     description: 'maker.rackUnits.enclosure.description',
-    y: -0.3,
-    height: 0.5,
+    y: 2.3,
+    height: 0.2,
     color: '#1A1A1A',
     type: 'enclosure'
   },
@@ -77,8 +77,8 @@ export const rackUnits: ServerUnit[] = [
     id: 'ups',
     name: 'maker.rackUnits.ups.name',
     description: 'maker.rackUnits.ups.description',
-    y: -0.8,
-    height: 0.5,
+    y: 2.1,
+    height: 0.2,
     color: '#1A1A1A',
     type: 'ups'
   }

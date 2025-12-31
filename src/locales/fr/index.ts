@@ -330,6 +330,8 @@ export default {
   maker: {
     title: 'Maker',
     subtitle: 'J\'adore construire et expérimenter, voici quelques uns de mes projets...',
+    cameraViewDesk: 'Vue Bureau',
+    cameraViewRack: 'Vue Rack',
     rackUnits: {
       freebox: {
         name: 'Freebox mini 4K',

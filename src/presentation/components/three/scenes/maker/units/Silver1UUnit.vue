@@ -21,7 +21,7 @@ defineProps<Props>()
 <template>
     <BaseServerUnit :unit="unit" :is-hovered="isHovered" :colors="colors">
         <!-- Status LEDs -->
-        <TresMesh :position="[0.5, 0.08, 0.38]">
+        <TresMesh :position="[0.302, 0.08, 0.38]">
             <TresSphereGeometry :args="[0.02, 6, 6]" />
             <TresMeshBasicMaterial :color="colors.serverGreen" :opacity="0.9" :transparent="true" />
         </TresMesh>

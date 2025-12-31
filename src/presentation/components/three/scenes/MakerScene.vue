@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
+import type { CameraMode } from '@application/composables/useMakerCamera'
 import type { QualityLevel } from '@application/composables/useQuality'
 import { useAnimationController } from '@application/composables/useAnimationController'
 import { useScreenTexture } from '@application/composables/useScreenTexture'
@@ -24,6 +25,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   hoverUnit: [unitId: string | null]
+  cameraModeChange: [mode: CameraMode]
 }>()
 
 // Screen texture
@@ -42,6 +44,7 @@ const animationController = useAnimationController(sectionElement)
 
 const sceneRef = ref()
 const serverUnitMeshes = ref<Map<string, any>>(new Map())
+const rackMeshRef = ref<any>(null)
 
 // Camera control state
 const cameraOffset = reactive({
@@ -52,7 +55,18 @@ const cameraOffset = reactive({
 })
 
 // Camera setup
-const { cameraPosition, cameraLookAt, updateCamera } = useMakerCamera(cameraOffset)
+const { cameraPosition, cameraLookAt, updateCamera, toggleMode, cameraMode } = useMakerCamera(cameraOffset)
+
+// Watch camera mode changes and emit event
+watch(cameraMode, (newMode) => {
+  emit('cameraModeChange', newMode)
+}, { immediate: true })
+
+// Expose camera controls for parent component
+defineExpose({
+  toggleMode,
+  cameraMode
+})
 
 // Server rack configuration
 const visibleRackUnits = computed(() =>
@@ -72,7 +86,9 @@ const { hoveredUnitId } = useMakerInteraction(
   sceneRef,
   cameraOffset,
   serverUnitMeshes,
-  (unitId) => emit('hoverUnit', unitId)
+  (unitId) => emit('hoverUnit', unitId),
+  rackMeshRef,
+  toggleMode
 )
 
 // Dust particles
@@ -105,6 +121,13 @@ const handleUnitRef = (unitId: string, ref: any) => {
   }
 }
 
+// Handle rack reference
+const handleRackRef = (ref: any) => {
+  if (ref) {
+    rackMeshRef.value = ref
+  }
+}
+
 let startTime = 0
 
 onMounted(() => {
@@ -133,23 +156,23 @@ onUnmounted(() => {
     :look-at="[cameraLookAt.x, cameraLookAt.y, cameraLookAt.z]" />
 
   <!-- Enhanced Lighting -->
-  <TresAmbientLight :intensity="1.0" />
-  <TresPointLight :position="[0, 6, 5]" :intensity="4.5" color="#FFFFFF" />
+  <TresAmbientLight :intensity="1.5" />
+  <TresPointLight :position="[0, 6, 5]" :intensity="6" color="#FFFFFF" />
   <!-- Monitor area lighting -->
-  <TresPointLight :position="[-2, 2.5, 0]" :intensity="2.5" :color="makerColors.screenGlow" />
-  <TresPointLight :position="[-1, 2.5, -0.5]" :intensity="2" color="#FFFFFF" />
-  <TresPointLight :position="[1, 2.5, -0.5]" :intensity="2" color="#FFFFFF" />
+  <TresPointLight :position="[-2, 2.5, 0]" :intensity="3.5" :color="makerColors.screenGlow" />
+  <TresPointLight :position="[-1, 2.5, -0.5]" :intensity="3" color="#FFFFFF" />
+  <TresPointLight :position="[1, 2.5, -0.5]" :intensity="3" color="#FFFFFF" />
   <!-- Server rack lighting -->
-  <TresPointLight :position="[3.5, 2, 0]" :intensity="4" :color="makerColors.serverBlue" />
-  <TresPointLight :position="[3, 1, 1]" :intensity="3" :color="makerColors.serverGreen" />
-  <TresPointLight :position="[4, 3, 0]" :intensity="3" color="#FFFFFF" />
-  <TresPointLight :position="[3.5, 2.5, 0.5]" :intensity="2.5" color="#FFFFFF" />
+  <TresPointLight :position="[3.5, 2, 0]" :intensity="5.5" :color="makerColors.serverBlue" />
+  <TresPointLight :position="[3, 1, 1]" :intensity="4.5" :color="makerColors.serverGreen" />
+  <TresPointLight :position="[4, 3, 0]" :intensity="4.5" color="#FFFFFF" />
+  <TresPointLight :position="[3.5, 2.5, 0.5]" :intensity="3.5" color="#FFFFFF" />
   <!-- General fill lights -->
-  <TresPointLight :position="[0, 3, 2]" :intensity="1.5" :color="makerColors.wifi" />
-  <TresPointLight :position="[-2, 1, 3]" :intensity="1.5" color="#FFFFFF" />
-  <TresPointLight :position="[0, 0.5, 2]" :intensity="1.2" color="#FFFFFF" />
-  <TresDirectionalLight :position="[2, 10, 5]" :intensity="2.5" color="#FFFFFF" />
-  <TresDirectionalLight :position="[-3, 8, 3]" :intensity="2" color="#FFFFFF" />
+  <TresPointLight :position="[0, 3, 2]" :intensity="2.5" :color="makerColors.wifi" />
+  <TresPointLight :position="[-2, 1, 3]" :intensity="2.5" color="#FFFFFF" />
+  <TresPointLight :position="[0, 0.5, 2]" :intensity="2" color="#FFFFFF" />
+  <TresDirectionalLight :position="[2, 10, 5]" :intensity="3.5" color="#FFFFFF" />
+  <TresDirectionalLight :position="[-3, 8, 3]" :intensity="3" color="#FFFFFF" />
 
   <TresGroup ref="sceneRef">
     <DeskComponent :colors="makerColors" />
@@ -157,7 +180,7 @@ onUnmounted(() => {
     <KeyboardComponent :colors="makerColors" />
     <MouseComponent />
     <ServerRackComponent :visible-rack-units="visibleRackUnits" :hovered-unit-id="hoveredUnitId" :anim="anim"
-      :colors="makerColors" @unit-ref="handleUnitRef" />
+      :colors="makerColors" @unit-ref="handleUnitRef" @rack-ref="handleRackRef" />
     <DustParticlesComponent v-if="dustParticles.length > 0" :dust-particles="dustParticles"
       :get-dust-pos="getDustPos" />
 

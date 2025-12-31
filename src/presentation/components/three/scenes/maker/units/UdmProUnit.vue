@@ -20,13 +20,8 @@ defineProps<Props>()
 
 <template>
     <BaseServerUnit :unit="unit" :is-hovered="isHovered" :colors="colors">
-        <!-- Status LED -->
-        <TresMesh :position="[0.6, 0.1, 0.38]">
-            <TresSphereGeometry :args="[0.03, 8, 8]" />
-            <TresMeshBasicMaterial :color="colors.serverGreen" :opacity="0.9" :transparent="true" />
-        </TresMesh>
         <!-- Small display area -->
-        <TresMesh :position="[-0.3, 0, 0.37]">
+        <TresMesh :position="[-0.181, 0, 0.37]">
             <TresPlaneGeometry :args="[0.4, 0.15]" />
             <TresMeshBasicMaterial :color="'#0A0A0A'" />
         </TresMesh>

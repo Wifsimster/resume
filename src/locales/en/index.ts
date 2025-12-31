@@ -329,7 +329,47 @@ export default {
   },
   maker: {
     title: 'Maker',
-    subtitle: 'Electronics Lab'
+    subtitle: 'Electronics Lab',
+    cameraViewDesk: 'Desk View',
+    cameraViewRack: 'Rack View',
+    rackUnits: {
+      freebox: {
+        name: 'Freebox mini 4K',
+        description: 'Free mini 4K router and internet box with yellow-green LCD screen and directional pad'
+      },
+      udmPro: {
+        name: 'UniFi Dream Machine Pro',
+        description: 'Unified router and network controller with integrated protection and centralized management'
+      },
+      switch: {
+        name: 'UniFi Switch',
+        description: 'Network switch with multiple Ethernet ports for network distribution'
+      },
+      ap: {
+        name: 'Wi-Fi Access Point',
+        description: 'Wireless access point for network coverage throughout the house'
+      },
+      silver1u: {
+        name: 'Silver 1U Device',
+        description: '1U rackmount equipment for network services or server'
+      },
+      pdu: {
+        name: 'PDU (Power Distribution Unit)',
+        description: 'Power distribution unit with 8 toggle switches for individual control'
+      },
+      nas: {
+        name: 'SilverStone NAS',
+        description: 'Network attached storage server for backup and file sharing'
+      },
+      enclosure: {
+        name: 'Rackmount Enclosure',
+        description: 'Server enclosure with activity indicators for equipment hosting'
+      },
+      ups: {
+        name: 'UPS (Uninterruptible Power Supply)',
+        description: 'Uninterruptible power supply for protection against power outages'
+      }
+    }
   },
   projects: {
     title: 'Projects',

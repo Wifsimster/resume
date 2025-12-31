@@ -9,16 +9,16 @@ defineProps<{
 </script>
 
 <template>
-  <TresGroup :position="[-2, 1.8, -1]">
+  <TresGroup :position="[-2, 0.925, 0.2]">
     <!-- Monitor frame (32 inch, 16:9 ratio) -->
     <TresMesh>
-      <TresBoxGeometry :args="[5.5, 3.1, 0.12]" />
+      <TresBoxGeometry :args="[1.59, 0.896, 0.157]" />
       <TresMeshStandardMaterial :color="colors.darkMetal" :roughness="0.25" />
     </TresMesh>
 
     <!-- Screen with content texture -->
-    <TresMesh :position="[0, 0, 0.065]">
-      <TresPlaneGeometry :args="[5.3, 2.98]" />
+    <TresMesh :position="[0, 0, 0.085]">
+      <TresPlaneGeometry :args="[1.55, 0.87]" />
       <TresMeshBasicMaterial :map="screenTexture" />
     </TresMesh>
   </TresGroup>
