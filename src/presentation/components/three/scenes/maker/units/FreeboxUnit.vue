@@ -20,54 +20,55 @@ defineProps<Props>()
 
 <template>
     <BaseServerUnit :unit="unit" :is-hovered="isHovered" :colors="colors">
-        <!-- LCD display on the left showing "13 37" in yellow-green -->
-        <TresMesh :position="[-0.362, 0, 0.37]">
-            <TresPlaneGeometry :args="[0.25, 0.25]" />
-            <TresMeshBasicMaterial :color="'#0A0A0A'" />
+        <!-- Status LED (blue, like real Freebox Mini) -->
+        <TresMesh :position="[-0.42, 0, 0.38]">
+            <TresSphereGeometry :args="[0.02, 8, 8]" />
+            <TresMeshBasicMaterial :color="'#00AAFF'" :opacity="0.95" :transparent="true" />
         </TresMesh>
-        <!-- LCD numbers background (yellow-green glow for "13 37") -->
-        <TresMesh :position="[-0.362, 0.05, 0.371]">
-            <TresPlaneGeometry :args="[0.2, 0.15]" />
-            <TresMeshBasicMaterial :color="'#ADFF2F'" :opacity="0.4" :transparent="true" />
+        <!-- LED glow halo -->
+        <TresMesh :position="[-0.42, 0, 0.375]">
+            <TresCircleGeometry :args="[0.04, 12]" />
+            <TresMeshBasicMaterial :color="'#00AAFF'" :opacity="0.2" :transparent="true" />
         </TresMesh>
 
-        <!-- Directional pad in center -->
-        <!-- Up arrow button -->
-        <TresMesh :position="[0, 0.08, 0.37]">
-            <TresCylinderGeometry :args="[0.04, 0.04, 0.01, 16]" />
-            <TresMeshStandardMaterial :color="'#1A1A1A'" />
+        <!-- LCD display background -->
+        <TresMesh :position="[-0.25, 0, 0.37]">
+            <TresPlaneGeometry :args="[0.22, 0.06]" />
+            <TresMeshBasicMaterial :color="'#050505'" />
         </TresMesh>
-        <!-- Down arrow button -->
-        <TresMesh :position="[0, -0.08, 0.37]">
-            <TresCylinderGeometry :args="[0.04, 0.04, 0.01, 16]" />
-            <TresMeshStandardMaterial :color="'#1A1A1A'" />
+        <!-- LCD numbers (yellow-green glow) -->
+        <TresMesh :position="[-0.25, 0, 0.371]">
+            <TresPlaneGeometry :args="[0.18, 0.04]" />
+            <TresMeshBasicMaterial :color="'#ADFF2F'" :opacity="0.8" :transparent="true" />
         </TresMesh>
-        <!-- Left arrow button -->
-        <TresMesh :position="[-0.08, 0, 0.37]">
-            <TresCylinderGeometry :args="[0.04, 0.04, 0.01, 16]" />
-            <TresMeshStandardMaterial :color="'#1A1A1A'" />
+
+        <!-- D-pad buttons (lighter color for visibility) -->
+        <TresMesh :position="[0.05, 0.03, 0.37]">
+            <TresCylinderGeometry :args="[0.025, 0.025, 0.01, 12]" />
+            <TresMeshStandardMaterial :color="'#3A3A3A'" :metalness="0.5" />
         </TresMesh>
-        <!-- Right arrow button -->
+        <TresMesh :position="[0.05, -0.03, 0.37]">
+            <TresCylinderGeometry :args="[0.025, 0.025, 0.01, 12]" />
+            <TresMeshStandardMaterial :color="'#3A3A3A'" :metalness="0.5" />
+        </TresMesh>
+        <TresMesh :position="[0.02, 0, 0.37]">
+            <TresCylinderGeometry :args="[0.025, 0.025, 0.01, 12]" />
+            <TresMeshStandardMaterial :color="'#3A3A3A'" :metalness="0.5" />
+        </TresMesh>
         <TresMesh :position="[0.08, 0, 0.37]">
-            <TresCylinderGeometry :args="[0.04, 0.04, 0.01, 16]" />
-            <TresMeshStandardMaterial :color="'#1A1A1A'" />
+            <TresCylinderGeometry :args="[0.025, 0.025, 0.01, 12]" />
+            <TresMeshStandardMaterial :color="'#3A3A3A'" :metalness="0.5" />
         </TresMesh>
-        <!-- Center OK button (square, slightly larger) -->
-        <TresMesh :position="[0, 0, 0.37]">
-            <TresBoxGeometry :args="[0.06, 0.06, 0.01]" />
-            <TresMeshStandardMaterial :color="'#2D2D2D'" />
-        </TresMesh>
-
-        <!-- Back/Menu button (circular with curved arrow) to the right of pad -->
-        <TresMesh :position="[0.2, 0, 0.37]">
-            <TresCylinderGeometry :args="[0.04, 0.04, 0.01, 16]" />
-            <TresMeshStandardMaterial :color="'#1A1A1A'" />
+        <!-- Center OK button -->
+        <TresMesh :position="[0.05, 0, 0.37]">
+            <TresBoxGeometry :args="[0.03, 0.03, 0.01]" />
+            <TresMeshStandardMaterial :color="'#4A4A4A'" :metalness="0.5" />
         </TresMesh>
 
-        <!-- Freebox logo text on the far right -->
-        <TresMesh :position="[0.302, 0, 0.37]">
-            <TresPlaneGeometry :args="[0.25, 0.08]" />
-            <TresMeshBasicMaterial :color="'#FFFFFF'" :opacity="0.9" :transparent="true" />
+        <!-- Freebox logo area on the right -->
+        <TresMesh :position="[0.3, 0, 0.37]">
+            <TresPlaneGeometry :args="[0.2, 0.05]" />
+            <TresMeshBasicMaterial :color="'#FFFFFF'" :opacity="0.85" :transparent="true" />
         </TresMesh>
     </BaseServerUnit>
 </template>

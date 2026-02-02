@@ -409,7 +409,7 @@ export default {
         description: 'Unité de distribution électrique avec interrupteurs individuels'
       },
       gamingComputer: {
-        name: 'Ordinateur de jeu',
+        name: 'Ordinateur de bureau',
         description: 'Station de travail gaming avec GPU haute performance'
       },
       pdu: {
@@ -421,7 +421,7 @@ export default {
         description: 'Proxmox avec Unraid et services Docker'
       },
       ups: {
-        name: 'UPS (Uninterruptible Power Supply)',
+        name: 'Onduleur',
         description: 'Alimentation sans interruption pour protection contre les coupures de courant'
       }
     }

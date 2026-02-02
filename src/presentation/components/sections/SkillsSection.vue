@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { resumeData } from '@domain/data/resume'
 import DustCanvas from '@presentation/components/ui/DustCanvas.vue'
+import HackOverlay from '@presentation/components/ui/HackOverlay.vue'
 
 const { t } = useI18n()
 
@@ -21,6 +22,7 @@ const skillsByCategory = computed(() => {
 <template>
   <section id="skills" class="section bg-transparent p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="skills">
     <DustCanvas color="#FBBF24" color-secondary="#42B883" />
+    <HackOverlay />
     <!-- Content -->
     <div class="section-content">
       <div class="text-center mb-8">

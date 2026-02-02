@@ -5,7 +5,7 @@ export const rackUnits: ServerUnit[] = [
     id: 'freebox',
     name: 'maker.rackUnits.freebox.name',
     description: 'maker.rackUnits.freebox.description',
-    y: 3.05,
+    y: 3.1,
     height: 0.1,
     color: '#1A1A1A',
     type: 'freebox'
@@ -14,7 +14,7 @@ export const rackUnits: ServerUnit[] = [
     id: 'patch-panel',
     name: 'maker.rackUnits.patchPanel.name',
     description: 'maker.rackUnits.patchPanel.description',
-    y: 2.85,
+    y: 2.95,
     height: 0.1,
     color: '#1A1A1A',
     type: 'patch-panel'

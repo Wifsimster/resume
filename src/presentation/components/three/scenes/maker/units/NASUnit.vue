@@ -40,7 +40,7 @@ const ledRefs = ref<any[]>([])
         <TresMesh v-for="led in 4" :key="`nas-led-${led}`" :position="[-0.302 + led * 0.151, 0.15, 0.38]"
             :geometry="sharedGeometries.smallLED"
             :ref="(el: any) => { if (el) ledRefs[led - 1] = el }">
-            <TresMeshBasicMaterial :color="colors.serverBlue" :opacity="0.5" :transparent="true" />
+            <TresMeshBasicMaterial :color="colors.serverBlue" :opacity="0.9" :transparent="true" />
         </TresMesh>
         <!-- Drive bays -->
         <TresMesh v-for="bay in 4" :key="`nas-bay-${bay}`" :position="[-0.302 + bay * 0.151, -0.15, 0.37]"

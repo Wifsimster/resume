@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, shallowRef, triggerRef, watch, onMounted, onBeforeUnmount } from 'vue'
-import { BufferAttribute, BufferGeometry, Points, PointsMaterial, AdditiveBlending } from 'three'
+import {
+  BufferAttribute,
+  BufferGeometry,
+  Points,
+  PointsMaterial,
+  AdditiveBlending,
+  Vector3,
+} from 'three'
+import { useTres } from '@tresjs/core'
 import type { QualityLevel } from '@application/composables/useQuality'
 import { resumeData } from '@domain/data/resume'
 import { useAnimationController } from '@application/composables/useAnimationController'
@@ -16,46 +24,61 @@ const sectionElement = ref<HTMLElement | null>(null)
 const animationController = useAnimationController(sectionElement)
 
 // ---------------------------------------------------------------------------
+// TresJS context — camera access for manual drift
+// ---------------------------------------------------------------------------
+const { camera } = useTres()
+
+// ---------------------------------------------------------------------------
 // Palette — one per book index, cycling
 // ---------------------------------------------------------------------------
 const bookPalette = [
-  { cover: '#2C3E50', spine: '#1A252F', emissive: '#3498DB' }, // Blue
-  { cover: '#8B4513', spine: '#5C2D0E', emissive: '#D2691E' }, // Brown
-  { cover: '#1A237E', spine: '#0D1242', emissive: '#3949AB' }, // Indigo
-  { cover: '#4A148C', spine: '#2E0D57', emissive: '#9C27B0' }, // Purple
-  { cover: '#1B5E20', spine: '#0E3311', emissive: '#4CAF50' }, // Green
-  { cover: '#B71C1C', spine: '#7A1212', emissive: '#E53935' }, // Red
-  { cover: '#E65100', spine: '#993600', emissive: '#FF9800' }, // Orange
-  { cover: '#01579B', spine: '#003A66', emissive: '#29B6F6' }, // Cyan
-  { cover: '#4E342E', spine: '#2E1F1B', emissive: '#8D6E63' }, // Warm brown
-  { cover: '#263238', spine: '#141B1F', emissive: '#78909C' }, // Slate
+  { cover: '#2C3E50', spine: '#1A252F', emissive: '#3498DB' },
+  { cover: '#8B4513', spine: '#5C2D0E', emissive: '#D2691E' },
+  { cover: '#1A237E', spine: '#0D1242', emissive: '#3949AB' },
+  { cover: '#4A148C', spine: '#2E0D57', emissive: '#9C27B0' },
+  { cover: '#1B5E20', spine: '#0E3311', emissive: '#4CAF50' },
+  { cover: '#B71C1C', spine: '#7A1212', emissive: '#E53935' },
+  { cover: '#E65100', spine: '#993600', emissive: '#FF9800' },
+  { cover: '#01579B', spine: '#003A66', emissive: '#29B6F6' },
+  { cover: '#4E342E', spine: '#2E1F1B', emissive: '#8D6E63' },
+  { cover: '#263238', spine: '#141B1F', emissive: '#78909C' },
 ]
 
 // ---------------------------------------------------------------------------
-// Lissajous parameter sets (10 unique, irrational ratios)
+// Corridor constants
 // ---------------------------------------------------------------------------
-const lissajousParams = [
-  { ax: 3.2, ay: 1.6, az: 2.4, phaseX: 0.0, phaseY: 1.1, phaseZ: 2.3, Ax: 3.5, Ay: 1.6, Az: 2.5 },
-  { ax: 2.1, ay: 2.7, az: 1.3, phaseX: 0.7, phaseY: 2.4, phaseZ: 0.5, Ax: 3.8, Ay: 1.8, Az: 2.8 },
-  { ax: 1.7, ay: 3.1, az: 2.9, phaseX: 1.5, phaseY: 0.3, phaseZ: 1.9, Ax: 3.2, Ay: 1.4, Az: 2.2 },
-  { ax: 2.9, ay: 1.3, az: 3.7, phaseX: 2.1, phaseY: 1.8, phaseZ: 0.2, Ax: 3.6, Ay: 1.7, Az: 2.6 },
-  { ax: 3.7, ay: 2.3, az: 1.9, phaseX: 0.4, phaseY: 2.9, phaseZ: 1.3, Ax: 3.0, Ay: 1.5, Az: 2.4 },
-  { ax: 1.3, ay: 3.7, az: 2.1, phaseX: 1.9, phaseY: 0.6, phaseZ: 2.7, Ax: 3.4, Ay: 1.9, Az: 2.3 },
-  { ax: 2.6, ay: 1.9, az: 3.3, phaseX: 2.8, phaseY: 1.4, phaseZ: 0.8, Ax: 3.7, Ay: 1.3, Az: 2.9 },
-  { ax: 3.3, ay: 2.6, az: 1.7, phaseX: 0.9, phaseY: 2.1, phaseZ: 1.6, Ax: 3.1, Ay: 1.6, Az: 2.1 },
-  { ax: 1.9, ay: 3.3, az: 2.6, phaseX: 1.2, phaseY: 0.8, phaseZ: 2.5, Ax: 3.3, Ay: 1.7, Az: 2.7 },
-  { ax: 2.3, ay: 1.7, az: 3.1, phaseX: 2.5, phaseY: 1.6, phaseZ: 0.4, Ax: 3.9, Ay: 1.5, Az: 2.0 },
-]
+const WALL_X = 2.5
+const SHELF_LEVELS = [0.5, 1.8]
+const CORRIDOR_Z_MIN = -12
+const CORRIDOR_Z_MAX = 2
+const CORRIDOR_DEPTH = CORRIDOR_Z_MAX - CORRIDOR_Z_MIN
 
-// Tumble frequency sets (3-axis multi-frequency per book)
-const tumbleParams = lissajousParams.map((_, i) => ({
-  rx1: 0.07 + i * 0.012, rx2: 0.03 + i * 0.008,
-  ry1: 0.05 + i * 0.01,  ry2: 0.025 + i * 0.007,
-  rz1: 0.04 + i * 0.009, rz2: 0.02 + i * 0.006,
-  px1: i * 0.7, px2: i * 1.3,
-  py1: i * 0.9, py2: i * 1.1,
-  pz1: i * 0.5, pz2: i * 1.5,
-}))
+// Camera drift parameters
+const CAM_Z_CENTER = -5
+const CAM_Z_AMP = 4
+const CAM_Z_FREQ = 0.08
+const CAM_Y_CENTER = 1.2
+const CAM_Y_AMP = 0.3
+const CAM_Y_FREQ = 0.15
+const CAM_X_AMP = 0.15
+const CAM_X_FREQ = 0.12
+const CAM_LOOK_AHEAD = 1.5
+
+// Candle light configs
+const CANDLE_COLORS = ['#FFE4B5', '#FFD194', '#FFDAB9', '#FFC978']
+const CANDLE_POSITIONS: [number, number, number][] = [
+  [0, 2.8, -2],
+  [0, 2.8, -5],
+  [0, 2.8, -8],
+  [0, 2.8, -11],
+]
+// Per-candle flicker parameters (phase offsets + frequency multipliers)
+const CANDLE_FLICKER_PARAMS = [
+  { f1: 3.0, f2: 7.1, f3: 13.0, p1: 0.0, p2: 1.7, p3: 3.2, base: 1.2 },
+  { f1: 2.7, f2: 6.3, f3: 11.5, p1: 0.8, p2: 2.5, p3: 0.4, base: 1.0 },
+  { f1: 3.3, f2: 8.0, f3: 12.2, p1: 1.5, p2: 0.3, p3: 2.1, base: 1.1 },
+  { f1: 2.5, f2: 7.7, f3: 14.0, p1: 2.2, p2: 1.0, p3: 0.9, base: 1.0 },
+]
 
 // ---------------------------------------------------------------------------
 // Quality-gated computeds
@@ -65,199 +88,261 @@ const isLow = computed(() => props.quality === 'low')
 const isHigh = computed(() => props.quality === 'high')
 
 const bookCount = computed(() => isMinimal.value ? 4 : isLow.value ? 6 : 8)
-const openBookIndices = computed<number[]>(() => {
-  if (isMinimal.value) return []
-  if (isLow.value) return [1, 3]
-  return [1, 3, 7]
-})
-const flutterPageCount = computed(() => isMinimal.value ? 0 : isLow.value ? 2 : 4)
-const showDetail = computed(() => !isMinimal.value) // cover frame, bands, strip
-const spineSegments = computed(() => isMinimal.value ? 6 : isLow.value ? 12 : 24)
-const showGlowSpheres = computed(() => {
-  if (isMinimal.value) return 'none'
-  if (isLow.value) return 'read'
-  return 'all'
-})
+const dustCount = computed(() => isMinimal.value ? 0 : isLow.value ? 100 : 400)
+const candleCount = computed(() => isMinimal.value ? 1 : isLow.value ? 2 : 4)
+const spineSegments = computed(() => isMinimal.value ? 6 : isLow.value ? 12 : 16)
+const fogDensity = computed(() => isMinimal.value ? 0 : isLow.value ? 0.04 : 0.06)
+const showMoonlight = computed(() => isHigh.value)
+const showGlowSpheres = computed(() => isHigh.value)
+
+// Shelf material properties
+const shelfOpacity = computed(() => isMinimal.value ? 1.0 : isLow.value ? 0.6 : 0.35)
+const shelfColor = computed(() => isMinimal.value ? '#2A2A3A' : '#4A6A8A')
+const shelfMetalness = computed(() => isMinimal.value ? 0.0 : isLow.value ? 0.3 : 0.6)
+const shelfRoughness = computed(() => isMinimal.value ? 0.8 : isLow.value ? 0.3 : 0.1)
 
 // ---------------------------------------------------------------------------
-// Visible books — derived from resume data + palette + open/ribbon flags
+// Book layout — distribute across 4 shelf quadrants
 // ---------------------------------------------------------------------------
-const visibleBooks = computed(() => {
-  return resumeData.books.slice(0, bookCount.value).map((book, i) => {
+interface BookPlacement {
+  id: string
+  title: string
+  author: string
+  status: string
+  index: number
+  colors: { cover: string; spine: string; emissive: string }
+  showGlow: boolean
+  position: [number, number, number]
+  rotationY: number
+  // Per-book breathing animation params
+  breathFreq: number
+  breathPhase: number
+  wobbleFreq: number
+  wobblePhase: number
+}
+
+const visibleBooks = computed<BookPlacement[]>(() => {
+  const count = bookCount.value
+  const books = resumeData.books.slice(0, count)
+
+  // 4 quadrants: left-lower, left-upper, right-lower, right-upper
+  const quadrants: { wallX: number; shelfY: number; faceDir: number }[] = [
+    { wallX: -WALL_X, shelfY: SHELF_LEVELS[0], faceDir: 1 },   // left wall, lower shelf
+    { wallX: -WALL_X, shelfY: SHELF_LEVELS[1], faceDir: 1 },   // left wall, upper shelf
+    { wallX: WALL_X, shelfY: SHELF_LEVELS[0], faceDir: -1 },  // right wall, lower shelf
+    { wallX: WALL_X, shelfY: SHELF_LEVELS[1], faceDir: -1 },  // right wall, upper shelf
+  ]
+
+  return books.map((book, i) => {
     const colors = bookPalette[i % bookPalette.length]
-    const isOpen = openBookIndices.value.includes(i)
-    const hasRibbon = !isMinimal.value && book.status === 'read'
-    const showGlow =
-      showGlowSpheres.value === 'all' ||
-      (showGlowSpheres.value === 'read' && book.status === 'read')
+    const quad = quadrants[i % quadrants.length]
+
+    // Distribute books along Z within corridor, evenly spaced per quadrant
+    const booksInQuad = Math.ceil(count / quadrants.length)
+    const indexInQuad = Math.floor(i / quadrants.length)
+    const zSpacing = CORRIDOR_DEPTH / (booksInQuad + 1)
+    const z = CORRIDOR_Z_MIN + zSpacing * (indexInQuad + 1)
+
+    // X: offset slightly from wall toward center so books sit on shelf edge
+    const x = quad.wallX + quad.faceDir * 0.3
+
+    // Y: book center sits above shelf surface (book half-height ~0.54)
+    const y = quad.shelfY + 0.58
+
     return {
-      ...book,
+      id: book.id,
+      title: book.title,
+      author: book.author,
+      status: book.status,
       index: i,
       colors,
-      isOpen,
-      hasRibbon,
-      showGlow,
-      liss: lissajousParams[i],
-      tumble: tumbleParams[i],
+      showGlow: showGlowSpheres.value && book.status === 'read',
+      position: [x, y, z] as [number, number, number],
+      rotationY: quad.faceDir > 0 ? Math.PI * 0.15 : -Math.PI * 0.15,
+      breathFreq: 0.4 + i * 0.07,
+      breathPhase: i * 1.3,
+      wobbleFreq: 0.3 + i * 0.05,
+      wobblePhase: i * 0.9,
     }
   })
 })
 
 // ---------------------------------------------------------------------------
-// Reactive animation state (positions/rotations driven each frame)
+// Shelf definitions — 4 floating glass shelves
 // ---------------------------------------------------------------------------
-interface BookState {
-  px: number; py: number; pz: number
-  rx: number; ry: number; rz: number
-  // open book specific
-  leftAngle: number; rightAngle: number
-  flutterAngles: number[]
-  // ribbon sway
-  ribbonAngle: number
+const shelves = computed(() => {
+  const shelfWidth = 4.0
+  const shelfDepth = CORRIDOR_DEPTH * 0.85
+  const shelfThickness = 0.05
+  const zCenter = (CORRIDOR_Z_MIN + CORRIDOR_Z_MAX) / 2
+
+  return [
+    // Left wall shelves
+    { pos: [-WALL_X + 0.3, SHELF_LEVELS[0], zCenter] as [number, number, number], size: [shelfWidth * 0.4, shelfThickness, shelfDepth] as [number, number, number] },
+    { pos: [-WALL_X + 0.3, SHELF_LEVELS[1], zCenter] as [number, number, number], size: [shelfWidth * 0.4, shelfThickness, shelfDepth] as [number, number, number] },
+    // Right wall shelves
+    { pos: [WALL_X - 0.3, SHELF_LEVELS[0], zCenter] as [number, number, number], size: [shelfWidth * 0.4, shelfThickness, shelfDepth] as [number, number, number] },
+    { pos: [WALL_X - 0.3, SHELF_LEVELS[1], zCenter] as [number, number, number], size: [shelfWidth * 0.4, shelfThickness, shelfDepth] as [number, number, number] },
+  ]
+})
+
+// ---------------------------------------------------------------------------
+// Reactive animation state
+// ---------------------------------------------------------------------------
+interface BookAnimState {
+  dy: number       // breathing Y offset
+  dRotY: number    // wobble rotation offset
 }
 
-const bookStates = shallowRef<BookState[]>(
-  Array.from({ length: 10 }, () => ({
-    px: 0, py: 0, pz: 0,
-    rx: 0, ry: 0, rz: 0,
-    leftAngle: -0.35, rightAngle: 0.35,
-    flutterAngles: [0, 0, 0, 0],
-    ribbonAngle: 0,
-  }))
+const bookAnimStates = shallowRef<BookAnimState[]>(
+  Array.from({ length: resumeData.books.length }, () => ({ dy: 0, dRotY: 0 }))
 )
 
-// ---------------------------------------------------------------------------
-// Refs
-// ---------------------------------------------------------------------------
-const sceneRef = ref()
-const keyLightRef = ref()
+// Candle intensities (reactive for template binding)
+const candleIntensities = ref<number[]>([1.2, 1.0, 1.1, 1.0])
 
 // ---------------------------------------------------------------------------
-// Particle systems (BufferGeometry + Points via <primitive>)
+// Dust particle system
 // ---------------------------------------------------------------------------
-const goldenDust = shallowRef<Points | null>(null)
-const ambientStars = shallowRef<Points | null>(null)
+const dustParticles = shallowRef<Points | null>(null)
+let dustPositions: Float32Array | null = null
+let dustVelocities: { vy: number; wx: number; wz: number; px: number; pz: number }[] = []
 
-const createParticleSystems = () => {
+const createDustParticles = () => {
   // Dispose existing
-  if (goldenDust.value) {
-    goldenDust.value.geometry.dispose()
-    ;(goldenDust.value.material as PointsMaterial).dispose()
-    goldenDust.value = null
-  }
-  if (ambientStars.value) {
-    ambientStars.value.geometry.dispose()
-    ;(ambientStars.value.material as PointsMaterial).dispose()
-    ambientStars.value = null
+  if (dustParticles.value) {
+    dustParticles.value.geometry.dispose()
+    ;(dustParticles.value.material as PointsMaterial).dispose()
+    dustParticles.value = null
+    dustPositions = null
+    dustVelocities = []
   }
 
-  if (isMinimal.value) return
+  const count = dustCount.value
+  if (count === 0) return
 
-  const dustCount = isHigh.value ? 500 : 150
-  const starCount = isHigh.value ? 400 : 100
+  dustPositions = new Float32Array(count * 3)
+  dustVelocities = []
 
-  // Golden dust — scattered within book volume (~8×4×6)
-  const dustPos = new Float32Array(dustCount * 3)
-  for (let i = 0; i < dustCount; i++) {
-    dustPos[i * 3] = (Math.random() - 0.5) * 8
-    dustPos[i * 3 + 1] = (Math.random() - 0.5) * 4
-    dustPos[i * 3 + 2] = (Math.random() - 0.5) * 6
+  for (let i = 0; i < count; i++) {
+    // Spawn within corridor volume
+    dustPositions[i * 3] = (Math.random() - 0.5) * (WALL_X * 2 - 0.5)
+    dustPositions[i * 3 + 1] = Math.random() * 3.5
+    dustPositions[i * 3 + 2] = CORRIDOR_Z_MIN + Math.random() * CORRIDOR_DEPTH
+
+    dustVelocities.push({
+      vy: 0.02 + Math.random() * 0.03,          // upward drift speed
+      wx: 0.3 + Math.random() * 0.5,             // X wander frequency
+      wz: 0.2 + Math.random() * 0.4,             // Z wander frequency
+      px: Math.random() * Math.PI * 2,            // X phase
+      pz: Math.random() * Math.PI * 2,            // Z phase
+    })
   }
-  const dustGeo = new BufferGeometry()
-  dustGeo.setAttribute('position', new BufferAttribute(dustPos, 3))
-  const dustMat = new PointsMaterial({
+
+  const geo = new BufferGeometry()
+  geo.setAttribute('position', new BufferAttribute(dustPositions, 3))
+
+  const mat = new PointsMaterial({
     color: 0xFFD700,
-    size: isHigh.value ? 0.035 : 0.05,
-    opacity: 0.6,
+    size: isHigh.value ? 0.03 : 0.045,
+    opacity: 0.5,
     transparent: true,
     blending: AdditiveBlending,
+    depthWrite: false,
   })
-  goldenDust.value = new Points(dustGeo, dustMat)
 
-  // Ambient stars — distant shell r=12..30
-  const starPos = new Float32Array(starCount * 3)
-  for (let i = 0; i < starCount; i++) {
-    const r = 12 + Math.random() * 18
-    const theta = Math.random() * Math.PI * 2
-    const phi = Math.acos(2 * Math.random() - 1)
-    starPos[i * 3] = r * Math.sin(phi) * Math.cos(theta)
-    starPos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
-    starPos[i * 3 + 2] = r * Math.cos(phi)
-  }
-  const starGeo = new BufferGeometry()
-  starGeo.setAttribute('position', new BufferAttribute(starPos, 3))
-  const starMat = new PointsMaterial({
-    color: 0xFFFFFF,
-    size: isHigh.value ? 0.06 : 0.08,
-    opacity: 0.4,
-    transparent: true,
-  })
-  ambientStars.value = new Points(starGeo, starMat)
+  dustParticles.value = new Points(geo, mat)
 }
 
-watch(() => props.quality, createParticleSystems)
+watch(() => props.quality, createDustParticles)
 
 // ---------------------------------------------------------------------------
-// Animation speed — global time multiplier (slow, dreamy)
+// Camera lookAt target (reuse to avoid GC)
 // ---------------------------------------------------------------------------
-const DRIFT_SPEED = 0.06
+const lookAtTarget = new Vector3()
 
+// ---------------------------------------------------------------------------
+// Main animation loop
+// ---------------------------------------------------------------------------
 const updateAnimations = (elapsed: number, _delta: number) => {
-  const t = elapsed * DRIFT_SPEED
+  // 1. Camera drift
+  const cam = camera.value
+  if (cam) {
+    const cx = Math.sin(elapsed * CAM_X_FREQ) * CAM_X_AMP
+    const cy = CAM_Y_CENTER + Math.sin(elapsed * CAM_Y_FREQ) * CAM_Y_AMP
+    const cz = CAM_Z_CENTER + Math.sin(elapsed * CAM_Z_FREQ) * CAM_Z_AMP
 
-  // 1. Scene subtle Y sway
-  if (sceneRef.value) {
-    sceneRef.value.rotation.y = Math.sin(t * 0.7) * 0.08
+    cam.position.set(cx, cy, cz)
+
+    // Look slightly ahead along corridor
+    lookAtTarget.set(cx * 0.5, cy - 0.1, cz - CAM_LOOK_AHEAD)
+    cam.lookAt(lookAtTarget)
   }
 
-  // 2-5. Per-book updates
-  const count = bookCount.value
-  for (let i = 0; i < count; i++) {
-    const liss = lissajousParams[i]
-    const tmb = tumbleParams[i]
-    const state = bookStates.value[i]
+  // 2. Candle flicker
+  const cCount = candleCount.value
+  for (let i = 0; i < cCount; i++) {
+    const p = CANDLE_FLICKER_PARAMS[i]
+    const flicker =
+      Math.sin(elapsed * p.f1 + p.p1) * 0.15 +
+      Math.sin(elapsed * p.f2 + p.p2) * 0.1 +
+      Math.sin(elapsed * p.f3 + p.p3) * 0.05
+    candleIntensities.value[i] = Math.max(0.3, p.base + flicker)
+  }
 
-    // Lissajous position
-    state.px = liss.Ax * Math.sin(liss.ax * t + liss.phaseX)
-    state.py = liss.Ay * Math.sin(liss.ay * t + liss.phaseY)
-    state.pz = liss.Az * Math.sin(liss.az * t + liss.phaseZ)
+  // 3. Book breathing animation
+  const bCount = bookCount.value
+  for (let i = 0; i < bCount; i++) {
+    const state = bookAnimStates.value[i]
+    const book = visibleBooks.value[i]
+    if (!book || !state) continue
 
-    // Tumble rotation (multi-frequency sinusoidal)
-    state.rx = Math.sin(tmb.rx1 * elapsed + tmb.px1) * 0.3 + Math.sin(tmb.rx2 * elapsed + tmb.px2) * 0.15
-    state.ry = Math.sin(tmb.ry1 * elapsed + tmb.py1) * 0.4 + Math.sin(tmb.ry2 * elapsed + tmb.py2) * 0.2
-    state.rz = Math.sin(tmb.rz1 * elapsed + tmb.pz1) * 0.2 + Math.sin(tmb.rz2 * elapsed + tmb.pz2) * 0.1
+    state.dy = Math.sin(elapsed * book.breathFreq + book.breathPhase) * 0.015
+    state.dRotY = Math.sin(elapsed * book.wobbleFreq + book.wobblePhase) * 0.02
+  }
+  triggerRef(bookAnimStates)
 
-    // Flutter pages on open books
-    if (openBookIndices.value.includes(i)) {
-      const flutter = Math.sin(elapsed * 1.2 + i) * 0.03
-      state.leftAngle = -0.4 + flutter
-      state.rightAngle = 0.4 - flutter
-      for (let p = 0; p < 4; p++) {
-        state.flutterAngles[p] = Math.sin(elapsed * 1.5 + i * 0.7 + p * 0.9) * 0.25
+  // 4. Dust particle movement
+  if (dustPositions && dustParticles.value) {
+    const count = dustCount.value
+    const halfX = WALL_X - 0.25
+    const maxY = 3.8
+    const dt = _delta / 1000 // delta is in ms from RAF
+
+    for (let i = 0; i < count; i++) {
+      const v = dustVelocities[i]
+      const i3 = i * 3
+
+      // Upward drift
+      dustPositions[i3 + 1] += v.vy * dt * 30
+
+      // XZ wander (frame-rate independent)
+      dustPositions[i3] += Math.sin(elapsed * v.wx + v.px) * 0.002 * dt * 60
+      dustPositions[i3 + 2] += Math.cos(elapsed * v.wz + v.pz) * 0.002 * dt * 60
+
+      // Wrap Y
+      if (dustPositions[i3 + 1] > maxY) {
+        dustPositions[i3 + 1] = -0.2
+      }
+
+      // Clamp X
+      if (dustPositions[i3] > halfX) dustPositions[i3] = -halfX
+      if (dustPositions[i3] < -halfX) dustPositions[i3] = halfX
+
+      // Wrap Z
+      if (dustPositions[i3 + 2] > CORRIDOR_Z_MAX) {
+        dustPositions[i3 + 2] = CORRIDOR_Z_MIN
+      }
+      if (dustPositions[i3 + 2] < CORRIDOR_Z_MIN) {
+        dustPositions[i3 + 2] = CORRIDOR_Z_MAX
       }
     }
 
-    // Bookmark ribbon sway
-    if (!isMinimal.value) {
-      state.ribbonAngle = Math.sin(elapsed * 0.8 + i * 1.3) * 0.15
+    // Signal Three.js to re-upload positions
+    const posAttr = dustParticles.value.geometry.getAttribute('position')
+    if (posAttr) {
+      ;(posAttr as BufferAttribute).needsUpdate = true
     }
-  }
-
-  // Batch-trigger reactivity once per frame (bookStates is shallowRef)
-  triggerRef(bookStates)
-
-  // 6. Particle system rotation
-  if (goldenDust.value) {
-    goldenDust.value.rotation.y = elapsed * 0.015
-    goldenDust.value.rotation.x = Math.sin(elapsed * 0.04) * 0.05
-  }
-  if (ambientStars.value) {
-    ambientStars.value.rotation.y = -elapsed * 0.005
-  }
-
-  // 7. Key light intensity pulse
-  if (keyLightRef.value) {
-    keyLightRef.value.intensity = 1.0 + Math.sin(elapsed * 0.3) * 0.2
   }
 }
 
@@ -270,7 +355,7 @@ onMounted(() => {
     sectionElement.value = canvas as HTMLElement
   }
 
-  createParticleSystems()
+  createDustParticles()
 
   animationController.start((elapsed, delta) => {
     updateAnimations(elapsed, delta)
@@ -279,384 +364,182 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   animationController.stop()
-  if (goldenDust.value) {
-    goldenDust.value.geometry.dispose()
-    ;(goldenDust.value.material as PointsMaterial).dispose()
+  if (dustParticles.value) {
+    dustParticles.value.geometry.dispose()
+    ;(dustParticles.value.material as PointsMaterial).dispose()
+    dustParticles.value = null
   }
-  if (ambientStars.value) {
-    ambientStars.value.geometry.dispose()
-    ;(ambientStars.value.material as PointsMaterial).dispose()
-  }
+  dustPositions = null
+  dustVelocities = []
 })
 </script>
 
 <template>
-  <!-- Camera: wider FOV to see drifting books -->
-  <TresPerspectiveCamera :position="[0, 2, 10]" :look-at="[0, 0, 0]" />
+  <!-- Camera: positioned at corridor entrance, will be overridden by animation -->
+  <TresPerspectiveCamera :position="[0, 1.2, 0]" :fov="65" :near="0.1" :far="50" />
+
+  <!-- ================================================================== -->
+  <!-- Fog (quality-gated via density, 0 = no fog)                         -->
+  <!-- ================================================================== -->
+  <TresFogExp2 v-if="fogDensity > 0" :args="['#0A0A0A', fogDensity]" />
 
   <!-- ================================================================== -->
   <!-- Lighting                                                            -->
   <!-- ================================================================== -->
-  <!-- Ambient: deep space feel -->
-  <TresAmbientLight :intensity="0.08" />
 
-  <!-- Key light: warm golden from above-front, all tiers -->
+  <!-- Dim ambient — deep enchanted darkness -->
+  <TresAmbientLight :intensity="0.05" color="#FFFFFF" />
+
+  <!-- Candle point lights along corridor -->
   <TresPointLight
-    ref="keyLightRef"
-    :position="[0, 4, 5]"
-    :intensity="1.0"
-    color="#FFE4B5"
-    :distance="20"
+    v-for="(pos, ci) in CANDLE_POSITIONS.slice(0, candleCount)"
+    :key="`candle-${ci}`"
+    :position="pos"
+    :intensity="candleIntensities[ci]"
+    :color="CANDLE_COLORS[ci]"
+    :distance="8"
     :decay="2"
   />
 
-  <!-- Rim lights (low + high) -->
-  <TresPointLight
-    v-if="!isMinimal"
-    :position="[-5, 2, 3]"
-    :intensity="0.35"
-    color="#4A90D9"
-    :distance="15"
-  />
-  <TresPointLight
-    v-if="!isMinimal"
-    :position="[5, 1, 3]"
-    :intensity="0.35"
-    color="#D4A574"
-    :distance="15"
-  />
-
-  <!-- Backlight: purple depth (high only) -->
-  <TresPointLight
-    v-if="isHigh"
-    :position="[0, 0, -6]"
-    :intensity="0.25"
-    color="#7B1FA2"
-    :distance="18"
-  />
-
-  <!-- Fill directional (high only) -->
+  <!-- Moonlight from above — high quality only -->
   <TresDirectionalLight
-    v-if="isHigh"
-    :position="[2, 3, 4]"
-    :intensity="0.15"
-    color="#FFFFFF"
+    v-if="showMoonlight"
+    :position="[1, 6, -5]"
+    :intensity="0.12"
+    color="#B0C4DE"
   />
 
   <!-- ================================================================== -->
-  <!-- Scene root                                                          -->
+  <!-- Floating glass shelves (4 total)                                    -->
   <!-- ================================================================== -->
-  <TresGroup ref="sceneRef">
-    <!-- ============================================================== -->
-    <!-- Books v-for                                                     -->
-    <!-- ============================================================== -->
-    <TresGroup
-      v-for="book in visibleBooks"
-      :key="book.id"
-      :position="[
-        bookStates[book.index].px,
-        bookStates[book.index].py,
-        bookStates[book.index].pz,
-      ]"
-      :rotation="[
-        bookStates[book.index].rx,
-        bookStates[book.index].ry,
-        bookStates[book.index].rz,
-      ]"
+  <TresMesh
+    v-for="(shelf, si) in shelves"
+    :key="`shelf-${si}`"
+    :position="shelf.pos"
+  >
+    <TresBoxGeometry :args="shelf.size" />
+    <TresMeshStandardMaterial
+      :color="shelfColor"
+      :opacity="shelfOpacity"
+      :transparent="shelfOpacity < 1"
+      :metalness="shelfMetalness"
+      :roughness="shelfRoughness"
+    />
+  </TresMesh>
+
+  <!-- ================================================================== -->
+  <!-- Books — upright standing on shelves                                 -->
+  <!-- ================================================================== -->
+  <TresGroup
+    v-for="book in visibleBooks"
+    :key="book.id"
+    :position="[
+      book.position[0],
+      book.position[1] + bookAnimStates[book.index].dy,
+      book.position[2],
+    ]"
+    :rotation="[0, book.rotationY + bookAnimStates[book.index].dRotY, 0]"
+  >
+    <!-- Front Cover -->
+    <TresMesh :position="[0, 0, 0.065]">
+      <TresBoxGeometry :args="[0.76, 1.08, 0.025]" />
+      <TresMeshStandardMaterial
+        :color="book.colors.cover"
+        :roughness="0.55"
+        :metalness="0.15"
+      />
+    </TresMesh>
+
+    <!-- Back Cover -->
+    <TresMesh :position="[0, 0, -0.065]">
+      <TresBoxGeometry :args="[0.76, 1.08, 0.025]" />
+      <TresMeshStandardMaterial
+        :color="book.colors.cover"
+        :roughness="0.55"
+        :metalness="0.15"
+      />
+    </TresMesh>
+
+    <!-- Spine -->
+    <TresMesh
+      :position="[-0.38, 0, 0]"
+      :rotation="[Math.PI / 2, 0, 0]"
     >
-      <!-- ============================================================ -->
-      <!-- CLOSED BOOK (default)                                         -->
-      <!-- ============================================================ -->
-      <TresGroup v-if="!book.isOpen">
-        <!-- Front Cover -->
-        <TresMesh :position="[0, 0, 0.065]">
-          <TresBoxGeometry :args="[0.76, 1.08, 0.025]" />
-          <TresMeshStandardMaterial
-            :color="book.colors.cover"
-            :roughness="0.55"
-            :metalness="0.15"
-          />
-        </TresMesh>
+      <TresCylinderGeometry :args="[0.09, 0.09, 1.08, spineSegments, 1, false, 0, Math.PI]" />
+      <TresMeshStandardMaterial
+        :color="book.colors.spine"
+        :roughness="0.5"
+        :metalness="0.2"
+      />
+    </TresMesh>
 
-        <!-- Back Cover -->
-        <TresMesh :position="[0, 0, -0.065]">
-          <TresBoxGeometry :args="[0.76, 1.08, 0.025]" />
-          <TresMeshStandardMaterial
-            :color="book.colors.cover"
-            :roughness="0.55"
-            :metalness="0.15"
-          />
-        </TresMesh>
+    <!-- Page Block -->
+    <TresMesh :position="[0.02, 0, 0]">
+      <TresBoxGeometry :args="[0.68, 1.0, 0.12]" />
+      <TresMeshStandardMaterial
+        color="#FFF8E7"
+        :roughness="0.9"
+        :metalness="0.0"
+      />
+    </TresMesh>
 
-        <!-- Spine (half-cylinder approximated with CylinderGeometry) -->
-        <TresMesh
-          :position="[-0.38, 0, 0]"
-          :rotation="[Math.PI / 2, 0, 0]"
-        >
-          <TresCylinderGeometry :args="[0.09, 0.09, 1.08, spineSegments, 1, false, 0, Math.PI]" />
-          <TresMeshStandardMaterial
-            :color="book.colors.spine"
-            :roughness="0.5"
-            :metalness="0.2"
-          />
-        </TresMesh>
+    <!-- Page Edges -->
+    <TresMesh :position="[0.02, 0.505, 0]">
+      <TresBoxGeometry :args="[0.68, 0.01, 0.12]" />
+      <TresMeshStandardMaterial color="#E8DCC8" :roughness="0.85" />
+    </TresMesh>
+    <TresMesh :position="[0.02, -0.505, 0]">
+      <TresBoxGeometry :args="[0.68, 0.01, 0.12]" />
+      <TresMeshStandardMaterial color="#E8DCC8" :roughness="0.85" />
+    </TresMesh>
+    <TresMesh :position="[0.365, 0, 0]">
+      <TresBoxGeometry :args="[0.01, 1.0, 0.12]" />
+      <TresMeshStandardMaterial color="#E8DCC8" :roughness="0.85" />
+    </TresMesh>
 
-        <!-- Page Block (cream, inset from covers) -->
-        <TresMesh :position="[0.02, 0, 0]">
-          <TresBoxGeometry :args="[0.68, 1.0, 0.12]" />
-          <TresMeshStandardMaterial
-            color="#FFF8E7"
-            :roughness="0.9"
-            :metalness="0.0"
-          />
-        </TresMesh>
+    <!-- Spine Bands (non-minimal) -->
+    <template v-if="!isMinimal">
+      <TresMesh
+        :position="[-0.38, 0.35, 0]"
+        :rotation="[Math.PI / 2, 0, 0]"
+      >
+        <TresCylinderGeometry :args="[0.095, 0.095, 0.06, spineSegments, 1, false, 0, Math.PI]" />
+        <TresMeshStandardMaterial
+          :color="book.colors.emissive"
+          :emissive="book.colors.emissive"
+          :emissive-intensity="0.4"
+          :roughness="0.4"
+          :metalness="0.5"
+        />
+      </TresMesh>
+      <TresMesh
+        :position="[-0.38, -0.35, 0]"
+        :rotation="[Math.PI / 2, 0, 0]"
+      >
+        <TresCylinderGeometry :args="[0.095, 0.095, 0.06, spineSegments, 1, false, 0, Math.PI]" />
+        <TresMeshStandardMaterial
+          :color="book.colors.emissive"
+          :emissive="book.colors.emissive"
+          :emissive-intensity="0.4"
+          :roughness="0.4"
+          :metalness="0.5"
+        />
+      </TresMesh>
+    </template>
 
-        <!-- Page Edge: Top -->
-        <TresMesh :position="[0.02, 0.505, 0]">
-          <TresBoxGeometry :args="[0.68, 0.01, 0.12]" />
-          <TresMeshStandardMaterial color="#E8DCC8" :roughness="0.85" />
-        </TresMesh>
-
-        <!-- Page Edge: Bottom -->
-        <TresMesh :position="[0.02, -0.505, 0]">
-          <TresBoxGeometry :args="[0.68, 0.01, 0.12]" />
-          <TresMeshStandardMaterial color="#E8DCC8" :roughness="0.85" />
-        </TresMesh>
-
-        <!-- Page Edge: Fore-edge (right side) -->
-        <TresMesh :position="[0.365, 0, 0]">
-          <TresBoxGeometry :args="[0.01, 1.0, 0.12]" />
-          <TresMeshStandardMaterial color="#E8DCC8" :roughness="0.85" />
-        </TresMesh>
-
-        <!-- Cover Frame (4 borders on front cover) — detail tier -->
-        <template v-if="showDetail">
-          <!-- Top frame -->
-          <TresMesh :position="[0, 0.525, 0.08]">
-            <TresBoxGeometry :args="[0.72, 0.02, 0.005]" />
-            <TresMeshStandardMaterial
-              :color="book.colors.emissive"
-              :metalness="0.7"
-              :roughness="0.3"
-            />
-          </TresMesh>
-          <!-- Bottom frame -->
-          <TresMesh :position="[0, -0.525, 0.08]">
-            <TresBoxGeometry :args="[0.72, 0.02, 0.005]" />
-            <TresMeshStandardMaterial
-              :color="book.colors.emissive"
-              :metalness="0.7"
-              :roughness="0.3"
-            />
-          </TresMesh>
-          <!-- Left frame -->
-          <TresMesh :position="[-0.355, 0, 0.08]">
-            <TresBoxGeometry :args="[0.02, 1.05, 0.005]" />
-            <TresMeshStandardMaterial
-              :color="book.colors.emissive"
-              :metalness="0.7"
-              :roughness="0.3"
-            />
-          </TresMesh>
-          <!-- Right frame -->
-          <TresMesh :position="[0.355, 0, 0.08]">
-            <TresBoxGeometry :args="[0.02, 1.05, 0.005]" />
-            <TresMeshStandardMaterial
-              :color="book.colors.emissive"
-              :metalness="0.7"
-              :roughness="0.3"
-            />
-          </TresMesh>
-        </template>
-
-        <!-- Spine Bands (2) — detail tier -->
-        <template v-if="showDetail">
-          <TresMesh
-            :position="[-0.38, 0.35, 0]"
-            :rotation="[Math.PI / 2, 0, 0]"
-          >
-            <TresCylinderGeometry :args="[0.095, 0.095, 0.06, spineSegments, 1, false, 0, Math.PI]" />
-            <TresMeshStandardMaterial
-              :color="book.colors.emissive"
-              :emissive="book.colors.emissive"
-              :emissive-intensity="0.4"
-              :roughness="0.4"
-              :metalness="0.5"
-            />
-          </TresMesh>
-          <TresMesh
-            :position="[-0.38, -0.35, 0]"
-            :rotation="[Math.PI / 2, 0, 0]"
-          >
-            <TresCylinderGeometry :args="[0.095, 0.095, 0.06, spineSegments, 1, false, 0, Math.PI]" />
-            <TresMeshStandardMaterial
-              :color="book.colors.emissive"
-              :emissive="book.colors.emissive"
-              :emissive-intensity="0.4"
-              :roughness="0.4"
-              :metalness="0.5"
-            />
-          </TresMesh>
-        </template>
-
-        <!-- Spine Title Strip — detail tier -->
-        <TresMesh
-          v-if="showDetail"
-          :position="[-0.47, 0, 0]"
-          :rotation="[0, -Math.PI / 2, 0]"
-        >
-          <TresPlaneGeometry :args="[0.08, 0.5]" />
-          <TresMeshStandardMaterial
-            :color="book.colors.emissive"
-            :emissive="book.colors.emissive"
-            :emissive-intensity="0.6"
-            :side="2"
-            :transparent="true"
-            :opacity="0.8"
-          />
-        </TresMesh>
-
-        <!-- Glow Sphere -->
-        <TresMesh v-if="book.showGlow">
-          <TresSphereGeometry :args="[0.7, 16, 16]" />
-          <TresMeshBasicMaterial
-            :color="book.colors.emissive"
-            :opacity="0.08"
-            :transparent="true"
-          />
-        </TresMesh>
-
-        <!-- Bookmark Ribbon (read books only, 3 meshes) -->
-        <TresGroup v-if="book.hasRibbon">
-          <!-- Top anchor (inside pages at top) -->
-          <TresMesh :position="[0.1, 0.54, 0.02]">
-            <TresBoxGeometry :args="[0.03, 0.04, 0.005]" />
-            <TresMeshStandardMaterial
-              :color="book.colors.emissive"
-              :roughness="0.6"
-            />
-          </TresMesh>
-          <!-- Hanging part -->
-          <TresMesh
-            :position="[0.1, 0.35, 0.08]"
-            :rotation="[bookStates[book.index].ribbonAngle * 0.3, 0, bookStates[book.index].ribbonAngle]"
-          >
-            <TresPlaneGeometry :args="[0.025, 0.35]" />
-            <TresMeshStandardMaterial
-              :color="book.colors.emissive"
-              :side="2"
-              :roughness="0.7"
-            />
-          </TresMesh>
-          <!-- Tail (pointed end, only on full quality) -->
-          <TresMesh
-            v-if="isHigh"
-            :position="[0.1, 0.15, 0.08]"
-            :rotation="[bookStates[book.index].ribbonAngle * 0.5, 0, bookStates[book.index].ribbonAngle * 1.2]"
-          >
-            <TresPlaneGeometry :args="[0.03, 0.06]" />
-            <TresMeshStandardMaterial
-              :color="book.colors.emissive"
-              :side="2"
-              :roughness="0.7"
-            />
-          </TresMesh>
-        </TresGroup>
-      </TresGroup>
-
-      <!-- ============================================================ -->
-      <!-- OPEN BOOK                                                     -->
-      <!-- ============================================================ -->
-      <TresGroup v-else>
-        <!-- Left half (cover + pages, pivoting at spine) -->
-        <TresGroup :rotation="[0, bookStates[book.index].leftAngle, 0]">
-          <!-- Left cover -->
-          <TresMesh :position="[-0.38, 0, 0]">
-            <TresBoxGeometry :args="[0.76, 1.08, 0.025]" />
-            <TresMeshStandardMaterial
-              :color="book.colors.cover"
-              :roughness="0.55"
-              :metalness="0.15"
-            />
-          </TresMesh>
-          <!-- Left page stack -->
-          <TresMesh :position="[-0.36, 0, 0.02]">
-            <TresBoxGeometry :args="[0.68, 1.0, 0.03]" />
-            <TresMeshStandardMaterial
-              color="#FFF8E7"
-              :roughness="0.9"
-              :emissive="'#FBBF24'"
-              :emissive-intensity="0.05"
-            />
-          </TresMesh>
-        </TresGroup>
-
-        <!-- Right half (cover + pages, pivoting at spine) -->
-        <TresGroup :rotation="[0, bookStates[book.index].rightAngle, 0]">
-          <!-- Right cover -->
-          <TresMesh :position="[0.38, 0, 0]">
-            <TresBoxGeometry :args="[0.76, 1.08, 0.025]" />
-            <TresMeshStandardMaterial
-              :color="book.colors.cover"
-              :roughness="0.55"
-              :metalness="0.15"
-            />
-          </TresMesh>
-          <!-- Right page stack -->
-          <TresMesh :position="[0.36, 0, 0.02]">
-            <TresBoxGeometry :args="[0.68, 1.0, 0.03]" />
-            <TresMeshStandardMaterial
-              color="#FFF8E7"
-              :roughness="0.9"
-              :emissive="'#FBBF24'"
-              :emissive-intensity="0.05"
-            />
-          </TresMesh>
-        </TresGroup>
-
-        <!-- Spine (center axis) -->
-        <TresMesh :rotation="[Math.PI / 2, 0, 0]">
-          <TresCylinderGeometry :args="[0.04, 0.04, 1.08, spineSegments, 1]" />
-          <TresMeshStandardMaterial
-            :color="book.colors.spine"
-            :roughness="0.5"
-            :metalness="0.2"
-          />
-        </TresMesh>
-
-        <!-- Flutter pages between halves -->
-        <TresMesh
-          v-for="p in flutterPageCount"
-          :key="`flutter-${book.id}-${p}`"
-          :position="[0, 0, 0.04]"
-          :rotation="[0, bookStates[book.index].flutterAngles[p - 1] || 0, 0]"
-        >
-          <TresPlaneGeometry :args="[0.7, 0.98]" />
-          <TresMeshStandardMaterial
-            color="#FFF8E7"
-            :opacity="0.7 - p * 0.1"
-            :transparent="true"
-            :side="2"
-            :roughness="0.95"
-          />
-        </TresMesh>
-
-        <!-- Warm glow from open pages -->
-        <TresMesh v-if="book.showGlow">
-          <TresSphereGeometry :args="[0.8, 16, 16]" />
-          <TresMeshBasicMaterial
-            color="#FBBF24"
-            :opacity="0.1"
-            :transparent="true"
-          />
-        </TresMesh>
-      </TresGroup>
-    </TresGroup>
+    <!-- Emissive glow sphere — read books, high quality only -->
+    <TresMesh v-if="book.showGlow">
+      <TresSphereGeometry :args="[0.7, 16, 16]" />
+      <TresMeshBasicMaterial
+        :color="book.colors.emissive"
+        :opacity="0.08"
+        :transparent="true"
+      />
+    </TresMesh>
   </TresGroup>
 
   <!-- ================================================================== -->
-  <!-- Particle primitives                                                 -->
+  <!-- Dust particles                                                      -->
   <!-- ================================================================== -->
-  <primitive v-if="goldenDust" :object="goldenDust" />
-  <primitive v-if="ambientStars" :object="ambientStars" />
+  <primitive v-if="dustParticles" :object="dustParticles" />
 </template>

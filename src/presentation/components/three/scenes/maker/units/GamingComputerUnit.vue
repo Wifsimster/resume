@@ -36,7 +36,7 @@ const statusLedRef = ref<any>(null)
         <!-- Status LED - animated via useLoop -->
         <TresMesh :position="[-0.35, 0.15, 0.37]" :geometry="sharedGeometries.tinyLED"
             :ref="(el: any) => { statusLedRef = el }">
-            <TresMeshBasicMaterial :color="colors.serverBlue" :opacity="0.5" :transparent="true" />
+            <TresMeshBasicMaterial :color="colors.serverBlue" :opacity="0.9" :transparent="true" />
         </TresMesh>
         <!-- Front panel vents/grilles -->
         <TresMesh v-for="vent in 6" :key="`vent-${vent}`"

@@ -30,7 +30,7 @@ const props = defineProps<Props>()
 
     <!-- Unit front plate -->
     <TresMesh :position="[0, 0, 0.405]">
-        <TresBoxGeometry :args="[0.87435, unit.height - 0.1, 0.02]" />
+        <TresBoxGeometry :args="[0.87435, Math.max(unit.height - 0.02, 0.04), 0.02]" />
         <TresMeshStandardMaterial
             :color="unit.type === 'pdu' ? '#1A1A1A' : unit.color === '#FFFFFF' ? '#F5F5F5' : '#1A1A1A'"
             :roughness="0.25" :metalness="0.8" />

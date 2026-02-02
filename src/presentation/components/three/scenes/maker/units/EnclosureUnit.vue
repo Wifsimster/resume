@@ -36,7 +36,7 @@ const ledRefs = ref<any[]>([])
             :position="[-0.241 + (led % 4) * 0.151, 0.1 - Math.floor(led / 4) * 0.2, 0.38]"
             :geometry="sharedGeometries.smallLED"
             :ref="(el: any) => { if (el) ledRefs[led - 1] = el }">
-            <TresMeshBasicMaterial :color="colors.serverBlue" :opacity="0.5" :transparent="true" />
+            <TresMeshBasicMaterial :color="colors.serverBlue" :opacity="0.9" :transparent="true" />
         </TresMesh>
     </BaseServerUnit>
 </template>

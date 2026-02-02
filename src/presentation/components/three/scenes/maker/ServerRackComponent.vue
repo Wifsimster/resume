@@ -161,7 +161,7 @@ const getUnitComponent = (unitType: ServerUnitType) => {
                 :geometry="sharedGeometries.smallLED"
                 :ref="(el: any) => { if (el) ledMeshRefs[port - 1] = el }">
                 <TresMeshBasicMaterial :color="port % 2 === 0 ? colors.serverGreen : colors.led"
-                    :opacity="0.5" :transparent="true" />
+                    :opacity="0.9" :transparent="true" />
             </TresMesh>
         </TresGroup>
     </TresGroup>
