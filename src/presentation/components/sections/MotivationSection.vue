@@ -1,23 +1,13 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { TresCanvas } from '@tresjs/core'
-import MotivationScene from '@presentation/components/three/scenes/MotivationScene.vue'
-import { useQuality } from '@application/composables/useQuality'
+import DustCanvas from '@presentation/components/ui/DustCanvas.vue'
 
 const { t } = useI18n()
-const { quality, renderSettings } = useQuality()
 </script>
 
 <template>
   <section id="motivation" class="section bg-transparent p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="motivation">
-    <!-- 3D Canvas -->
-    <div class="section-canvas">
-      <TresCanvas :clear-color="'#0A0A0A'" :alpha="true" :dpr="renderSettings.dpr" :antialias="renderSettings.antialias"
-        :power-preference="renderSettings.powerPreference">
-        <MotivationScene :quality="quality" />
-      </TresCanvas>
-    </div>
-
+    <DustCanvas color="#A855F7" color-secondary="#EC4899" />
     <!-- Content -->
     <div class="section-content flex flex-col justify-center items-center h-full">
       <div class="mb-4 text-center w-full">

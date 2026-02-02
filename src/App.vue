@@ -112,6 +112,11 @@ const checkPatienceAchievement = () => {
 }
 
 onMounted(() => {
+  // Auto-enable FPS display in development
+  if (import.meta.env.DEV && fpsDisplayRef.value) {
+    fpsDisplayRef.value.start()
+  }
+
   checkVisitAchievements()
   checkTimeAchievements()
   checkPatienceAchievement()

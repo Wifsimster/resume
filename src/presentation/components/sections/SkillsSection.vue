@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { TresCanvas } from '@tresjs/core'
-import SkillsScene from '@presentation/components/three/scenes/SkillsScene.vue'
-import { useQuality } from '@application/composables/useQuality'
 import { resumeData } from '@domain/data/resume'
+import DustCanvas from '@presentation/components/ui/DustCanvas.vue'
 
 const { t } = useI18n()
-const { quality, renderSettings } = useQuality()
 
 // Group skills by category, preserving the intentional order from the data file
 // The order groups related items together (e.g., DevOps tools, then Testing, then IDE/AI tools)
@@ -23,19 +20,7 @@ const skillsByCategory = computed(() => {
 
 <template>
   <section id="skills" class="section bg-transparent p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="skills">
-    <!-- 3D Canvas -->
-    <div class="section-canvas">
-      <TresCanvas
-        :clear-color="'#0A0A0A'"
-        :alpha="true"
-        :dpr="renderSettings.dpr"
-        :antialias="renderSettings.antialias"
-        :power-preference="renderSettings.powerPreference"
-      >
-        <SkillsScene :quality="quality" />
-      </TresCanvas>
-    </div>
-
+    <DustCanvas color="#FBBF24" color-secondary="#42B883" />
     <!-- Content -->
     <div class="section-content">
       <div class="text-center mb-8">
