@@ -142,6 +142,10 @@ jobs:
             wifsimster/resume:v${{ steps.version_parts.outputs.full }}
             wifsimster/resume:${{ steps.version_parts.outputs.minor }}
             wifsimster/resume:${{ steps.version_parts.outputs.major }}
+          build-args: |
+            VERSION=${{ steps.version.outputs.new_version }}
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64

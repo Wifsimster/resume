@@ -1,3 +1,8 @@
+# Build args
+ARG VERSION=0.0.0
+ARG BUILD_DATE
+ARG VCS_REF
+
 # Build stage
 FROM node:24-alpine AS build
 
@@ -17,6 +22,14 @@ RUN npm run build
 
 # Production stage
 FROM nginx:alpine
+
+# OCI metadata labels
+LABEL org.opencontainers.image.title="wifsimster-resume" \
+      org.opencontainers.image.description="Immersive WebGL resume for Damien Battistella" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.source="https://github.com/Wifsimster/resume"
 
 # Copy built assets
 COPY --from=build /app/dist /usr/share/nginx/html

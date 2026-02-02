@@ -10,7 +10,14 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "type-check": "vue-tsc --noEmit"
+    "type-check": "vue-tsc --noEmit",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "version:minor": "npm version minor --no-git-tag-version",
+    "version:major": "npm version major --no-git-tag-version",
+    "docker:build": "docker build --build-arg VERSION=$(node -p \"require('./package.json').version\") --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ) --build-arg VCS_REF=$(git rev-parse --short HEAD) -t wifsimster/resume:latest -t wifsimster/resume:$(node -p \"require('./package.json').version\") .",
+    "docker:tag": "docker tag wifsimster/resume:latest wifsimster/resume:$(node -p \"require('./package.json').version.split('.').slice(0,2).join('.')\") && docker tag wifsimster/resume:latest wifsimster/resume:$(node -p \"require('./package.json').version.split('.')[0]\")",
+    "docker:push": "docker push --all-tags wifsimster/resume",
+    "release": "npm run build && npm run docker:build && npm run docker:tag && npm run docker:push"
   },
   "dependencies": {
     "vue": "^3.5.26",
