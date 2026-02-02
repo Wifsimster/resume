@@ -125,33 +125,28 @@ export const resumeData: ResumeData = {
   ],
 
   skills: [
-    // Frontend
-    { id: 'javascript', name: 'JavaScript', category: 'frontend', icon: '⚡', url: 'https://developer.mozilla.org/docs/Web/JavaScript' },
-    { id: 'vue', name: 'Vue.js', category: 'frontend', icon: '💚', url: 'https://vuejs.org/' },
-    { id: 'pinia', name: 'Pinia', category: 'frontend', icon: '🍍', url: 'https://pinia.vuejs.org/' },
-    { id: 'tailwind', name: 'TailwindCSS', category: 'frontend', icon: '🎨', url: 'https://tailwindcss.com/' },
-    { id: 'primevue', name: 'PrimeVue', category: 'frontend', icon: '🎯', url: 'https://primevue.org/' },
+    // Hard Skills
+    { id: 'javascript', name: 'JavaScript', category: 'hardskills', icon: '⚡', url: 'https://developer.mozilla.org/docs/Web/JavaScript' },
+    { id: 'vue', name: 'Vue.js', category: 'hardskills', icon: '💚', url: 'https://vuejs.org/' },
+    { id: 'pinia', name: 'Pinia', category: 'hardskills', icon: '🍍', url: 'https://pinia.vuejs.org/' },
+    { id: 'tailwind', name: 'TailwindCSS', category: 'hardskills', icon: '🎨', url: 'https://tailwindcss.com/' },
+    { id: 'primevue', name: 'PrimeVue', category: 'hardskills', icon: '🎯', url: 'https://primevue.org/' },
+    { id: 'nodejs', name: 'Node.js', category: 'hardskills', icon: '💚', url: 'https://nodejs.org/' },
+    { id: 'postgresql', name: 'PostgreSQL', category: 'hardskills', icon: '🐘', url: 'https://www.postgresql.org/' },
+    { id: 'oracle', name: 'Oracle', category: 'hardskills', icon: '🔶', url: 'https://www.oracle.com/database/' },
+    { id: 'restapi', name: 'REST API', category: 'hardskills', icon: '🔌', url: 'https://restfulapi.net/' },
+    { id: 'hl7', name: 'HL7', category: 'hardskills', icon: '🏥', url: 'https://www.hl7.org/' },
+    { id: 'git', name: 'Git', category: 'hardskills', icon: '📦', url: 'https://git-scm.com/' },
+    { id: 'gitlab', name: 'GitLab CI', category: 'hardskills', icon: '🦊', url: 'https://docs.gitlab.com/ee/ci/' },
+    { id: 'docker', name: 'Docker', category: 'hardskills', icon: '🐳', url: 'https://www.docker.com/' },
+    { id: 'vitest', name: 'Vitest', category: 'hardskills', icon: '🧪', url: 'https://vitest.dev/' },
+    { id: 'playwright', name: 'Playwright', category: 'hardskills', icon: '🎭', url: 'https://playwright.dev/' },
+    { id: 'vscode', name: 'VS Code', category: 'hardskills', icon: '💻', url: 'https://code.visualstudio.com/' },
 
-    // Backend
-    { id: 'nodejs', name: 'Node.js', category: 'backend', icon: '💚', url: 'https://nodejs.org/' },
-    { id: 'postgresql', name: 'PostgreSQL', category: 'backend', icon: '🐘', url: 'https://www.postgresql.org/' },
-    { id: 'oracle', name: 'Oracle', category: 'backend', icon: '🔶', url: 'https://www.oracle.com/database/' },
-    { id: 'restapi', name: 'REST API', category: 'backend', icon: '🔌', url: 'https://restfulapi.net/' },
-    { id: 'hl7', name: 'HL7', category: 'backend', icon: '🏥', url: 'https://www.hl7.org/' },
-
-    // DevOps & CI/CD
-    { id: 'git', name: 'Git', category: 'devops', icon: '📦', url: 'https://git-scm.com/' },
-    { id: 'gitlab', name: 'GitLab CI', category: 'devops', icon: '🦊', url: 'https://docs.gitlab.com/ee/ci/' },
-    { id: 'docker', name: 'Docker', category: 'devops', icon: '🐳', url: 'https://www.docker.com/' },
-
-    // Testing
-    { id: 'vitest', name: 'Vitest', category: 'devops', icon: '🧪', url: 'https://vitest.dev/' },
-    { id: 'playwright', name: 'Playwright', category: 'devops', icon: '🎭', url: 'https://playwright.dev/' },
-
-    // IDE & AI Tools
-    { id: 'vscode', name: 'VS Code', category: 'devops', icon: '💻', url: 'https://code.visualstudio.com/' },
-    { id: 'cursor', name: 'Cursor', category: 'devops', icon: '✨', url: 'https://cursor.com/' },
-    { id: 'copilot', name: 'GitHub Copilot', category: 'devops', icon: '🤖', url: 'https://github.com/features/copilot' },
+    // IA
+    { id: 'copilot', name: 'GitHub Copilot', category: 'ia', icon: '🤖', url: 'https://github.com/features/copilot' },
+    { id: 'cursor', name: 'Cursor', category: 'ia', icon: '✨', url: 'https://cursor.com/' },
+    { id: 'claude', name: 'Claude', category: 'ia', icon: '🧠', url: 'https://claude.ai/' },
 
     // Soft Skills
     { id: 'motivation', name: 'Motivation', category: 'soft', icon: '💪' },

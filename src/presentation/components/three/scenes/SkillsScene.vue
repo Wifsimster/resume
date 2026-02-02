@@ -18,19 +18,17 @@ const orbitGroupRef = ref()
 
 // Category config with vertical offset for better visibility
 const categoryConfig: Record<string, { color: string, orbitRadius: number, speed: number, yOffset: number }> = {
-  frontend: { color: '#42B883', orbitRadius: 1.2, speed: 0.08, yOffset: 0.6 },
-  backend: { color: '#61DAFB', orbitRadius: 1.8, speed: -0.06, yOffset: 0.2 },
-  devops: { color: '#FF6B35', orbitRadius: 2.4, speed: 0.05, yOffset: -0.2 },
-  soft: { color: '#FFD93D', orbitRadius: 3.0, speed: -0.04, yOffset: -0.6 }
+  soft: { color: '#FFD93D', orbitRadius: 1.2, speed: 0.08, yOffset: 0.4 },
+  ia: { color: '#10B981', orbitRadius: 2.0, speed: -0.06, yOffset: 0 },
+  hardskills: { color: '#42B883', orbitRadius: 3.0, speed: 0.04, yOffset: -0.5 }
 }
 
 // Build skill nodes from actual resume data
 const skillNodes = computed(() => {
   const nodesByCategory: Record<string, typeof resumeData.skills> = {
-    frontend: [],
-    backend: [],
-    devops: [],
-    soft: []
+    soft: [],
+    ia: [],
+    hardskills: []
   }
   
   // Group skills by category

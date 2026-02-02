@@ -49,23 +49,28 @@ export default {
     },
     completionist: {
       name: 'Completionist',
-      desc: 'Unlocked all achievements'
+      desc: 'Unlocked all achievements',
+      hint: 'Unlock every other achievement first...'
     },
     bilingual: {
       name: 'Bilingual',
-      desc: 'Switched language'
+      desc: 'Switched language',
+      hint: 'Try viewing the site in another language...'
     },
     nightOwl: {
       name: 'Night Owl',
-      desc: 'Visited in dark mode'
+      desc: 'Visited late at night',
+      hint: 'Visit between 10PM and 5AM...'
     },
     firstVisit: {
       name: 'Welcome',
-      desc: 'First time visiting'
+      desc: 'First time visiting',
+      hint: 'Just show up for the first time...'
     },
     returnVisitor: {
       name: 'Return Visitor',
-      desc: 'Came back for more'
+      desc: 'Came back for more',
+      hint: 'Come back after your first visit...'
     },
     earlyBird: {
       name: 'Early Bird',
@@ -94,7 +99,8 @@ export default {
     },
     qualityToggler: {
       name: 'Graphics Guru',
-      desc: 'Toggled quality settings'
+      desc: 'Toggled quality settings',
+      hint: 'Try changing the graphics quality...'
     },
     makerFan: {
       name: 'Maker Fan',
@@ -103,11 +109,13 @@ export default {
     },
     patience: {
       name: 'Patient One',
-      desc: 'Waited for all 3D to load'
+      desc: 'Waited for all 3D to load',
+      hint: 'Wait for everything to fully load...'
     },
     contactAttempt: {
       name: 'Reach Out',
-      desc: 'Opened contact section'
+      desc: 'Opened contact section',
+      hint: 'Navigate to the contact section...'
     },
     githubVisitor: {
       name: 'Open Sourcer',
@@ -123,6 +131,46 @@ export default {
       name: 'Book Buyer',
       desc: 'Clicked on a book to buy',
       hint: 'Explore the books to buy section...'
+    },
+    nightExplorer: {
+      name: 'Night Explorer',
+      desc: 'Visited after midnight',
+      hint: 'Browse the site in the dead of night...'
+    },
+    keyboardNinja: {
+      name: 'Keyboard Ninja',
+      desc: 'Navigated with keyboard',
+      hint: 'Use the Tab key to navigate around...'
+    },
+    boomerang: {
+      name: 'Boomerang',
+      desc: 'Scrolled to bottom then back to top',
+      hint: 'Scroll all the way down, then all the way back up...'
+    },
+    mobileScout: {
+      name: 'Mobile Scout',
+      desc: 'Visited from a mobile device',
+      hint: 'Try visiting from your phone...'
+    },
+    printReady: {
+      name: 'Print Ready',
+      desc: 'Tried to print the resume',
+      hint: 'Try printing this page...'
+    },
+    devotedReader: {
+      name: 'Devoted Reader',
+      desc: 'Spent 10+ minutes exploring',
+      hint: 'Stay and explore for over 10 minutes...'
+    },
+    frequentFlyer: {
+      name: 'Frequent Flyer',
+      desc: 'Visited on 3 different days',
+      hint: 'Come back on 3 separate days...'
+    },
+    secretWhisper: {
+      name: 'Secret Whisper',
+      desc: 'Typed the secret word',
+      hint: 'Type a friendly greeting...'
     }
   },
   console: {
@@ -321,9 +369,8 @@ export default {
   skills: {
     title: 'Skills',
     subtitle: 'What I use daily',
-    frontend: 'Frontend',
-    backend: 'Backend',
-    devops: 'DevOps',
+    hardskills: 'Hard Skills',
+    ia: 'IA',
     maker: 'Maker',
     soft: 'Soft Skills'
   },

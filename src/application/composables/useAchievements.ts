@@ -34,7 +34,15 @@ const defaultAchievements: Achievement[] = [
   { id: 'contactAttempt', name: 'Reach Out', description: 'Opened contact section', icon: '✉️', unlocked: false },
   { id: 'githubVisitor', name: 'Open Sourcer', description: 'Clicked on a GitHub link', icon: '🐙', unlocked: false },
   { id: 'consoleExplorer', name: 'Console Explorer', description: 'Found the console easter egg', icon: '💻', unlocked: false },
-  { id: 'bookBuyer', name: 'Book Buyer', description: 'Clicked on a book to buy', icon: '🛒', unlocked: false }
+  { id: 'bookBuyer', name: 'Book Buyer', description: 'Clicked on a book to buy', icon: '🛒', unlocked: false },
+  { id: 'nightExplorer', name: 'Night Explorer', description: 'Visited after midnight', icon: '🌙', unlocked: false },
+  { id: 'keyboardNinja', name: 'Keyboard Ninja', description: 'Navigated with keyboard', icon: '🥷', unlocked: false },
+  { id: 'boomerang', name: 'Boomerang', description: 'Scrolled to bottom then back to top', icon: '🪃', unlocked: false },
+  { id: 'mobileScout', name: 'Mobile Scout', description: 'Visited from a mobile device', icon: '📱', unlocked: false },
+  { id: 'printReady', name: 'Print Ready', description: 'Tried to print the resume', icon: '🖨️', unlocked: false },
+  { id: 'devotedReader', name: 'Devoted Reader', description: 'Spent 10+ minutes exploring', icon: '📖', unlocked: false },
+  { id: 'frequentFlyer', name: 'Frequent Flyer', description: 'Visited on 3 different days', icon: '✈️', unlocked: false },
+  { id: 'secretWhisper', name: 'Secret Whisper', description: 'Typed the secret word', icon: '🤫', unlocked: false }
 ]
 
 // Load from localStorage

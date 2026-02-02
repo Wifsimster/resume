@@ -49,23 +49,28 @@ export default {
     },
     completionist: {
       name: 'Complétionniste',
-      desc: 'Débloqué tous les succès'
+      desc: 'Débloqué tous les succès',
+      hint: 'Débloquez tous les autres succès d\'abord...'
     },
     bilingual: {
       name: 'Bilingue',
-      desc: 'Changé de langue'
+      desc: 'Changé de langue',
+      hint: 'Essayez de voir le site dans une autre langue...'
     },
     nightOwl: {
       name: 'Noctambule',
-      desc: 'Visité en mode sombre'
+      desc: 'Visité tard le soir',
+      hint: 'Visitez entre 22h et 5h du matin...'
     },
     firstVisit: {
       name: 'Bienvenue',
-      desc: 'Première visite sur le site'
+      desc: 'Première visite sur le site',
+      hint: 'Il suffit de venir pour la première fois...'
     },
     returnVisitor: {
       name: 'Fidèle',
-      desc: 'Revenu pour en voir plus'
+      desc: 'Revenu pour en voir plus',
+      hint: 'Revenez après votre première visite...'
     },
     earlyBird: {
       name: 'Lève-tôt',
@@ -94,7 +99,8 @@ export default {
     },
     qualityToggler: {
       name: 'Gourou graphique',
-      desc: 'Changé les paramètres de qualité'
+      desc: 'Changé les paramètres de qualité',
+      hint: 'Essayez de changer la qualité graphique...'
     },
     makerFan: {
       name: 'Fan de maker',
@@ -103,11 +109,13 @@ export default {
     },
     patience: {
       name: 'Patient',
-      desc: 'Attendu le chargement complet de la 3D'
+      desc: 'Attendu le chargement complet de la 3D',
+      hint: 'Attendez que tout soit complètement chargé...'
     },
     contactAttempt: {
       name: 'Prise de contact',
-      desc: 'Ouvert la section contact'
+      desc: 'Ouvert la section contact',
+      hint: 'Naviguez vers la section contact...'
     },
     githubVisitor: {
       name: 'Open Sourceur',
@@ -123,6 +131,46 @@ export default {
       name: 'Acheteur de livres',
       desc: 'Cliqué sur un livre à acheter',
       hint: 'Explorez la section des livres à acheter...'
+    },
+    nightExplorer: {
+      name: 'Explorateur nocturne',
+      desc: 'Visité après minuit',
+      hint: 'Naviguez sur le site en pleine nuit...'
+    },
+    keyboardNinja: {
+      name: 'Ninja du clavier',
+      desc: 'Navigué au clavier',
+      hint: 'Utilisez la touche Tab pour naviguer...'
+    },
+    boomerang: {
+      name: 'Boomerang',
+      desc: 'Scrollé jusqu\'en bas puis remonté',
+      hint: 'Scrollez tout en bas, puis remontez tout en haut...'
+    },
+    mobileScout: {
+      name: 'Éclaireur mobile',
+      desc: 'Visité depuis un appareil mobile',
+      hint: 'Essayez de visiter depuis votre téléphone...'
+    },
+    printReady: {
+      name: 'Prêt à imprimer',
+      desc: 'Essayé d\'imprimer le CV',
+      hint: 'Essayez d\'imprimer cette page...'
+    },
+    devotedReader: {
+      name: 'Lecteur assidu',
+      desc: 'Passé plus de 10 minutes à explorer',
+      hint: 'Restez et explorez pendant plus de 10 minutes...'
+    },
+    frequentFlyer: {
+      name: 'Grand voyageur',
+      desc: 'Visité 3 jours différents',
+      hint: 'Revenez sur 3 jours distincts...'
+    },
+    secretWhisper: {
+      name: 'Murmure secret',
+      desc: 'Tapé le mot secret',
+      hint: 'Tapez une salutation amicale...'
     }
   },
   console: {
@@ -321,9 +369,8 @@ export default {
   skills: {
     title: 'Compétences',
     subtitle: 'Ce que j\'utilise au quotidien',
-    frontend: 'Frontend',
-    backend: 'Backend',
-    devops: 'DevOps',
+    hardskills: 'Hard Skills',
+    ia: 'IA',
     maker: 'Maker',
     soft: 'Soft Skills'
   },

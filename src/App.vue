@@ -33,6 +33,9 @@ watch(fpsEnabled, async (enabled) => {
 const clickCount = ref(0)
 const totalScrolled = ref(0)
 const lastScrollY = ref(0)
+const reachedBottom = ref(false)
+const tabKeyCount = ref(0)
+const secretBuffer = ref('')
 const timeSpentInterval = ref<ReturnType<typeof setInterval> | null>(null)
 
 const VISIT_STORAGE_KEY = 'wifsimster_visit_count'
@@ -54,12 +57,22 @@ const checkVisitAchievements = () => {
 const checkTimeAchievements = () => {
   const hour = new Date().getHours()
   const day = new Date().getDay()
-  
+
   // Early bird: 5AM - 8AM
   if (hour >= 5 && hour < 8) {
     unlock('earlyBird')
   }
-  
+
+  // Night owl: 10PM - 5AM
+  if (hour >= 22 || hour < 5) {
+    unlock('nightOwl')
+  }
+
+  // Night explorer: midnight - 3AM
+  if (hour >= 0 && hour < 4) {
+    unlock('nightExplorer')
+  }
+
   // Weekend warrior: Saturday (6) or Sunday (0)
   if (day === 0 || day === 6) {
     unlock('weekendWarrior')
@@ -80,23 +93,38 @@ const handleScroll = () => {
   const scrollDiff = Math.abs(currentScrollY - lastScrollY.value)
   totalScrolled.value += scrollDiff
   lastScrollY.value = currentScrollY
-  
+
   if (totalScrolled.value >= 10000 && !isUnlocked('scrollMaster')) {
     unlock('scrollMaster')
+  }
+
+  // Boomerang: scrolled to bottom then back to top
+  const scrollHeight = document.documentElement.scrollHeight
+  const clientHeight = document.documentElement.clientHeight
+  const scrollPercent = currentScrollY / (scrollHeight - clientHeight)
+
+  if (scrollPercent >= 0.99) {
+    reachedBottom.value = true
+  }
+  if (reachedBottom.value && scrollPercent < 0.01 && !isUnlocked('boomerang')) {
+    unlock('boomerang')
   }
 }
 
 // Track time spent
 const startTimeTracking = () => {
   const startTime = Date.now()
-  
+
   timeSpentInterval.value = setInterval(() => {
     const elapsed = (Date.now() - startTime) / 1000 / 60 // minutes
     if (elapsed >= 5 && !isUnlocked('timeSpent')) {
       unlock('timeSpent')
-      if (timeSpentInterval.value) {
-        clearInterval(timeSpentInterval.value)
-      }
+    }
+    if (elapsed >= 10 && !isUnlocked('devotedReader')) {
+      unlock('devotedReader')
+    }
+    if (isUnlocked('timeSpent') && isUnlocked('devotedReader') && timeSpentInterval.value) {
+      clearInterval(timeSpentInterval.value)
     }
   }, 10000) // Check every 10 seconds
 }
@@ -111,6 +139,64 @@ const checkPatienceAchievement = () => {
   }, { once: true })
 }
 
+// Check device type
+const checkDeviceAchievements = () => {
+  if (navigator.maxTouchPoints > 0 && window.innerWidth < 768) {
+    unlock('mobileScout')
+  }
+}
+
+// Listen for print attempts
+const handleBeforePrint = () => {
+  unlock('printReady')
+}
+
+const setupPrintListener = () => {
+  window.addEventListener('beforeprint', handleBeforePrint)
+}
+
+// Track unique visit days for frequent flyer
+const VISIT_DAYS_STORAGE_KEY = 'wifsimster_visit_days'
+
+const checkFrequentFlyer = () => {
+  const today = new Date().toISOString().split('T')[0]
+  const savedDays = JSON.parse(localStorage.getItem(VISIT_DAYS_STORAGE_KEY) || '[]') as string[]
+
+  if (!savedDays.includes(today)) {
+    savedDays.push(today)
+    localStorage.setItem(VISIT_DAYS_STORAGE_KEY, JSON.stringify(savedDays))
+  }
+
+  if (savedDays.length >= 3) {
+    unlock('frequentFlyer')
+  }
+}
+
+// Track Tab key presses
+const handleKeyboardTracking = (e: KeyboardEvent) => {
+  if (e.key === 'Tab') {
+    tabKeyCount.value++
+    if (tabKeyCount.value >= 10 && !isUnlocked('keyboardNinja')) {
+      unlock('keyboardNinja')
+    }
+  }
+}
+
+// Buffer keystrokes and detect secret words
+const handleSecretWord = (e: KeyboardEvent) => {
+  if (e.key.length === 1) {
+    secretBuffer.value += e.key.toLowerCase()
+    // Keep buffer manageable
+    if (secretBuffer.value.length > 20) {
+      secretBuffer.value = secretBuffer.value.slice(-20)
+    }
+    if (secretBuffer.value.includes('hello') || secretBuffer.value.includes('bonjour')) {
+      unlock('secretWhisper')
+      secretBuffer.value = ''
+    }
+  }
+}
+
 onMounted(() => {
   // Auto-enable FPS display in development
   if (import.meta.env.DEV && fpsDisplayRef.value) {
@@ -120,16 +206,24 @@ onMounted(() => {
   checkVisitAchievements()
   checkTimeAchievements()
   checkPatienceAchievement()
+  checkDeviceAchievements()
+  checkFrequentFlyer()
+  setupPrintListener()
   startTimeTracking()
-  
+
   lastScrollY.value = window.scrollY
   window.addEventListener('click', handleClick)
   window.addEventListener('scroll', handleScroll, { passive: true })
+  window.addEventListener('keydown', handleKeyboardTracking)
+  window.addEventListener('keydown', handleSecretWord)
 })
 
 onUnmounted(() => {
   window.removeEventListener('click', handleClick)
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('keydown', handleKeyboardTracking)
+  window.removeEventListener('keydown', handleSecretWord)
+  window.removeEventListener('beforeprint', handleBeforePrint)
   if (timeSpentInterval.value) {
     clearInterval(timeSpentInterval.value)
   }

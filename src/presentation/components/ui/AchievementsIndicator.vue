@@ -38,7 +38,24 @@ const achievementsWithHints = [
   'weekendWarrior',
   'makerFan',
   'githubVisitor',
-  'bookBuyer'
+  'bookBuyer',
+  'completionist',
+  'bilingual',
+  'nightOwl',
+  'firstVisit',
+  'returnVisitor',
+  'qualityToggler',
+  'patience',
+  'contactAttempt',
+  'nightExplorer',
+  'keyboardNinja',
+  'boomerang',
+  'mobileScout',
+  'printReady',
+  'devotedReader',
+  'frequentFlyer',
+  'secretWhisper',
+  'consoleExplorer'
 ]
 
 const hasHint = (id: string) => {

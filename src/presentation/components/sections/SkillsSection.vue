@@ -9,7 +9,7 @@ const { t } = useI18n()
 // Group skills by category, preserving the intentional order from the data file
 // The order groups related items together (e.g., DevOps tools, then Testing, then IDE/AI tools)
 const skillsByCategory = computed(() => {
-  const categories = ['frontend', 'backend', 'devops', 'soft'] as const
+  const categories = ['soft', 'ia', 'hardskills'] as const
   return categories.map(cat => ({
     id: cat,
     name: t(`skills.${cat}`),
@@ -28,7 +28,7 @@ const skillsByCategory = computed(() => {
         <p class="font-(--font-display) text-2xl text-white/70">{{ t('skills.subtitle') }}</p>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-[900px] xl:max-w-[1000px] 2xl:max-w-[1100px] mx-auto justify-items-center lg:justify-items-stretch">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-[800px] xl:max-w-[900px] 2xl:max-w-[1000px] mx-auto justify-items-center lg:justify-items-stretch">
         <div 
           v-for="category in skillsByCategory" 
           :key="category.id"
