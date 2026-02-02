@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { TresCanvas } from '@tresjs/core'
 import MakerScene from '@presentation/components/three/scenes/MakerScene.vue'
@@ -172,10 +172,12 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Rack Legend - Hand-drawn annotations -->
+    <!-- Rack Legend - Hand-drawn annotations (PERFORMANCE FIXED) -->
     <RackLegend
-      :visible="!isDeskMode"
+      :visible="!isDeskMode && !!makerSceneRef"
       :rack-units="rackUnits"
+      :camera="makerSceneRef?.camera"
+      :renderer="makerSceneRef?.renderer"
     />
   </section>
 </template>

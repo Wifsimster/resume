@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run type-check:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout:*)",
+      "Bash(cat:*)",
+      "Bash(findstr:*)",
+      "Bash(docker build:*)",
+      "Bash(docker tag:*)",
+      "Bash(docker push:*)",
+      "Bash(docker run:*)",
+      "Bash(curl:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(claude config:*)",
+      "Bash(npx claude config:*)",
+      "Bash(where:*)",
+      "Bash(claude.exe config list:*)",
+      "Bash(\"C:\\\\Users\\\\batti\\\\.local\\\\bin\\\\claude.exe\" config list --help)",
+      "Bash(\"C:\\\\Users\\\\batti\\\\.local\\\\bin\\\\claude.exe\" config --help)",
+      "Bash(dir /b \"%USERPROFILE%\\\\.claude\"\")",
+      "Bash(dir /b \"C:\\\\Users\\\\batti\\\\.claude\")",
+      "Bash(echo:*)",
+      "Bash(dir /b \"C:\\\\git\\\\resume\\\\.claude\")"
+    ]
+  }
+}

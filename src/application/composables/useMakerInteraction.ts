@@ -23,24 +23,21 @@ export function useMakerInteraction(
   // Mouse position for raycasting
   const mouse = new Vector2()
   const raycasterInstance = new Raycaster()
+  
+  // Throttling for raycasting
+  let rafId: number | null = null
+  const lastMousePos = { x: 0, y: 0 }
+  const MOUSE_MOVE_THRESHOLD = 0.01 // Only raycast if mouse moved significantly
 
-  const handleMouseMove = (event: MouseEvent) => {
+  // Perform raycasting (throttled via requestAnimationFrame)
+  const performRaycast = () => {
     const rendererInstance = (renderer as any).value
-    if (!camera.value || !rendererInstance || !sceneRef.value) return
+    if (!camera.value || !rendererInstance || !sceneRef.value) {
+      rafId = null
+      return
+    }
 
-    // Access renderer's domElement (TresJS compatibility)
-    const canvas = rendererInstance.domElement
-    const rect = canvas.getBoundingClientRect()
-
-    // Calculate normalized device coordinates
-    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
-    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
-
-    // Update camera offset based on mouse position (limited range)
-    cameraOffset.targetX = mouse.x * 0.5 // Limit to ±0.5
-    cameraOffset.targetY = mouse.y * 0.3 // Limit to ±0.3
-
-    // Update raycaster
+    // Update raycaster with current mouse position
     raycasterInstance.setFromCamera(mouse, camera.value)
 
     // Find intersections with server unit meshes
@@ -51,7 +48,10 @@ export function useMakerInteraction(
       })
       .filter(Boolean)
 
-    if (meshes.length === 0) return
+    if (meshes.length === 0) {
+      rafId = null
+      return
+    }
 
     const intersects = raycasterInstance.intersectObjects(meshes, true)
 
@@ -82,6 +82,41 @@ export function useMakerInteraction(
         hoveredUnitId.value = null
         onHoverChange(null)
       }
+    }
+    
+    rafId = null
+  }
+
+  const handleMouseMove = (event: MouseEvent) => {
+    const rendererInstance = (renderer as any).value
+    if (!camera.value || !rendererInstance || !sceneRef.value) return
+
+    // Access renderer's domElement (TresJS compatibility)
+    const canvas = rendererInstance.domElement
+    const rect = canvas.getBoundingClientRect()
+
+    // Calculate normalized device coordinates
+    const newMouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1
+    const newMouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1
+
+    // Update camera offset immediately (cheap operation)
+    cameraOffset.targetX = newMouseX * 0.5 // Limit to ±0.5
+    cameraOffset.targetY = newMouseY * 0.3 // Limit to ±0.3
+
+    // Check if mouse moved significantly
+    const mouseDelta = Math.abs(newMouseX - lastMousePos.x) + Math.abs(newMouseY - lastMousePos.y)
+    if (mouseDelta < MOUSE_MOVE_THRESHOLD) {
+      return // Skip if mouse hasn't moved much
+    }
+
+    lastMousePos.x = newMouseX
+    lastMousePos.y = newMouseY
+    mouse.x = newMouseX
+    mouse.y = newMouseY
+
+    // Schedule raycasting for next frame (throttled)
+    if (rafId === null) {
+      rafId = requestAnimationFrame(performRaycast)
     }
   }
 
@@ -140,6 +175,10 @@ export function useMakerInteraction(
   onUnmounted(() => {
     window.removeEventListener('mousemove', handleMouseMove)
     window.removeEventListener('click', handleClick)
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId)
+      rafId = null
+    }
   })
 
   return {

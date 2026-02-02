@@ -173,40 +173,43 @@ const detectQuality = (): QualityLevel => {
 }
 
 // Get render settings for a quality level
+// Performance-optimized: Capped DPR to 1.5 max to prevent GPU bottleneck
 const getRenderSettings = (level: QualityLevel): RenderSettings => {
   const caps = detectDeviceCapabilities()
   const isMobile = caps.isMobile
-  
+
   switch (level) {
     case 'minimal':
       return {
         dpr: 1,
         antialias: false,
         powerPreference: 'low-power',
-        particleMultiplier: isMobile ? 0.15 : 0.25,
-        segmentMultiplier: isMobile ? 0.2 : 0.25,
+        particleMultiplier: 0,
+        segmentMultiplier: 0.25,
         targetFPS: 30,
-        lightCount: isMobile ? 2 : 3
+        lightCount: 2
       }
     case 'low':
       return {
-        dpr: isMobile ? Math.min(caps.nativeDpr, 1.2) : Math.min(caps.nativeDpr, 1.5),
+        dpr: 1,
         antialias: false,
-        powerPreference: isMobile ? 'low-power' : 'default',
-        particleMultiplier: isMobile ? 0.35 : 0.5,
-        segmentMultiplier: isMobile ? 0.4 : 0.5,
-        targetFPS: isMobile ? 30 : 45,
-        lightCount: isMobile ? 3 : 4
+        powerPreference: 'default',
+        particleMultiplier: isMobile ? 0.25 : 0.5,
+        segmentMultiplier: 0.5,
+        targetFPS: 45,
+        lightCount: 3
       }
     case 'high':
     default:
       return {
-        dpr: isMobile ? Math.min(caps.nativeDpr, 1.5) : Math.min(caps.nativeDpr, 2.5),
-        antialias: !isMobile, // Disable antialias on mobile for performance
-        powerPreference: isMobile ? 'default' : 'high-performance',
-        particleMultiplier: isMobile ? 0.8 : 1.5,
-        segmentMultiplier: isMobile ? 0.9 : 1.5,
-        targetFPS: isMobile ? 30 : 60,
+        // Cap DPR at 1.5 max - higher values kill FPS without visible quality gain
+        dpr: Math.min(caps.nativeDpr, 1.5),
+        antialias: !isMobile,
+        powerPreference: 'high-performance',
+        particleMultiplier: isMobile ? 0.5 : 1,
+        segmentMultiplier: 1,
+        targetFPS: 60,
+        // More lights for better illumination
         lightCount: isMobile ? 4 : 6
       }
   }

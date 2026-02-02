@@ -3,7 +3,7 @@ import { ref } from 'vue'
 // import { useLoop } from '@tresjs/core' // DISABLED FOR TESTING
 import type { ServerUnit } from '@domain/types/makerRack'
 import type { makerColors } from '@domain/data/makerRack'
-import { sharedGeometries, sharedMaterials } from '@application/composables/useSharedGeometries'
+import { sharedGeometries } from '@application/composables/useSharedGeometries'
 import BaseServerUnit from '../BaseServerUnit.vue'
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
 
 defineProps<Props>()
 
-// Direct Three.js refs for LED animation (bypasses Vue reactivity)
+// Direct Three.js refs for LED animation
 const ledRefs = ref<any[]>([])
 
 // DISABLED FOR PERFORMANCE TESTING
@@ -23,7 +23,7 @@ const ledRefs = ref<any[]>([])
 //     ledRefs.value.forEach((led, index) => {
 //         if (led?.material) {
 //             const ledNum = index + 1
-//             led.material.opacity = Math.sin(elapsed * (2 + ledNum * 0.3) + ledNum) > 0.3 ? 1 : 0.3
+//             led.material.opacity = Math.sin(elapsed * (1 + ledNum * 0.2) + ledNum) > 0.5 ? 1 : 0.4
 //         }
 //     })
 // })
@@ -31,19 +31,18 @@ const ledRefs = ref<any[]>([])
 
 <template>
     <BaseServerUnit :unit="unit" :is-hovered="isHovered" :colors="colors">
-        <!-- Ethernet ports with indicator lights -->
-        <TresMesh v-for="port in 12" :key="`port-${port}`"
-            :position="[-0.362 + (port % 6) * 0.121, -0.15 + Math.floor(port / 6) * 0.3, 0.37]"
-            :material="sharedMaterials.darkMetal">
+        <!-- Electric switches (8 toggle switches) -->
+        <TresMesh v-for="switchNum in 8" :key="`switch-${switchNum}`"
+            :position="[-0.362 + (switchNum - 1) * 0.103, 0, 0.37]">
             <TresBoxGeometry :args="[0.08, 0.06, 0.02]" />
+            <TresMeshStandardMaterial :color="'#1A1A1A'" />
         </TresMesh>
-        <!-- Port indicator lights - animated via useLoop -->
-        <TresMesh v-for="led in 12" :key="`switch-led-${led}`"
-            :position="[-0.362 + (led % 6) * 0.121, -0.12 + Math.floor(led / 6) * 0.3, 0.38]"
+        <!-- Switch indicators - animated via useLoop -->
+        <TresMesh v-for="led in 8" :key="`switch-led-${led}`"
+            :position="[-0.362 + (led - 1) * 0.103, 0.03, 0.38]"
             :geometry="sharedGeometries.tinyLED"
             :ref="(el: any) => { if (el) ledRefs[led - 1] = el }">
-            <TresMeshBasicMaterial :color="led % 3 === 0 ? '#00FF00' : '#0088FF'" :opacity="0.5" :transparent="true" />
+            <TresMeshBasicMaterial :color="colors.serverGreen" :opacity="0.5" :transparent="true" />
         </TresMesh>
     </BaseServerUnit>
 </template>
-

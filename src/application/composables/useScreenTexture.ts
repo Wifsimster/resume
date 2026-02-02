@@ -1,4 +1,4 @@
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { CanvasTexture } from 'three'
 
 interface ScreenTextureProps {
@@ -10,6 +10,18 @@ interface ScreenTextureProps {
 
 export function useScreenTexture(props: ScreenTextureProps) {
   const screenTexture = ref<CanvasTexture | null>(null)
+  let debounceTimer: number | null = null
+  let lastPropsHash = ''
+
+  // Create a hash of props to detect actual changes
+  const getPropsHash = () => {
+    return JSON.stringify({
+      title: props.title,
+      subtitle: props.subtitle,
+      projects: props.projects,
+      techStack: props.techStack
+    })
+  }
 
   const createScreenTexture = () => {
     const canvas = document.createElement('canvas')
@@ -112,13 +124,54 @@ export function useScreenTexture(props: ScreenTextureProps) {
     return texture
   }
 
-  // Update texture when props change
-  watch(() => [props.projects, props.techStack, props.title, props.subtitle], () => {
+  // Update texture when props actually change (with debouncing)
+  const updateTexture = () => {
+    const currentHash = getPropsHash()
+    
+    // Only recreate if props actually changed
+    if (currentHash === lastPropsHash) {
+      return
+    }
+    
+    lastPropsHash = currentHash
+    
+    // Dispose of old texture
+    if (screenTexture.value) {
+      screenTexture.value.dispose()
+    }
+    
+    // Create new texture
     screenTexture.value = createScreenTexture()
+  }
+
+  // Debounced update function
+  const debouncedUpdate = () => {
+    if (debounceTimer !== null) {
+      clearTimeout(debounceTimer)
+    }
+    debounceTimer = window.setTimeout(() => {
+      updateTexture()
+      debounceTimer = null
+    }, 100) // 100ms debounce
+  }
+
+  // Watch for prop changes with proper change detection
+  watch(() => [props.projects, props.techStack, props.title, props.subtitle], () => {
+    debouncedUpdate()
   }, { deep: true })
 
   onMounted(() => {
+    lastPropsHash = getPropsHash()
     screenTexture.value = createScreenTexture()
+  })
+
+  onUnmounted(() => {
+    if (debounceTimer !== null) {
+      clearTimeout(debounceTimer)
+    }
+    if (screenTexture.value) {
+      screenTexture.value.dispose()
+    }
   })
 
   return {

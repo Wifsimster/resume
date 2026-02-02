@@ -337,33 +337,41 @@ export default {
         name: 'Freebox mini 4K',
         description: 'Free mini 4K router and internet box with yellow-green LCD screen and directional pad'
       },
+      patchPanel: {
+        name: 'Patch Panel',
+        description: 'Network patch panel for managing Ethernet connections'
+      },
       udmPro: {
-        name: 'UniFi Dream Machine Pro',
+        name: 'UniFi Firewall',
         description: 'Unified router and network controller with integrated protection and centralized management'
       },
       switch: {
-        name: 'UniFi Switch',
-        description: 'Network switch with multiple Ethernet ports for network distribution'
+        name: 'UniFi PoE switch',
+        description: 'PoE network switch with multiple Ethernet ports for network distribution and power delivery'
       },
       ap: {
         name: 'Wi-Fi Access Point',
         description: 'Wireless access point for network coverage throughout the house'
       },
       silver1u: {
-        name: 'Silver 1U Device',
-        description: '1U rackmount equipment for network services or server'
+        name: 'UniFi UNVR',
+        description: 'UniFi Network Video Recorder for network video recording'
+      },
+      electricSwitches: {
+        name: 'Electric Switches',
+        description: 'Power distribution unit with individual switches'
+      },
+      gamingComputer: {
+        name: 'Gaming computer',
+        description: 'High-performance gaming workstation with GPU'
       },
       pdu: {
         name: 'PDU (Power Distribution Unit)',
         description: 'Power distribution unit with 8 toggle switches for individual control'
       },
       nas: {
-        name: 'SilverStone NAS',
-        description: 'Network attached storage server for backup and file sharing'
-      },
-      enclosure: {
-        name: 'Rackmount Enclosure',
-        description: 'Server enclosure with activity indicators for equipment hosting'
+        name: 'Compute + NAS',
+        description: 'Proxmox with Unraid and Docker services'
       },
       ups: {
         name: 'UPS (Uninterruptible Power Supply)',

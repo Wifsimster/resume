@@ -15,6 +15,7 @@ export function useAnimationController(elementRef?: { value: HTMLElement | null 
   const isVisible = ref(true)
   const animationFrameId = ref<number | null>(null)
   const lastFrameTime = ref(0)
+  const animationCallback = ref<((elapsed: number, delta: number) => void) | null>(null)
   const batteryInfo = ref<BatteryInfo>({
     level: null,
     charging: null,
@@ -24,15 +25,13 @@ export function useAnimationController(elementRef?: { value: HTMLElement | null 
 
   // Detect mobile device
   const isMobile = computed(() => deviceCapabilities.isMobile)
-  
-  // Target FPS based on device and quality
+
+  // Target FPS info (for debugging/monitoring, not for limiting)
   const targetFPS = computed(() => {
     if (quality.value === 'minimal') return 30
     if (quality.value === 'low') return isMobile.value ? 30 : 45
     return isMobile.value ? 30 : 60
   })
-
-  const frameInterval = computed(() => 1000 / targetFPS.value)
 
   // Battery API detection
   const detectBattery = async () => {
@@ -85,31 +84,31 @@ export function useAnimationController(elementRef?: { value: HTMLElement | null 
     intersectionObserver.observe(elementRef.value)
   }
 
-  // Frame rate limiter
+  // Simple animation loop - let the browser handle frame timing via RAF
+  // No artificial frame limiting which was causing severe FPS drops
   const createAnimationLoop = (callback: (elapsed: number, delta: number) => void) => {
-    let accumulatedTime = 0
-    const targetDelta = frameInterval.value
+    let startTime = 0
 
     const animate = (currentTime: number) => {
+      // If paused or not visible, stop the loop
       if (isPaused.value || !isVisible.value) {
-        animationFrameId.value = requestAnimationFrame(animate)
+        animationFrameId.value = null
         return
       }
 
-      if (lastFrameTime.value === 0) {
+      // Initialize start time on first frame
+      if (startTime === 0) {
+        startTime = currentTime
         lastFrameTime.value = currentTime
       }
 
+      // Calculate delta (time since last frame) and elapsed (total time)
       const delta = currentTime - lastFrameTime.value
+      const elapsed = (currentTime - startTime) / 1000
       lastFrameTime.value = currentTime
-      accumulatedTime += delta
 
-      // Update at target frame rate
-      if (accumulatedTime >= targetDelta) {
-        const elapsed = (currentTime - (lastFrameTime.value - accumulatedTime)) / 1000
-        callback(elapsed, accumulatedTime)
-        accumulatedTime = 0
-      }
+      // Call the animation callback every frame
+      callback(elapsed, delta)
 
       animationFrameId.value = requestAnimationFrame(animate)
     }
@@ -123,9 +122,15 @@ export function useAnimationController(elementRef?: { value: HTMLElement | null 
       stop()
     }
 
-    lastFrameTime.value = 0
-    const animate = createAnimationLoop(callback)
-    animationFrameId.value = requestAnimationFrame(animate)
+    // Store callback so we can restart when section becomes visible
+    animationCallback.value = callback
+
+    // Only start if visible and not paused
+    if (isVisible.value && !isPaused.value) {
+      lastFrameTime.value = 0
+      const animate = createAnimationLoop(callback)
+      animationFrameId.value = requestAnimationFrame(animate)
+    }
   }
 
   // Stop animation loop
@@ -145,12 +150,23 @@ export function useAnimationController(elementRef?: { value: HTMLElement | null 
   const resume = () => {
     isPaused.value = false
     lastFrameTime.value = 0 // Reset timing on resume
+    // Restart animation if visible and callback exists
+    if (isVisible.value && animationCallback.value && animationFrameId.value === null) {
+      const animate = createAnimationLoop(animationCallback.value)
+      animationFrameId.value = requestAnimationFrame(animate)
+    }
   }
 
-  // Auto-pause when not visible
+  // Auto-stop/start when visibility changes
   watch(isVisible, (visible) => {
     if (!visible && !isPaused.value) {
-      // Don't pause, just let the loop skip updates
+      // Stop the animation loop completely when not visible
+      stop()
+    } else if (visible && !isPaused.value && animationCallback.value && animationFrameId.value === null) {
+      // Restart the animation loop when becoming visible
+      lastFrameTime.value = 0
+      const animate = createAnimationLoop(animationCallback.value)
+      animationFrameId.value = requestAnimationFrame(animate)
     }
   })
 

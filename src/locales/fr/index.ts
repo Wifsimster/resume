@@ -337,33 +337,41 @@ export default {
         name: 'Freebox mini 4K',
         description: 'Routeur et box internet Free mini 4K avec écran LCD jaune-vert et pad directionnel'
       },
+      patchPanel: {
+        name: 'Baie de brassage',
+        description: 'Panneau de brassage réseau pour la gestion des connexions Ethernet'
+      },
       udmPro: {
-        name: 'UniFi Dream Machine Pro',
+        name: 'UniFi Firewall',
         description: 'Routeur et contrôleur réseau unifié avec protection intégrée et gestion centralisée'
       },
       switch: {
-        name: 'UniFi Switch',
-        description: 'Commutateur réseau avec ports Ethernet multiples pour la distribution réseau'
+        name: 'UniFi PoE switch',
+        description: 'Commutateur réseau PoE avec ports Ethernet multiples pour la distribution réseau et alimentation'
       },
       ap: {
         name: 'Point d\'accès Wi-Fi',
         description: 'Point d\'accès sans fil pour la couverture réseau dans toute la maison'
       },
       silver1u: {
-        name: 'Appareil 1U argenté',
-        description: 'Équipement rackmount 1U pour services réseau ou serveur'
+        name: 'UniFi UNVR',
+        description: 'UniFi Network Video Recorder pour l\'enregistrement vidéo réseau'
+      },
+      electricSwitches: {
+        name: 'Interrupteurs électriques',
+        description: 'Unité de distribution électrique avec interrupteurs individuels'
+      },
+      gamingComputer: {
+        name: 'Ordinateur de jeu',
+        description: 'Station de travail gaming avec GPU haute performance'
       },
       pdu: {
         name: 'PDU (Power Distribution Unit)',
         description: 'Unité de distribution d\'alimentation avec 8 interrupteurs à bascule pour contrôle individuel'
       },
       nas: {
-        name: 'NAS SilverStone',
-        description: 'Serveur de stockage en réseau pour sauvegarde et partage de fichiers'
-      },
-      enclosure: {
-        name: 'Boîtier rackmount',
-        description: 'Enceinte serveur avec indicateurs d\'activité pour hébergement d\'équipements'
+        name: 'Calcul + NAS',
+        description: 'Proxmox avec Unraid et services Docker'
       },
       ups: {
         name: 'UPS (Uninterruptible Power Supply)',

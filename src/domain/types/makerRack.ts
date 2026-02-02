@@ -1,4 +1,4 @@
-export type ServerUnitType = 'freebox' | 'udm-pro' | 'switch' | 'ap' | 'silver-1u' | 'pdu' | 'nas' | 'enclosure' | 'ups'
+export type ServerUnitType = 'freebox' | 'patch-panel' | 'udm-pro' | 'switch' | 'ap' | 'silver-1u' | 'electric-switches' | 'pdu' | 'nas' | 'enclosure' | 'ups' | 'gaming-computer'
 
 export interface ServerUnit {
   id: string

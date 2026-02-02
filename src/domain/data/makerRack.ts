@@ -5,16 +5,25 @@ export const rackUnits: ServerUnit[] = [
     id: 'freebox',
     name: 'maker.rackUnits.freebox.name',
     description: 'maker.rackUnits.freebox.description',
-    y: 3.25,
+    y: 2.95,
     height: 0.1,
     color: '#1A1A1A',
     type: 'freebox'
   },
   {
+    id: 'patch-panel',
+    name: 'maker.rackUnits.patchPanel.name',
+    description: 'maker.rackUnits.patchPanel.description',
+    y: 2.85,
+    height: 0.1,
+    color: '#1A1A1A',
+    type: 'patch-panel'
+  },
+  {
     id: 'udm-pro',
     name: 'maker.rackUnits.udmPro.name',
     description: 'maker.rackUnits.udmPro.description',
-    y: 3.15,
+    y: 2.75,
     height: 0.1,
     color: '#FFFFFF',
     type: 'udm-pro'
@@ -23,61 +32,52 @@ export const rackUnits: ServerUnit[] = [
     id: 'switch',
     name: 'maker.rackUnits.switch.name',
     description: 'maker.rackUnits.switch.description',
-    y: 3.05,
+    y: 2.65,
     height: 0.1,
     color: '#FFFFFF',
     type: 'switch'
   },
   {
-    id: 'ap',
-    name: 'maker.rackUnits.ap.name',
-    description: 'maker.rackUnits.ap.description',
-    y: 2.95,
-    height: 0.1,
-    color: '#FFFFFF',
-    type: 'ap'
-  },
-  {
     id: 'silver-1u',
     name: 'maker.rackUnits.silver1u.name',
     description: 'maker.rackUnits.silver1u.description',
-    y: 2.85,
+    y: 2.45,
     height: 0.1,
     color: '#C0C0C0',
     type: 'silver-1u'
   },
   {
-    id: 'pdu',
-    name: 'maker.rackUnits.pdu.name',
-    description: 'maker.rackUnits.pdu.description',
-    y: 2.7,
-    height: 0.2,
+    id: 'electric-switches',
+    name: 'maker.rackUnits.electricSwitches.name',
+    description: 'maker.rackUnits.electricSwitches.description',
+    y: 2.35,
+    height: 0.1,
     color: '#1A1A1A',
-    type: 'pdu'
+    type: 'electric-switches'
+  },
+  {
+    id: 'gaming-computer',
+    name: 'maker.rackUnits.gamingComputer.name',
+    description: 'maker.rackUnits.gamingComputer.description',
+    y: 2.0,
+    height: 0.4,
+    color: '#1A1A1A',
+    type: 'gaming-computer'
   },
   {
     id: 'nas',
     name: 'maker.rackUnits.nas.name',
     description: 'maker.rackUnits.nas.description',
-    y: 2.5,
-    height: 0.2,
+    y: 1.0,
+    height: 0.4,
     color: '#1A1A1A',
     type: 'nas'
-  },
-  {
-    id: 'enclosure',
-    name: 'maker.rackUnits.enclosure.name',
-    description: 'maker.rackUnits.enclosure.description',
-    y: 2.3,
-    height: 0.2,
-    color: '#1A1A1A',
-    type: 'enclosure'
   },
   {
     id: 'ups',
     name: 'maker.rackUnits.ups.name',
     description: 'maker.rackUnits.ups.description',
-    y: 2.1,
+    y: 0.2,
     height: 0.2,
     color: '#1A1A1A',
     type: 'ups'
