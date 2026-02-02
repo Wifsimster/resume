@@ -5,10 +5,12 @@
 An interactive, infinite-scroll resume website featuring 9 unique WebGL 3D scenes, gaming-inspired UI elements, and bilingual support (FR/EN).
 
 ![Vue](https://img.shields.io/badge/Vue-3.5-42b883?logo=vue.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6?logo=typescript)
-![Three.js](https://img.shields.io/badge/Three.js-r170-black?logo=three.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript)
+![Three.js](https://img.shields.io/badge/Three.js-r182-black?logo=three.js)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-06b6d4?logo=tailwindcss)
-![Vite](https://img.shields.io/badge/Vite-6-646cff?logo=vite)
+![Vite](https://img.shields.io/badge/Vite-7-646cff?logo=vite)
+![Docker](https://img.shields.io/docker/v/wifsimster/resume?label=Docker%20Hub&logo=docker)
+![GitHub Actions](https://img.shields.io/github/actions/workflow/status/Wifsimster/resume/release.yml?label=CI&logo=github)
 
 ## ✨ Features
 
@@ -24,12 +26,12 @@ An interactive, infinite-scroll resume website featuring 9 unique WebGL 3D scene
 | Technology | Version | Description |
 |------------|---------|-------------|
 | **Vue 3** | 3.5 | Progressive JavaScript framework |
-| **Vite** | 6 | Next generation frontend tooling |
+| **Vite** | 7 | Next generation frontend tooling |
 | **TailwindCSS** | 4 | Utility-first CSS framework |
-| **TresJS** | 4.3 | Vue + Three.js integration |
-| **Three.js** | r170 | WebGL 3D library |
-| **Vue I18n** | 9.14 | Internationalization |
-| **TypeScript** | 5.6 | Type safety |
+| **TresJS** | 5.2 | Vue + Three.js integration |
+| **Three.js** | r182 | WebGL 3D library |
+| **Vue I18n** | 11.2 | Internationalization |
+| **TypeScript** | 5.9 | Type safety |
 
 ## 🚀 Getting Started
 
@@ -56,33 +58,61 @@ npm run preview
 # Type check
 npm run type-check
 
-# Lint
-npm run lint
+# Version bump (patch/minor/major)
+npm run version:patch
 ```
 
-## 🐳 Docker Deployment
+## 🐳 Docker
 
-### Build and run locally
+The Docker image is published to [Docker Hub](https://hub.docker.com/r/wifsimster/resume) as `wifsimster/resume`.
+
+### Run from Docker Hub
 
 ```bash
-# Build the image
-docker build -t wifsimster-resume .
-
-# Run the container
-docker run -p 80:80 wifsimster-resume
+docker run -p 80:80 wifsimster/resume:latest
 ```
 
-### Push to Docker Hub
+### Manual publishing
 
 ```bash
-# Tag and push
-docker tag wifsimster-resume wifsimster/resume:latest
-docker push wifsimster/resume:latest
+# Full release pipeline: build app, build image, tag, push
+npm run release
+
+# Or step by step:
+npm run docker:build   # Build image with version tags
+npm run docker:tag     # Create semver tags (major, minor)
+npm run docker:push    # Push all tags to Docker Hub
+```
+
+### Build locally
+
+```bash
+docker build -t wifsimster/resume .
+docker run -p 80:80 wifsimster/resume
 ```
 
 ### Deploy with Traefik
 
 The container is ready to be deployed behind Traefik reverse proxy with health check enabled.
+
+## 🔄 CI/CD
+
+GitHub Actions automatically runs on every push to `main` (`.github/workflows/release.yml`):
+
+1. Detects version bump type from conventional commits (`feat:` = minor, `feat!:` = major, otherwise patch)
+2. Bumps `package.json` version
+3. Builds and pushes a multi-platform Docker image (linux/amd64 + linux/arm64) to Docker Hub
+4. Tags: `latest`, `vX.Y.Z`, `X.Y`, `X`
+5. Creates a GitHub Release with auto-generated changelog
+
+You can also trigger manually via `workflow_dispatch` to choose the version bump type.
+
+### Required secrets
+
+| Secret | Description |
+|--------|-------------|
+| `DOCKERHUB_USERNAME` | Docker Hub username |
+| `DOCKERHUB_TOKEN` | Docker Hub access token |
 
 ## 🎯 Sections
 
