@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, shallowRef, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, reactive, shallowRef, onMounted, onUnmounted, computed, watch, toRef } from 'vue'
 import type { CameraMode } from '@application/composables/useMakerCamera'
 import type { QualityLevel } from '@application/composables/useQuality'
 import { useAnimationController } from '@application/composables/useAnimationController'
@@ -19,6 +19,7 @@ import DustParticlesComponent, { type DustParticle } from './maker/DustParticles
 
 const props = defineProps<{
   quality: QualityLevel
+  cameraMode: CameraMode
   projects?: Array<{ icon: string, label: string, year: string }>
   techStack?: Array<{ icon: string, label: string }>
   title?: string
@@ -27,8 +28,10 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   hoverUnit: [unitId: string | null]
-  cameraModeChange: [mode: CameraMode]
 }>()
+
+// Convert prop to ref for composables
+const cameraModeRef = toRef(props, 'cameraMode')
 
 // Screen texture
 const { screenTexture } = useScreenTexture({
@@ -46,7 +49,6 @@ const animationController = useAnimationController(sectionElement)
 
 const sceneRef = ref()
 const serverUnitMeshes = ref<Map<string, any>>(new Map())
-const rackMeshRef = ref<any>(null)
 const dustParticlesRef = ref<{ updateInstances: () => void } | null>(null)
 
 // Camera control state
@@ -57,8 +59,8 @@ const cameraOffset = reactive({
   targetY: 0
 })
 
-// Camera setup
-const { cameraPosition, cameraLookAt, updateCamera, toggleMode, cameraMode } = useMakerCamera(cameraOffset)
+// Camera setup - mode is driven by parent via prop
+const { cameraPosition, cameraLookAt, updateCamera } = useMakerCamera(cameraOffset, cameraModeRef)
 
 // Get Tres context (camera and renderer) - this works because we're inside TresCanvas
 const { camera, renderer } = useTres()
@@ -66,15 +68,8 @@ const { camera, renderer } = useTres()
 // Quality settings for performance optimization
 const { renderSettings } = useQuality()
 
-// Watch camera mode changes and emit event
-watch(cameraMode, (newMode) => {
-  emit('cameraModeChange', newMode)
-}, { immediate: true })
-
-// Expose camera controls and Tres context for parent component
+// Expose Tres context for parent component (RackLegend)
 defineExpose({
-  toggleMode,
-  cameraMode,
   camera,
   renderer
 })
@@ -82,11 +77,11 @@ defineExpose({
 // Server rack configuration - adjust based on quality
 const visibleRackUnits = computed(() => {
   if (props.quality === 'minimal') {
-    return rackUnits.slice(0, 3) // Only 3 units in minimal
+    return rackUnits.slice(0, 3)
   } else if (props.quality === 'low') {
-    return rackUnits.slice(0, 5) // 5 units in low
+    return rackUnits.slice(0, 5)
   }
-  return rackUnits // All units in high
+  return rackUnits
 })
 
 // Animation setup
@@ -101,14 +96,17 @@ const { anim, updateAnimations } = useMakerAnimations(
 const { hoveredUnitId } = useMakerInteraction(
   sceneRef,
   cameraOffset,
+  cameraModeRef,
   serverUnitMeshes,
-  (unitId) => emit('hoverUnit', unitId),
-  rackMeshRef,
-  toggleMode
+  (unitId) => emit('hoverUnit', unitId)
 )
 
+// Clear stale mesh references when mode changes (prevents raycasting against disposed objects)
+watch(cameraModeRef, () => {
+  serverUnitMeshes.value.clear()
+})
+
 // Dust particles - use shallowRef to avoid reactivity overhead
-// Only regenerate when quality changes, not every frame
 const dustParticles = shallowRef<DustParticle[]>([])
 
 const generateDustParticles = () => {
@@ -153,12 +151,6 @@ const handleUnitRef = (unitId: string, ref: any) => {
   }
 }
 
-// Handle rack reference
-const handleRackRef = (ref: any) => {
-  if (ref) {
-    rackMeshRef.value = ref
-  }
-}
 
 onMounted(() => {
   // Find the parent section element
@@ -168,10 +160,8 @@ onMounted(() => {
   }
 
   // Full animation with markRaw (non-reactive) anim object
-  // Vue won't track anim changes, so no re-renders triggered
   animationController.start((elapsed, delta) => {
     updateAnimations(elapsed, delta)
-    // Manually update dust particles since they use instanced rendering
     dustParticlesRef.value?.updateInstances()
   })
 })
@@ -185,47 +175,54 @@ onUnmounted(() => {
   <TresPerspectiveCamera :position="[cameraPosition.x, cameraPosition.y, cameraPosition.z]"
     :look-at="[cameraLookAt.x, cameraLookAt.y, cameraLookAt.z]" />
 
-  <!-- Lighting - Enhanced for better visibility -->
-  <TresAmbientLight :intensity="2.0" />
+  <!-- Desk Lighting -->
+  <TresAmbientLight v-if="cameraMode === 'desk'" :intensity="3.0" />
+  <TresDirectionalLight v-if="cameraMode === 'desk'" :position="[2, 10, 5]" :intensity="6" color="#FFFFFF" />
+  <TresPointLight v-if="cameraMode === 'desk'" :position="[-2, 4, 4]" :intensity="12" color="#FFFFFF" />
+  <TresPointLight v-if="cameraMode === 'desk' && renderSettings.lightCount >= 3" :position="[-2, 2.5, 0]" :intensity="8" :color="makerColors.screenGlow" />
+  <TresPointLight v-if="cameraMode === 'desk' && renderSettings.lightCount >= 4" :position="[0, 3, 2]" :intensity="5" :color="makerColors.wifi" />
+  <TresPointLight v-if="cameraMode === 'desk' && renderSettings.lightCount >= 5" :position="[-3, 1, 3]" :intensity="4" color="#FFFFFF" />
 
-  <!-- Main key light - covers desk and monitor area -->
-  <TresPointLight v-if="renderSettings.lightCount >= 2" :position="[0, 6, 5]" :intensity="8" color="#FFFFFF" />
-
-  <!-- Monitor area accent light - combines screen glow and fill -->
-  <TresPointLight v-if="renderSettings.lightCount >= 3" :position="[-2, 2.5, 0]" :intensity="5" :color="makerColors.screenGlow" />
-
-  <!-- Server rack lighting - combines multiple rack lights into one strategic light -->
-  <TresPointLight v-if="renderSettings.lightCount >= 4" :position="[3.5, 2, 0]" :intensity="8" :color="makerColors.serverBlue" />
-
-  <!-- General fill light - covers remaining areas -->
-  <TresDirectionalLight v-if="renderSettings.lightCount >= 5" :position="[2, 10, 5]" :intensity="4" color="#FFFFFF" />
-
-  <!-- Additional high-quality lights -->
-  <TresPointLight v-if="renderSettings.lightCount >= 6" :position="[0, 3, 2]" :intensity="3" :color="makerColors.wifi" />
-
-  <!-- Rack area front fill light -->
-  <TresPointLight v-if="renderSettings.lightCount >= 6" :position="[3, 1.5, 3]" :intensity="4" color="#FFFFFF" />
+  <!-- Rack Lighting (centered on rack at x=1.372) - boosted for dark metal materials -->
+  <TresAmbientLight v-if="cameraMode === 'rack'" :intensity="5.0" />
+  <TresDirectionalLight v-if="cameraMode === 'rack'" :position="[1.372, 8, 6]" :intensity="10" color="#FFFFFF" />
+  <!-- Strong frontal key light -->
+  <TresPointLight v-if="cameraMode === 'rack'" :position="[1.372, 1, 3.5]" :intensity="20" color="#FFFFFF" />
+  <!-- Overhead light -->
+  <TresPointLight v-if="cameraMode === 'rack'" :position="[1.372, 4, 1]" :intensity="15" color="#FFFFFF" />
+  <!-- Blue accent from behind -->
+  <TresPointLight v-if="cameraMode === 'rack' && renderSettings.lightCount >= 3" :position="[1.372, 1.5, -1]" :intensity="12" :color="makerColors.serverBlue" />
+  <!-- Right side fill -->
+  <TresPointLight v-if="cameraMode === 'rack' && renderSettings.lightCount >= 4" :position="[3, 0.5, 2]" :intensity="8" color="#FFFFFF" />
+  <!-- Left side fill -->
+  <TresPointLight v-if="cameraMode === 'rack' && renderSettings.lightCount >= 5" :position="[-0.3, 0.5, 2]" :intensity="8" color="#FFFFFF" />
 
   <TresGroup ref="sceneRef">
-    <DeskComponent :colors="makerColors" />
-    <MonitorComponent :screen-texture="screenTexture" :colors="makerColors" />
-    <KeyboardComponent :colors="makerColors" />
-    <MouseComponent />
-    <ServerRackComponent :visible-rack-units="visibleRackUnits" :hovered-unit-id="hoveredUnitId" :anim="anim"
-      :colors="makerColors" @unit-ref="handleUnitRef" @rack-ref="handleRackRef" />
+    <!-- Desk Animation -->
+    <TresGroup v-if="cameraMode === 'desk'">
+      <DeskComponent :colors="makerColors" />
+      <MonitorComponent :screen-texture="screenTexture" :colors="makerColors" />
+      <KeyboardComponent :colors="makerColors" />
+      <MouseComponent />
+    </TresGroup>
+
+    <!-- Rack Animation -->
+    <TresGroup v-if="cameraMode === 'rack'">
+      <ServerRackComponent :visible-rack-units="visibleRackUnits" :hovered-unit-id="hoveredUnitId" :anim="anim"
+        :colors="makerColors" @unit-ref="handleUnitRef" />
+    </TresGroup>
+
+    <!-- Shared: Dust Particles & Backdrop -->
     <DustParticlesComponent v-if="dustParticles.length > 0" ref="dustParticlesRef"
       :dust-particles="dustParticles" :get-dust-pos="getDustPos" />
 
-    <!-- ========== BACKDROP WALL ========== -->
-    <!-- Using MeshBasicMaterial for performance - no PBR overhead -->
     <TresMesh :position="[1, 2, -2.5]">
       <TresPlaneGeometry :args="[16, 7]" />
       <TresMeshBasicMaterial :color="'#0A0A0A'" />
     </TresMesh>
   </TresGroup>
 
-  <!-- ========== FLOOR ========== -->
-  <!-- Using MeshBasicMaterial for performance - no PBR overhead -->
+  <!-- Floor -->
   <TresMesh :position="[0, -1.8, 0]" :rotation="[-Math.PI / 2, 0, 0]">
     <TresPlaneGeometry :args="[20, 16]" />
     <TresMeshBasicMaterial :color="'#080808'" />

@@ -47,7 +47,8 @@ const skillsByCategory = computed(() => {
               class="flex items-center gap-2 py-1.5 px-2.5 bg-black/15 rounded-md transition-all duration-150 hover:bg-black/25 hover:translate-x-1"
               :class="{ 'cursor-pointer': skill.url }"
             >
-              <span v-if="skill.icon" class="text-lg">{{ skill.icon }}</span>
+              <img v-if="skill.logo" :src="skill.logo" :alt="skill.name" class="w-5 h-5 rounded-sm" />
+              <span v-else-if="skill.icon" class="text-lg">{{ skill.icon }}</span>
               <span class="text-sm text-[var(--color-paper-cream)]">{{ skill.name }}</span>
               <span v-if="skill.url" class="ml-auto text-white/30 text-xs">↗</span>
             </component>

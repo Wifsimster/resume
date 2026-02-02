@@ -5,7 +5,7 @@ export const rackUnits: ServerUnit[] = [
     id: 'freebox',
     name: 'maker.rackUnits.freebox.name',
     description: 'maker.rackUnits.freebox.description',
-    y: 2.95,
+    y: 3.05,
     height: 0.1,
     color: '#1A1A1A',
     type: 'freebox'

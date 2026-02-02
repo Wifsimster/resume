@@ -125,34 +125,34 @@ export const resumeData: ResumeData = {
   ],
 
   skills: [
-    // Hard Skills
+    // Hard Skills — language → stack → infra → domain → methodology
     { id: 'javascript', name: 'JavaScript', category: 'hardskills', icon: '⚡', url: 'https://developer.mozilla.org/docs/Web/JavaScript' },
     { id: 'vue', name: 'Vue.js', category: 'hardskills', icon: '💚', url: 'https://vuejs.org/' },
-    { id: 'pinia', name: 'Pinia', category: 'hardskills', icon: '🍍', url: 'https://pinia.vuejs.org/' },
-    { id: 'tailwind', name: 'TailwindCSS', category: 'hardskills', icon: '🎨', url: 'https://tailwindcss.com/' },
-    { id: 'primevue', name: 'PrimeVue', category: 'hardskills', icon: '🎯', url: 'https://primevue.org/' },
     { id: 'nodejs', name: 'Node.js', category: 'hardskills', icon: '💚', url: 'https://nodejs.org/' },
-    { id: 'postgresql', name: 'PostgreSQL', category: 'hardskills', icon: '🐘', url: 'https://www.postgresql.org/' },
-    { id: 'oracle', name: 'Oracle', category: 'hardskills', icon: '🔶', url: 'https://www.oracle.com/database/' },
+    { id: 'relationaldb', name: 'Relational Database', category: 'hardskills', icon: '🗄️' },
     { id: 'restapi', name: 'REST API', category: 'hardskills', icon: '🔌', url: 'https://restfulapi.net/' },
-    { id: 'hl7', name: 'HL7', category: 'hardskills', icon: '🏥', url: 'https://www.hl7.org/' },
-    { id: 'git', name: 'Git', category: 'hardskills', icon: '📦', url: 'https://git-scm.com/' },
-    { id: 'gitlab', name: 'GitLab CI', category: 'hardskills', icon: '🦊', url: 'https://docs.gitlab.com/ee/ci/' },
     { id: 'docker', name: 'Docker', category: 'hardskills', icon: '🐳', url: 'https://www.docker.com/' },
-    { id: 'vitest', name: 'Vitest', category: 'hardskills', icon: '🧪', url: 'https://vitest.dev/' },
-    { id: 'playwright', name: 'Playwright', category: 'hardskills', icon: '🎭', url: 'https://playwright.dev/' },
-    { id: 'vscode', name: 'VS Code', category: 'hardskills', icon: '💻', url: 'https://code.visualstudio.com/' },
+    { id: 'cicd', name: 'CI/CD', category: 'hardskills', icon: '🔄' },
+    { id: 'hl7', name: 'HL7', category: 'hardskills', icon: '🏥', url: 'https://www.hl7.org/' },
+    { id: 'systemdesign', name: 'System Design', category: 'hardskills', icon: '📐' },
+    { id: 'cleanarchitecture', name: 'Clean Architecture', category: 'hardskills', icon: '🏗️' },
 
     // IA
-    { id: 'copilot', name: 'GitHub Copilot', category: 'ia', icon: '🤖', url: 'https://github.com/features/copilot' },
-    { id: 'cursor', name: 'Cursor', category: 'ia', icon: '✨', url: 'https://cursor.com/' },
-    { id: 'claude', name: 'Claude', category: 'ia', icon: '🧠', url: 'https://claude.ai/' },
+    { id: 'copilot', name: 'GitHub Copilot', category: 'ia', logo: '/logos/copilot.svg', url: 'https://github.com/features/copilot' },
+    { id: 'cursor', name: 'Cursor', category: 'ia', logo: '/logos/cursor.svg', url: 'https://cursor.com/' },
+    { id: 'claude', name: 'Claude', category: 'ia', logo: '/logos/claude.svg', url: 'https://claude.ai/' },
+    { id: 'gemini', name: 'Gemini', category: 'ia', logo: '/logos/gemini.svg', url: 'https://gemini.google.com/' },
+    { id: 'mcp', name: 'MCP', category: 'ia', logo: '/logos/mcp.svg', url: 'https://modelcontextprotocol.io/' },
+    { id: 'skills', name: 'Skills', category: 'ia', logo: '/logos/skills.svg', url: 'https://skills.sh/' },
 
     // Soft Skills
-    { id: 'motivation', name: 'Motivation', category: 'soft', icon: '💪' },
-    { id: 'mentoring', name: 'Mentoring', category: 'soft', icon: '🎓' },
-    { id: 'craftsmanship', name: 'Craftsmanship', category: 'soft', icon: '🛠️' },
-    { id: 'cleanarchitecture', name: 'Clean Architecture', category: 'soft', icon: '🏗️' }
+    { id: 'leadership', name: 'Leadership', category: 'soft', icon: '👑' },
+    { id: 'communication', name: 'Communication', category: 'soft', icon: '💬' },
+    { id: 'decisionmaking', name: 'Decision Making', category: 'soft', icon: '🧭' },
+    { id: 'problemsolving', name: 'Problem Solving', category: 'soft', icon: '🧩' },
+    { id: 'adaptability', name: 'Adaptability', category: 'soft', icon: '🔄' },
+    { id: 'agilemindset', name: 'Agile Mindset', category: 'soft', icon: '⚡' },
+    { id: 'mentoring', name: 'Mentoring', category: 'soft', icon: '🎓' }
   ],
 
   projects: [

@@ -1,6 +1,7 @@
-import { ref, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, watch, onMounted, onUnmounted, type Ref } from 'vue'
 import { Raycaster, Vector2 } from 'three'
 import { useTres } from '@tresjs/core'
+import type { CameraMode } from './useMakerCamera'
 
 interface CameraOffset {
   x: number
@@ -12,24 +13,31 @@ interface CameraOffset {
 export function useMakerInteraction(
   sceneRef: Ref<any>,
   cameraOffset: CameraOffset,
+  cameraMode: Ref<CameraMode>,
   serverUnitMeshes: Ref<Map<string, any>>,
-  onHoverChange: (unitId: string | null) => void,
-  rackMeshRef: Ref<any> | null = null,
-  onRackClick: (() => void) | null = null
+  onHoverChange: (unitId: string | null) => void
 ) {
   const hoveredUnitId = ref<string | null>(null)
   const { camera, renderer } = useTres()
 
+  // Reset hover state when leaving rack mode
+  watch(cameraMode, (newMode) => {
+    if (newMode !== 'rack' && hoveredUnitId.value !== null) {
+      hoveredUnitId.value = null
+      onHoverChange(null)
+    }
+  })
+
   // Mouse position for raycasting
   const mouse = new Vector2()
   const raycasterInstance = new Raycaster()
-  
+
   // Throttling for raycasting
   let rafId: number | null = null
   const lastMousePos = { x: 0, y: 0 }
-  const MOUSE_MOVE_THRESHOLD = 0.01 // Only raycast if mouse moved significantly
+  const MOUSE_MOVE_THRESHOLD = 0.01
 
-  // Perform raycasting (throttled via requestAnimationFrame)
+  // Perform raycasting (throttled via requestAnimationFrame) - rack mode only
   const performRaycast = () => {
     const rendererInstance = (renderer as any).value
     if (!camera.value || !rendererInstance || !sceneRef.value) {
@@ -37,15 +45,10 @@ export function useMakerInteraction(
       return
     }
 
-    // Update raycaster with current mouse position
     raycasterInstance.setFromCamera(mouse, camera.value)
 
-    // Find intersections with server unit meshes
     const meshes = Array.from(serverUnitMeshes.value.values())
-      .map(mesh => {
-        // Get the actual Three.js object from TresJS ref
-        return mesh?.value || mesh
-      })
+      .map(mesh => mesh?.value || mesh)
       .filter(Boolean)
 
     if (meshes.length === 0) {
@@ -57,11 +60,9 @@ export function useMakerInteraction(
 
     if (intersects.length > 0) {
       const intersectedObject = intersects[0].object
-      // Traverse up to find the parent group
       let current = intersectedObject
       let unitId: string | null = null
 
-      // Check if this object or any parent is in our map
       while (current && !unitId) {
         const currentObj = current
         unitId = Array.from(serverUnitMeshes.value.entries())
@@ -83,7 +84,7 @@ export function useMakerInteraction(
         onHoverChange(null)
       }
     }
-    
+
     rafId = null
   }
 
@@ -91,90 +92,39 @@ export function useMakerInteraction(
     const rendererInstance = (renderer as any).value
     if (!camera.value || !rendererInstance || !sceneRef.value) return
 
-    // Access renderer's domElement (TresJS compatibility)
     const canvas = rendererInstance.domElement
     const rect = canvas.getBoundingClientRect()
 
-    // Calculate normalized device coordinates
     const newMouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1
     const newMouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1
 
-    // Update camera offset immediately (cheap operation)
-    cameraOffset.targetX = newMouseX * 0.5 // Limit to ±0.5
-    cameraOffset.targetY = newMouseY * 0.3 // Limit to ±0.3
-
-    // Check if mouse moved significantly
-    const mouseDelta = Math.abs(newMouseX - lastMousePos.x) + Math.abs(newMouseY - lastMousePos.y)
-    if (mouseDelta < MOUSE_MOVE_THRESHOLD) {
-      return // Skip if mouse hasn't moved much
+    // Desk mode: update camera parallax offset
+    if (cameraMode.value === 'desk') {
+      cameraOffset.targetX = newMouseX * 0.5
+      cameraOffset.targetY = newMouseY * 0.3
+      return
     }
+
+    // Rack mode: perform raycasting for unit hover
+    const mouseDelta = Math.abs(newMouseX - lastMousePos.x) + Math.abs(newMouseY - lastMousePos.y)
+    if (mouseDelta < MOUSE_MOVE_THRESHOLD) return
 
     lastMousePos.x = newMouseX
     lastMousePos.y = newMouseY
     mouse.x = newMouseX
     mouse.y = newMouseY
 
-    // Schedule raycasting for next frame (throttled)
     if (rafId === null) {
       rafId = requestAnimationFrame(performRaycast)
     }
   }
 
-  const handleClick = (event: MouseEvent) => {
-    const rendererInstance = (renderer as any).value
-    if (!camera.value || !rendererInstance || !sceneRef.value || !rackMeshRef?.value || !onRackClick) return
-
-    // Access renderer's domElement (TresJS compatibility)
-    const canvas = rendererInstance.domElement
-    const rect = canvas.getBoundingClientRect()
-
-    // Calculate normalized device coordinates
-    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
-    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
-
-    // Update raycaster
-    raycasterInstance.setFromCamera(mouse, camera.value)
-
-    // Get the rack mesh object
-    const rackMesh = rackMeshRef.value?.value || rackMeshRef.value
-    if (!rackMesh) return
-
-    // Check for intersection with rack (including all children)
-    const intersects = raycasterInstance.intersectObject(rackMesh, true)
-
-    if (intersects.length > 0) {
-      // Check if we clicked on a server unit (don't toggle if clicking on units)
-      const clickedObject = intersects[0].object
-      const unitMeshes = Array.from(serverUnitMeshes.value.values())
-        .map(mesh => mesh?.value || mesh)
-        .filter(Boolean)
-
-      // Check if the clicked object is part of a server unit
-      let isUnit = false
-      let current = clickedObject
-      while (current && !isUnit) {
-        isUnit = unitMeshes.some(unitMesh => {
-          return unitMesh === current || (unitMesh.children && unitMesh.children.includes(current))
-        })
-        // @ts-expect-error - parent can be null, but while loop handles it
-        current = current.parent
-      }
-
-      // Only toggle if we clicked on the rack itself, not on a unit
-      if (!isUnit) {
-        onRackClick()
-      }
-    }
-  }
-
   onMounted(() => {
     window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('click', handleClick)
   })
 
   onUnmounted(() => {
     window.removeEventListener('mousemove', handleMouseMove)
-    window.removeEventListener('click', handleClick)
     if (rafId !== null) {
       cancelAnimationFrame(rafId)
       rafId = null
@@ -186,4 +136,3 @@ export function useMakerInteraction(
     serverUnitMeshes
   }
 }
-

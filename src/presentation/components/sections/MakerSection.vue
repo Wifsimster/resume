@@ -17,20 +17,15 @@ const { unlock } = useAchievements()
 const hoveredUnitId = ref<string | null>(null)
 const mousePosition = ref({ x: 0, y: 0 })
 
-// MakerScene ref for camera controls
+// MakerScene ref for Tres context (camera/renderer used by RackLegend)
 const makerSceneRef = ref<InstanceType<typeof MakerScene> | null>(null)
 
-// Camera mode state
+// Camera mode state - managed here, passed as prop to MakerScene
 const cameraMode = ref<CameraMode>('desk')
-
-// Handle camera mode changes from MakerScene
-const handleCameraModeChange = (mode: CameraMode) => {
-  cameraMode.value = mode
-}
 
 // Toggle camera mode
 const handleToggleCamera = () => {
-  makerSceneRef.value?.toggleMode()
+  cameraMode.value = cameraMode.value === 'desk' ? 'rack' : 'desk'
 }
 
 // Check if desk mode is active
@@ -138,15 +133,15 @@ onUnmounted(() => {
         :antialias="renderSettings.antialias"
         :power-preference="renderSettings.powerPreference"
       >
-        <MakerScene 
+        <MakerScene
           ref="makerSceneRef"
-          :quality="quality" 
+          :quality="quality"
+          :camera-mode="cameraMode"
           :projects="projects"
           :tech-stack="techStack"
           :title="t('maker.title')"
           :subtitle="t('maker.subtitle')"
           @hover-unit="handleHoverUnit"
-          @camera-mode-change="handleCameraModeChange"
         />
       </TresCanvas>
     </div>

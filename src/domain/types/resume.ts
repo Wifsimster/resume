@@ -26,6 +26,7 @@ export interface Skill {
   name: string
   category: 'hardskills' | 'ia' | 'maker' | 'soft'
   icon?: string
+  logo?: string
   url?: string
 }
 

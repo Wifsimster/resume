@@ -1,4 +1,4 @@
-import { reactive, ref } from 'vue'
+import { reactive, type Ref } from 'vue'
 
 interface CameraOffset {
   x: number
@@ -9,72 +9,30 @@ interface CameraOffset {
 
 export type CameraMode = 'rack' | 'desk'
 
-export function useMakerCamera(cameraOffset: CameraOffset) {
-  // Camera mode state
-  const cameraMode = ref<CameraMode>('desk')
-
-  // Desk mode camera positions (default/original)
+export function useMakerCamera(cameraOffset: CameraOffset, cameraMode: Ref<CameraMode>) {
+  // Desk mode camera positions
   const deskCameraPos = { x: -2, y: 0.925, z: 4.5 }
   const deskLookAt = { x: -2, y: 0.925, z: 0.285 }
 
-  // Rack mode camera positions (close-up view)
-  const rackCameraPos = { x: 2.5, y: 1.5, z: 5.5 }
+  // Rack mode camera positions (centered in front of rack at x=1.372)
+  const rackCameraPos = { x: 1.372, y: 1.5, z: 5.5 }
   const rackLookAt = { x: 1.372, y: 0, z: 0.5 }
-
-  // Target positions for smooth transitions
-  const targetCameraPos = reactive({ x: deskCameraPos.x, y: deskCameraPos.y, z: deskCameraPos.z })
-  const targetLookAt = reactive({ x: deskLookAt.x, y: deskLookAt.y, z: deskLookAt.z })
 
   // Reactive camera position and look-at
   const cameraPosition = reactive({ x: deskCameraPos.x, y: deskCameraPos.y, z: deskCameraPos.z })
   const cameraLookAt = reactive({ x: deskLookAt.x, y: deskLookAt.y, z: deskLookAt.z })
 
-  // Switch camera mode
-  const switchMode = (mode: CameraMode) => {
-    if (cameraMode.value === mode) return
-    cameraMode.value = mode
-
-    if (mode === 'rack') {
-      targetCameraPos.x = rackCameraPos.x
-      targetCameraPos.y = rackCameraPos.y
-      targetCameraPos.z = rackCameraPos.z
-      targetLookAt.x = rackLookAt.x
-      targetLookAt.y = rackLookAt.y
-      targetLookAt.z = rackLookAt.z
-    } else {
-      targetCameraPos.x = deskCameraPos.x
-      targetCameraPos.y = deskCameraPos.y
-      targetCameraPos.z = deskCameraPos.z
-      targetLookAt.x = deskLookAt.x
-      targetLookAt.y = deskLookAt.y
-      targetLookAt.z = deskLookAt.z
-    }
-  }
-
-  // Toggle between modes
-  const toggleMode = () => {
-    switchMode(cameraMode.value === 'rack' ? 'desk' : 'rack')
-  }
+  // Track last mode to avoid redundant per-frame writes in rack mode
+  let lastMode: CameraMode | null = null
 
   const updateCamera = (elapsed: number) => {
-    // Smooth interpolation for mouse-based offset (only in desk mode)
     if (cameraMode.value === 'desk') {
+      lastMode = 'desk'
+
+      // Smooth interpolation for mouse-based offset
       cameraOffset.x += (cameraOffset.targetX - cameraOffset.x) * 0.1
       cameraOffset.y += (cameraOffset.targetY - cameraOffset.y) * 0.1
-    } else {
-      // Reset offset in rack mode
-      cameraOffset.x = 0
-      cameraOffset.y = 0
-      cameraOffset.targetX = 0
-      cameraOffset.targetY = 0
-    }
 
-    // Calculate desired camera position based on mode
-    let desiredPos = { x: targetCameraPos.x, y: targetCameraPos.y, z: targetCameraPos.z }
-    let desiredLookAt = { x: targetLookAt.x, y: targetLookAt.y, z: targetLookAt.z }
-
-    // Only apply automatic animation in desk mode
-    if (cameraMode.value === 'desk') {
       // Automatic circular animation
       const orbitRadius = 0.8
       const orbitSpeed = 0.15
@@ -84,38 +42,39 @@ export function useMakerCamera(cameraOffset: CameraOffset) {
       // Breathing effect (vertical)
       const breathing = Math.sin(elapsed * 0.3) * 0.15
 
-      // Combine automatic animation with user offset (limited range)
-      const userOffsetX = cameraOffset.x * 0.3 // Limit user control to 30% of automatic range
+      // Combine automatic animation with user offset
+      const userOffsetX = cameraOffset.x * 0.3
       const userOffsetY = cameraOffset.y * 0.2
 
-      // Calculate desired camera position with animation
-      desiredPos.x = targetCameraPos.x + autoX + userOffsetX
-      desiredPos.y = targetCameraPos.y + breathing + userOffsetY
-      desiredPos.z = targetCameraPos.z + autoZ
+      cameraPosition.x = deskCameraPos.x + autoX + userOffsetX
+      cameraPosition.y = deskCameraPos.y + breathing + userOffsetY
+      cameraPosition.z = deskCameraPos.z + autoZ
 
-      // Look at point with slight offset based on mouse
-      desiredLookAt.x = targetLookAt.x + cameraOffset.x * 0.15
-      desiredLookAt.y = targetLookAt.y + cameraOffset.y * 0.1
-      desiredLookAt.z = targetLookAt.z
+      cameraLookAt.x = deskLookAt.x + cameraOffset.x * 0.15
+      cameraLookAt.y = deskLookAt.y + cameraOffset.y * 0.1
+      cameraLookAt.z = deskLookAt.z
+    } else if (lastMode !== 'rack') {
+      // Rack mode: set static camera only once on mode change
+      lastMode = 'rack'
+
+      cameraOffset.x = 0
+      cameraOffset.y = 0
+      cameraOffset.targetX = 0
+      cameraOffset.targetY = 0
+
+      cameraPosition.x = rackCameraPos.x
+      cameraPosition.y = rackCameraPos.y
+      cameraPosition.z = rackCameraPos.z
+      cameraLookAt.x = rackLookAt.x
+      cameraLookAt.y = rackLookAt.y
+      cameraLookAt.z = rackLookAt.z
     }
-
-    // Smooth interpolation to desired position (for mode switching and animation)
-    const transitionSpeed = 0.05
-    cameraPosition.x += (desiredPos.x - cameraPosition.x) * transitionSpeed
-    cameraPosition.y += (desiredPos.y - cameraPosition.y) * transitionSpeed
-    cameraPosition.z += (desiredPos.z - cameraPosition.z) * transitionSpeed
-    cameraLookAt.x += (desiredLookAt.x - cameraLookAt.x) * transitionSpeed
-    cameraLookAt.y += (desiredLookAt.y - cameraLookAt.y) * transitionSpeed
-    cameraLookAt.z += (desiredLookAt.z - cameraLookAt.z) * transitionSpeed
   }
 
   return {
     cameraPosition,
     cameraLookAt,
-    cameraMode,
-    updateCamera,
-    switchMode,
-    toggleMode
+    updateCamera
   }
 }
 
