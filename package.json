@@ -1,7 +1,7 @@
 {
   "name": "wifsimster-resume",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "description": "Immersive WebGL resume for Damien Battistella (Wifsimster)",
   "author": "Damien Battistella <wifsimster@github.com>",
