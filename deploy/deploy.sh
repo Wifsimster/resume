@@ -1,7 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
+COMPOSE_DIR="${RESUME_COMPOSE_DIR:-/opt/resume}"
+
+cd "$COMPOSE_DIR"
 
 echo "Pulling latest images..."
 docker compose pull resume

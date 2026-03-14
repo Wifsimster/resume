@@ -11,7 +11,7 @@ services:
       - lan
     labels:
       - traefik.enable=true
-      - traefik.http.routers.resume.rule=Host(`resume.battistella.ovh`)
+      - traefik.http.routers.resume.rule=Host(`cv.battistella.ovh`)
       - traefik.http.routers.resume.entrypoints=websecure
       - traefik.http.routers.resume.tls.certresolver=letsencrypt
       - traefik.http.services.resume.loadbalancer.server.port=80
