@@ -24,6 +24,7 @@ jobs:
   release:
     name: Create Release & Publish Docker Image
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'chore: bump version')"
 
     steps:
       - name: Checkout code
@@ -139,3 +140,11 @@ jobs:
           body_path: ${{ steps.changelog.outputs.changelog_file }}
           draft: false
           prerelease: false
+
+      - name: Deploy to production
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: cd ~/resume && ./deploy/deploy.sh

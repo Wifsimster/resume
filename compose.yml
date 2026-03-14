@@ -1,0 +1,21 @@
+services:
+  resume:
+    image: wifsimster/resume:latest
+    container_name: resume
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - lan
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.resume.rule=Host(`resume.battistella.ovh`)
+      - traefik.http.routers.resume.entrypoints=websecure
+      - traefik.http.routers.resume.tls.certresolver=letsencrypt
+      - traefik.http.services.resume.loadbalancer.server.port=80
+
+networks:
+  lan:
+    external: true
