@@ -101,22 +101,19 @@ watch(() => props.visible, (isVisible) => {
       <!-- Label -->
       <div class="pl-1">
         <div
-          class="text-white text-[10px] sm:text-xs whitespace-nowrap"
-          style="font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif; text-shadow: 1px 1px 3px rgba(0,0,0,0.9);"
+          class="label-hand text-white text-[10px] sm:text-xs whitespace-nowrap"
         >
           {{ t(`maker.rackUnits.${getTranslationKey(unit.id)}.name`) }}
         </div>
         <div
           v-if="unit.id === 'nas'"
-          class="text-white/50 text-[8px] sm:text-[10px] whitespace-nowrap"
-          style="font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif; text-shadow: 1px 1px 3px rgba(0,0,0,0.9);"
+          class="label-hand text-white/50 text-[8px] sm:text-[10px] whitespace-nowrap"
         >
           Proxmox avec Unraid et Docker
         </div>
         <div
           v-if="unit.id === 'gaming-computer'"
-          class="text-white/50 text-[8px] sm:text-[10px] whitespace-nowrap"
-          style="font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif; text-shadow: 1px 1px 3px rgba(0,0,0,0.9);"
+          class="label-hand text-white/50 text-[8px] sm:text-[10px] whitespace-nowrap"
         >
           32 Go RAM, i7 3.4 GHz, RTX 4070 Ti SUPER, 1 To NVMe
         </div>

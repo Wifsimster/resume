@@ -13,16 +13,16 @@ defineExpose({
 <template>
   <div
     v-if="enabled"
-    class="fixed top-4 left-4 z-100 bg-[#1E1E1E]/90 backdrop-blur-md border border-[var(--color-border)] rounded-lg px-3 py-2 font-(--font-code) text-xs text-[var(--color-text-primary)] shadow-lg"
+    class="fixed top-4 left-4 z-[var(--z-header)] bg-[var(--color-surface-overlay-strong)] backdrop-blur-md border border-[var(--color-border)] rounded-lg px-3 py-2 font-(--font-code) text-xs text-[var(--color-text-primary)] shadow-lg"
   >
     <div class="flex items-center gap-2">
       <span class="text-[var(--color-accent-primary)]">FPS:</span>
       <span 
         class="font-bold"
         :class="{
-          'text-green-400': fps >= 55,
-          'text-yellow-400': fps >= 30 && fps < 55,
-          'text-red-400': fps < 30
+          'text-[var(--color-success)]': fps >= 55,
+          'text-[var(--color-warning)]': fps >= 30 && fps < 55,
+          'text-[var(--color-danger)]': fps < 30
         }"
       >
         {{ fps }}

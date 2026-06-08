@@ -101,9 +101,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section id="maker" class="section bg-transparent relative p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="maker">
+  <section id="maker" class="section bg-transparent relative section-padding" data-section="maker">
     <!-- Camera View Toggle Switch -->
-    <div class="absolute top-0 left-0 right-0 z-50 p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16">
+    <div class="absolute top-0 left-0 right-0 z-50 section-padding">
       <div class="sticky top-0 flex justify-center">
         <button
           class="flex items-center justify-between w-[90px] h-9 p-0.5 bg-[#1E1E1E]/80 backdrop-blur-md border border-white/10 rounded-2xl cursor-pointer transition-all duration-200 hover:border-white/20 sm:w-20 sm:h-10"

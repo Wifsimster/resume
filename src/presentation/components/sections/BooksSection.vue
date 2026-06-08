@@ -28,7 +28,7 @@ const openBook = (url: string, status?: string) => {
 </script>
 
 <template>
-  <section id="books" class="section bg-transparent p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="books">
+  <section id="books" class="section bg-transparent section-padding" data-section="books">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas

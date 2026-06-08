@@ -5,76 +5,172 @@
    ============================================ */
 
 :root {
-  /* Base colors */
-  --color-bg-primary: #0A0A0A;
-  --color-bg-secondary: #141414;
-  --color-bg-tertiary: #1E1E1E;
-  --color-bg-elevated: #252525;
-  
-  /* Legacy aliases for compatibility */
-  --color-wood-dark: #0A0A0A;
-  --color-wood-medium: #1E1E1E;
-  --color-wood-light: #3D3D3D;
-  --color-wood-highlight: #525252;
-  
-  /* Accent colors - Cursor blue/purple */
-  --color-accent-primary: #7C3AED;
-  --color-accent-secondary: #A855F7;
-  --color-accent-tertiary: #6366F1;
-  
-  /* Terminal/Code */
-  --color-terminal-green: #A855F7;
-  --color-terminal-bg: #0A0A0A;
-  --color-code-purple: #A855F7;
-  
-  /* Frontend passion */
-  --color-vue-green: #7C3AED;
-  --color-frontend-blue: #6366F1;
-  
-  /* Team/People */
-  --color-team-orange: #F97316;
-  --color-growth-yellow: #FBBF24;
-  
-  /* Knowledge/Books */
-  --color-book-amber: #F59E0B;
-  --color-paper-cream: #E5E5E5;
-  
-  /* Accents */
-  --color-copper: #A855F7;
-  --color-led-red: #EF4444;
-  --color-led-green: #22C55E;
-  --color-led-blue: #3B82F6;
-  
-  /* Gaming */
-  --color-xp-bar: linear-gradient(90deg, #7C3AED, #A855F7);
-  --color-achievement-gold: #FBBF24;
-  
-  /* Shadows */
-  --shadow-glow-green: 0 0 20px rgba(124, 58, 237, 0.4);
+  /* ============================================
+     Core Palette — single source of truth.
+     Raw values live here only; everything else
+     references these via semantic tokens below.
+     ============================================ */
+
+  /* Neutrals (dark scale) */
+  --palette-black: #0A0A0A;
+  --palette-gray-950: #141414;
+  --palette-gray-900: #1E1E1E;
+  --palette-gray-850: #252525;
+  --palette-gray-800: #27272A;
+  --palette-gray-700: #3F3F46;
+  --palette-gray-600: #525252;
+  --palette-gray-550: #3D3D3D;
+  --palette-gray-500: #71717A;
+  --palette-gray-400: #A1A1AA;
+  --palette-gray-100: #E5E5E5;
+  --palette-white: #FAFAFA;
+
+  /* Brand — Cursor-inspired purple/indigo */
+  --palette-purple-400: #A855F7;
+  --palette-purple-500: #7C3AED;
+  --palette-indigo-500: #6366F1;
+
+  /* Functional hues */
+  --palette-orange: #F97316;
+  --palette-amber: #FBBF24;
+  --palette-amber-deep: #F59E0B;
+  --palette-red: #EF4444;
+  --palette-green: #22C55E;
+  --palette-blue: #3B82F6;
+
+  /* ============================================
+     Semantic — Backgrounds & Surfaces
+     ============================================ */
+  --color-bg-primary: var(--palette-black);
+  --color-bg-secondary: var(--palette-gray-950);
+  --color-bg-tertiary: var(--palette-gray-900);
+  --color-bg-elevated: var(--palette-gray-850);
+
+  /* Translucent surfaces for floating controls & overlays.
+     Use these instead of hardcoded bg-[#1E1E1E]/80 arbitrary values. */
+  --color-surface-overlay: rgba(30, 30, 30, 0.8);
+  --color-surface-overlay-strong: rgba(30, 30, 30, 0.9);
+  --color-surface-glass: rgba(20, 20, 20, 0.45);
+
+  /* ============================================
+     Semantic — Brand / Accent
+     ============================================ */
+  --color-accent-primary: var(--palette-purple-500);
+  --color-accent-secondary: var(--palette-purple-400);
+  --color-accent-tertiary: var(--palette-indigo-500);
+
+  /* ============================================
+     Semantic — Feedback / Status
+     ============================================ */
+  --color-success: var(--palette-green);
+  --color-warning: var(--palette-amber);
+  --color-danger: var(--palette-red);
+  --color-info: var(--palette-blue);
+
+  /* ============================================
+     Semantic — Text
+     ============================================ */
+  --color-text-primary: var(--palette-white);
+  --color-text-secondary: var(--palette-gray-400);
+  --color-text-muted: var(--palette-gray-500);
+
+  /* ============================================
+     Semantic — Borders
+     ============================================ */
+  --color-border: var(--palette-gray-800);
+  --color-border-hover: var(--palette-gray-700);
+
+  /* ============================================
+     Domain accents (per resume section)
+     ============================================ */
+  --color-team-orange: var(--palette-orange);
+  --color-growth-yellow: var(--palette-amber);
+  --color-book-amber: var(--palette-amber-deep);
+  --color-paper-cream: var(--palette-gray-100);
+  --color-led-red: var(--palette-red);
+  --color-led-green: var(--palette-green);
+  --color-led-blue: var(--palette-blue);
+  --color-achievement-gold: var(--palette-amber);
+
+  /* Gradients */
+  --color-xp-bar: linear-gradient(90deg, var(--palette-purple-500), var(--palette-purple-400));
+
+  /* ============================================
+     Shadows & Glows
+     ============================================ */
+  --shadow-glow-accent: 0 0 20px rgba(124, 58, 237, 0.4);
   --shadow-glow-orange: 0 0 20px rgba(249, 115, 22, 0.3);
-  
-  /* Text colors */
-  --color-text-primary: #FAFAFA;
-  --color-text-secondary: #A1A1AA;
-  --color-text-muted: #71717A;
-  
-  /* Border */
-  --color-border: #27272A;
-  --color-border-hover: #3F3F46;
-  
-  /* Typography */
+  --shadow-glow-gold: 0 0 30px rgba(255, 215, 0, 0.3);
+  --shadow-elevated: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+  /* ============================================
+     Typography
+     ============================================ */
   --font-display: 'JetBrains Mono', monospace;
   --font-code: 'JetBrains Mono', monospace;
   --font-body: 'Nunito', sans-serif;
-  
-  /* Spacing */
+  --font-hand: 'Amatic SC', 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+
+  /* Fluid type scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: clamp(1.25rem, 2vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 3vw, 2rem);
+  --text-h3: clamp(1.5rem, 3vw, 2.5rem);
+  --text-h2: clamp(2rem, 5vw, 4rem);
+  --text-h1: clamp(3rem, 8vw, 6rem);
+
+  /* ============================================
+     Spacing
+     ============================================ */
   --spacing-unit: 4px;
-  
-  /* Transitions */
+  /* Responsive section padding — replaces repeated p-3 sm:p-4 md:p-8 ... chains */
+  --space-section: clamp(0.75rem, 4vw, 4rem);
+
+  /* ============================================
+     Radius scale
+     ============================================ */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* ============================================
+     Z-index scale — replaces magic 50/100/1000 values
+     ============================================ */
+  --z-canvas: 1;
+  --z-content: 10;
+  --z-overlay: 50;
+  --z-header: 100;
+  --z-toast: 1000;
+  --z-modal: 1100;
+
+  /* ============================================
+     Transitions
+     ============================================ */
   --transition-fast: 150ms ease;
   --transition-normal: 300ms ease;
   --transition-slow: 500ms ease;
   --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ============================================
+     Legacy aliases — kept for back-compat.
+     Prefer the semantic tokens above in new code.
+     ============================================ */
+  --color-wood-dark: var(--color-bg-primary);
+  --color-wood-medium: var(--color-bg-tertiary);
+  --color-wood-light: var(--palette-gray-550);
+  --color-wood-highlight: var(--palette-gray-600);
+  --color-terminal-green: var(--color-accent-secondary);
+  --color-terminal-bg: var(--color-bg-primary);
+  --color-code-purple: var(--color-accent-secondary);
+  --color-vue-green: var(--color-accent-primary);
+  --color-frontend-blue: var(--color-accent-tertiary);
+  --color-copper: var(--color-accent-secondary);
+  --shadow-glow-green: var(--shadow-glow-accent);
 }
 
 /* ============================================
@@ -154,7 +250,7 @@ code, pre {
 
 .section-content {
   position: relative;
-  z-index: 10;
+  z-index: var(--z-content);
   max-width: 1200px;
   width: 100%;
 }
@@ -181,7 +277,7 @@ code, pre {
 .section-canvas {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-canvas);
   /* GPU acceleration for canvas */
   transform: translateZ(0);
   will-change: contents;
@@ -199,7 +295,7 @@ code, pre {
   right: 0;
   height: 4px;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  z-index: var(--z-toast);
 }
 
 .xp-bar-fill {
@@ -214,16 +310,16 @@ code, pre {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  background: linear-gradient(135deg, var(--color-wood-medium), var(--color-wood-dark));
+  background: linear-gradient(135deg, var(--color-bg-tertiary), var(--color-bg-primary));
   border: 2px solid var(--color-achievement-gold);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  z-index: 1000;
+  z-index: var(--z-toast);
   animation: achievement-slide-in 0.5s var(--transition-bounce);
-  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+  box-shadow: var(--shadow-glow-gold);
 }
 
 @keyframes achievement-slide-in {
@@ -254,11 +350,11 @@ code, pre {
   gap: 0.25rem;
   /* Padding handled by Tailwind utilities: px-2 py-1 */
   /* Font-size handled by Tailwind utilities: text-xs */
-  background: var(--color-wood-medium);
-  border: 1px solid var(--color-terminal-green);
-  border-radius: 4px;
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-accent-secondary);
+  border-radius: var(--radius-sm);
   font-family: var(--font-code);
-  color: var(--color-terminal-green);
+  color: var(--color-accent-secondary);
 }
 
 /* ============================================
@@ -275,7 +371,7 @@ code, pre {
   font-family: var(--font-body);
   font-weight: 600;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
@@ -302,14 +398,42 @@ code, pre {
 }
 
 /* ============================================
-   Glass Effect
+   Surfaces & Glass Effect
    ============================================ */
 
 .glass {
-  background: rgba(20, 20, 20, 0.45);
+  background: var(--color-surface-glass);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
+}
+
+/* Floating control surface (toggles, badges, HUD elements) */
+.surface-overlay {
+  background: var(--color-surface-overlay);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.surface-overlay:hover {
+  border-color: var(--color-border-hover);
+}
+
+/* ============================================
+   Utilities
+   ============================================ */
+
+/* Consistent fluid section padding — replaces the repeated
+   p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16 utility chains. */
+.section-padding {
+  padding: var(--space-section);
+}
+
+/* Hand-drawn label style used for physical-object annotations */
+.label-hand {
+  font-family: var(--font-hand);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 /* ============================================
