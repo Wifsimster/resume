@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, shallowRef, onMounted, onBeforeUnmount, watch } from 'vue'
+import { computed, shallowRef, triggerRef, watch, onBeforeUnmount } from 'vue'
 import {
   BufferGeometry,
   BufferAttribute,
@@ -7,231 +7,231 @@ import {
   LineBasicMaterial,
   Points,
   PointsMaterial,
-  SphereGeometry,
-  MeshBasicMaterial,
-  Mesh,
   Color,
-  AdditiveBlending,
-  Vector3
+  AdditiveBlending
 } from 'three'
 import type { QualityLevel } from '@application/composables/useQuality'
-import { useAnimationController } from '@application/composables/useAnimationController'
+import { useSceneAnimation } from '@application/composables/useSceneAnimation'
+import { createParticleField, disposeParticleField } from '../utils/particleField'
 
-// ── Types ───────────────────────────────────────────────────────────────────
-
-interface Branch {
-  start: Vector3
-  end: Vector3
-  direction: Vector3
-  depth: number
-  children: Branch[]
-  /** Flat index used for sequential grow/dissolve ordering */
-  flatIndex: number
-}
-
-const enum Phase {
-  GROWING = 0,
-  HOLDING = 1,
-  DISSOLVING = 2,
-  DEAD = 3
-}
-
-interface Structure {
-  seed: Vector3
-  root: Branch
-  flatBranches: Branch[]
-  phase: Phase
-  phaseTime: number
-  lines: LineSegments | null
-  junctions: Mesh[] | null
-  junctionGeometry: SphereGeometry | null
-  colorBase: Color
-  colorTip: Color
-  paletteIndex: number
-  /** When true, this structure is excess and should not be respawned after DEAD */
-  markedForRemoval: boolean
-}
-
-// ── Props & animation controller ────────────────────────────────────────────
+// ── "Circuit Constellations" — Open Source Gallery ───────────────────────────
+// Sparse, luminous neon line-networks that grow outward from a seed, hold, then
+// gracefully dissolve and regrow in a new colour. Each constellation reads as a
+// project branching from open-source roots: calm, intentional, additive glow —
+// not a dense generative thicket.
+//
+// Perf model:
+//  - Each constellation = ONE LineSegments draw call (additive, depthWrite:false)
+//    + ONE junction Points draw call. Vertices generated once on (re)build.
+//  - Growth/hold/dissolve animate only geometry.setDrawRange + material.opacity.
+//  - Geometry is rebuilt ONLY on quality change and on dissolve→regrow.
+//  - One shared ambient dust Points field, animated by rotation only.
+//  - No per-frame heap allocations in update().
 
 const props = defineProps<{
   quality: QualityLevel
 }>()
 
-const sectionElement = ref<HTMLElement | null>(null)
-const animationController = useAnimationController(sectionElement)
-
-// ── Constants ───────────────────────────────────────────────────────────────
+// ── Palette ──────────────────────────────────────────────────────────────────
 
 const PALETTES = [
-  { base: new Color('#7C3AED'), tip: new Color('#C4B5FD') }, // purple
-  { base: new Color('#A855F7'), tip: new Color('#E9D5FF') }, // light purple
+  { base: new Color('#7C3AED'), tip: new Color('#C4B5FD') }, // violet
+  { base: new Color('#22D3EE'), tip: new Color('#A5F3FC') }, // cyan
   { base: new Color('#6366F1'), tip: new Color('#C7D2FE') }, // indigo
+  { base: new Color('#EC4899'), tip: new Color('#FBCFE8') }  // magenta
 ]
 
-const PHASE_DURATIONS: Record<Phase, number> = {
-  [Phase.GROWING]: 2.0,
-  [Phase.HOLDING]: 3.0,
-  [Phase.DISSOLVING]: 1.5,
-  [Phase.DEAD]: 0,
+// ── Lifecycle phases ─────────────────────────────────────────────────────────
+
+const enum Phase {
+  GROWING = 0,
+  HOLDING = 1,
+  DISSOLVING = 2
 }
 
-const BRANCH_DECAY = 0.68
-const CHILD_COUNT_MIN = 2
-const CHILD_COUNT_MAX = 3
-const BASE_BRANCH_LENGTH = 1.8
-const ANGLE_SPREAD = 0.7 // radians
-const DIRECTION_NOISE = 0.3
+const GROW_DURATION = 2.6
+const HOLD_DURATION = 3.4
+const DISSOLVE_DURATION = 1.8
+const CYCLE = GROW_DURATION + HOLD_DURATION + DISSOLVE_DURATION
 
-// ── Quality-derived settings ────────────────────────────────────────────────
+// Generation bounds. Branch factor 2 keeps each constellation sparse and caps
+// total branches well under 40 at high quality (1+2+4+8+16 = 31).
+const BRANCH_FACTOR = 2
+const BASE_LENGTH = 1.9
+const LENGTH_DECAY = 0.66
+const ANGLE_SPREAD = 0.65
+const DIRECTION_NOISE = 0.22
 
-function getQualitySettings(q: QualityLevel) {
+// ── Quality settings ─────────────────────────────────────────────────────────
+
+interface QualitySettings {
+  structures: number
+  maxDepth: number
+  particles: number
+  junctions: boolean
+}
+
+function getQualitySettings(q: QualityLevel): QualitySettings {
   switch (q) {
-    case 'minimal': return { structureCount: 1, maxDepth: 3, junctions: false, particleCount: 0 }
-    case 'low':     return { structureCount: 2, maxDepth: 4, junctions: false, particleCount: 80 }
-    case 'high':    return { structureCount: 3, maxDepth: 5, junctions: true,  particleCount: 300 }
+    case 'high':    return { structures: 2, maxDepth: 4, particles: 220, junctions: true }
+    case 'low':     return { structures: 1, maxDepth: 3, particles: 90, junctions: true }
+    case 'minimal': return { structures: 1, maxDepth: 2, particles: 0, junctions: false }
   }
 }
 
-// ── Three.js object refs ────────────────────────────────────────────────────
+const isMinimal = computed(() => props.quality === 'minimal')
 
-const sceneGroup = ref()
+// ── Structure model ──────────────────────────────────────────────────────────
+
+interface Structure {
+  lines: LineSegments
+  /** Single Points field of junction glpoints (one per branch end), or null */
+  junctions: Points | null
+  /** Total line segments in this constellation */
+  segmentCount: number
+  phase: Phase
+  phaseTime: number
+  /** Per-instance shimmer offset to desync constellations */
+  shimmerSeed: number
+}
+
+const structures = shallowRef<Structure[]>([])
 const ambientDust = shallowRef<Points | null>(null)
 
-// Active structures
-let structures: Structure[] = []
-let currentMaxDepth = 0
 let paletteCounter = 0
-let cachedQS = getQualitySettings('minimal')
 
-// ── Branch generation ───────────────────────────────────────────────────────
+// ── Branch generation (allocates only at build time) ─────────────────────────
 
-function randomSeed(): Vector3 {
-  return new Vector3(
-    (Math.random() - 0.5) * 6,
-    (Math.random() - 0.5) * 4,
-    (Math.random() - 0.5) * 3
-  )
+// Scratch vectors reused during generation (build-time only, never per frame).
+const tmpStart = new Float32Array(3)
+const tmpDir = new Float32Array(3)
+const tmpPerp = new Float32Array(3)
+const tmpPerp2 = new Float32Array(3)
+
+function normalize3(v: Float32Array) {
+  const len = Math.hypot(v[0], v[1], v[2]) || 1
+  v[0] /= len; v[1] /= len; v[2] /= len
 }
 
-/** Returns a random perpendicular(-ish) direction from the parent direction */
-function childDirection(parentDir: Vector3): Vector3 {
-  // Find a non-parallel axis for cross product
-  const arbitrary = Math.abs(parentDir.y) < 0.9
-    ? new Vector3(0, 1, 0)
-    : new Vector3(1, 0, 0)
-
-  const perp = new Vector3().crossVectors(parentDir, arbitrary).normalize()
-  const perp2 = new Vector3().crossVectors(parentDir, perp).normalize()
-
-  const angle = (Math.random() - 0.5) * 2 * ANGLE_SPREAD
-  const tilt = (Math.random() - 0.5) * 2 * ANGLE_SPREAD
-
-  const dir = new Vector3()
-    .addScaledVector(parentDir, 0.6)
-    .addScaledVector(perp, Math.sin(angle) * 0.8)
-    .addScaledVector(perp2, Math.sin(tilt) * 0.8)
-
-  // Add noise
-  dir.x += (Math.random() - 0.5) * DIRECTION_NOISE
-  dir.y += (Math.random() - 0.5) * DIRECTION_NOISE
-  dir.z += (Math.random() - 0.5) * DIRECTION_NOISE
-
-  return dir.normalize()
+function cross3(out: Float32Array, a: Float32Array, b: Float32Array) {
+  const ax = a[0], ay = a[1], az = a[2]
+  const bx = b[0], by = b[1], bz = b[2]
+  out[0] = ay * bz - az * by
+  out[1] = az * bx - ax * bz
+  out[2] = ax * by - ay * bx
 }
 
-function generateBranch(
-  start: Vector3,
-  direction: Vector3,
+/**
+ * Recursively writes branch line segments into `positions`/`colors`.
+ * Returns the next free segment index. Build-time only.
+ */
+function growBranch(
+  positions: Float32Array,
+  colors: Float32Array,
+  segIndex: number,
+  sx: number, sy: number, sz: number,
+  dx: number, dy: number, dz: number,
   depth: number,
   maxDepth: number,
-  flatIndex: { value: number }
-): Branch {
-  const length = BASE_BRANCH_LENGTH * Math.pow(BRANCH_DECAY, depth)
-  const end = new Vector3().copy(start).addScaledVector(direction, length)
+  base: Color,
+  tip: Color
+): number {
+  const length = BASE_LENGTH * Math.pow(LENGTH_DECAY, depth)
+  const ex = sx + dx * length
+  const ey = sy + dy * length
+  const ez = sz + dz * length
 
-  const branch: Branch = {
-    start: start.clone(),
-    end: end.clone(),
-    direction: direction.clone(),
-    depth,
-    children: [],
-    flatIndex: flatIndex.value++
-  }
+  const o = segIndex * 6
+  positions[o] = sx; positions[o + 1] = sy; positions[o + 2] = sz
+  positions[o + 3] = ex; positions[o + 4] = ey; positions[o + 5] = ez
+
+  // Colour fades from root (base) toward tip with depth.
+  const t = maxDepth > 0 ? depth / maxDepth : 0
+  const r0 = base.r + (tip.r - base.r) * t
+  const g0 = base.g + (tip.g - base.g) * t
+  const b0 = base.b + (tip.b - base.b) * t
+  const t2 = Math.min(1, t + 0.18)
+  const r1 = base.r + (tip.r - base.r) * t2
+  const g1 = base.g + (tip.g - base.g) * t2
+  const b1 = base.b + (tip.b - base.b) * t2
+  colors[o] = r0; colors[o + 1] = g0; colors[o + 2] = b0
+  colors[o + 3] = r1; colors[o + 4] = g1; colors[o + 5] = b1
+
+  segIndex += 1
 
   if (depth < maxDepth) {
-    const childCount = CHILD_COUNT_MIN + Math.floor(Math.random() * (CHILD_COUNT_MAX - CHILD_COUNT_MIN + 1))
-    for (let i = 0; i < childCount; i++) {
-      const dir = childDirection(direction)
-      branch.children.push(generateBranch(end, dir, depth + 1, maxDepth, flatIndex))
+    // Build an orthonormal-ish frame around the parent direction.
+    tmpDir[0] = dx; tmpDir[1] = dy; tmpDir[2] = dz
+    if (Math.abs(dy) < 0.9) { tmpPerp[0] = 0; tmpPerp[1] = 1; tmpPerp[2] = 0 }
+    else { tmpPerp[0] = 1; tmpPerp[1] = 0; tmpPerp[2] = 0 }
+    cross3(tmpPerp2, tmpDir, tmpPerp)
+    normalize3(tmpPerp2)
+    cross3(tmpPerp, tmpDir, tmpPerp2)
+    normalize3(tmpPerp)
+
+    for (let i = 0; i < BRANCH_FACTOR; i++) {
+      const angle = (Math.random() - 0.5) * 2 * ANGLE_SPREAD
+      const tilt = (Math.random() - 0.5) * 2 * ANGLE_SPREAD
+      const sa = Math.sin(angle) * 0.8
+      const st = Math.sin(tilt) * 0.8
+      let cx = dx * 0.6 + tmpPerp[0] * sa + tmpPerp2[0] * st + (Math.random() - 0.5) * DIRECTION_NOISE
+      let cy = dy * 0.6 + tmpPerp[1] * sa + tmpPerp2[1] * st + (Math.random() - 0.5) * DIRECTION_NOISE
+      let cz = dz * 0.6 + tmpPerp[2] * sa + tmpPerp2[2] * st + (Math.random() - 0.5) * DIRECTION_NOISE
+      const len = Math.hypot(cx, cy, cz) || 1
+      cx /= len; cy /= len; cz /= len
+      segIndex = growBranch(
+        positions, colors, segIndex,
+        ex, ey, ez, cx, cy, cz,
+        depth + 1, maxDepth, base, tip
+      )
     }
   }
 
-  return branch
+  return segIndex
 }
 
-function flattenBranches(branch: Branch): Branch[] {
-  const result: Branch[] = [branch]
-  for (const child of branch.children) {
-    result.push(...flattenBranches(child))
-  }
-  return result
-}
-
-// ── Structure creation & rendering ──────────────────────────────────────────
-
-function countBranches(maxDepth: number): number {
-  // geometric series: 1 + 3 + 9 + 27 + ...  (rough upper bound with 3 children)
+/** Geometric upper bound on segment count for a given depth. */
+function maxSegments(maxDepth: number): number {
   let total = 0
   let level = 1
   for (let d = 0; d <= maxDepth; d++) {
     total += level
-    level *= 3
+    level *= BRANCH_FACTOR
   }
   return total
 }
 
-function createStructureLineSegments(
-  flatBranches: Branch[],
-  colorBase: Color,
-  colorTip: Color,
-  maxDepth: number
-): LineSegments {
-  const maxBranches = countBranches(maxDepth)
-  // 2 vertices per line segment, 3 floats per vertex
-  const positions = new Float32Array(maxBranches * 2 * 3)
-  const colors = new Float32Array(maxBranches * 2 * 3)
+// ── Structure construction ───────────────────────────────────────────────────
 
-  const tmpColor = new Color()
+function spawnStructure(qs: QualitySettings): Structure {
+  const palette = PALETTES[paletteCounter++ % PALETTES.length]
+  const base = palette.base
+  const tip = palette.tip
 
-  for (let i = 0; i < flatBranches.length; i++) {
-    const b = flatBranches[i]
-    const idx = i * 6
-    positions[idx] = b.start.x
-    positions[idx + 1] = b.start.y
-    positions[idx + 2] = b.start.z
-    positions[idx + 3] = b.end.x
-    positions[idx + 4] = b.end.y
-    positions[idx + 5] = b.end.z
+  const cap = maxSegments(qs.maxDepth)
+  const positions = new Float32Array(cap * 6)
+  const colors = new Float32Array(cap * 6)
 
-    // Color lerp based on depth
-    const t = maxDepth > 0 ? b.depth / maxDepth : 0
-    tmpColor.copy(colorBase).lerp(colorTip, t)
+  // Seed somewhere in a calm spread; initial direction biased gently outward.
+  const seedX = (Math.random() - 0.5) * 6
+  const seedY = (Math.random() - 0.5) * 3.5
+  const seedZ = (Math.random() - 0.5) * 2.5
+  tmpStart[0] = (Math.random() - 0.5) * 0.6
+  tmpStart[1] = 0.35 + Math.random() * 0.4
+  tmpStart[2] = (Math.random() - 0.5) * 0.6
+  normalize3(tmpStart)
 
-    colors[idx] = tmpColor.r
-    colors[idx + 1] = tmpColor.g
-    colors[idx + 2] = tmpColor.b
-    // Tip is slightly brighter
-    tmpColor.copy(colorBase).lerp(colorTip, Math.min(1, t + 0.15))
-    colors[idx + 3] = tmpColor.r
-    colors[idx + 4] = tmpColor.g
-    colors[idx + 5] = tmpColor.b
-  }
+  const segmentCount = growBranch(
+    positions, colors, 0,
+    seedX, seedY, seedZ,
+    tmpStart[0], tmpStart[1], tmpStart[2],
+    0, qs.maxDepth, base, tip
+  )
 
   const geometry = new BufferGeometry()
   geometry.setAttribute('position', new BufferAttribute(positions, 3))
   geometry.setAttribute('color', new BufferAttribute(colors, 3))
-  geometry.setDrawRange(0, 0) // start hidden
+  geometry.setDrawRange(0, 0) // start hidden; growth reveals via drawRange
 
   const material = new LineBasicMaterial({
     vertexColors: true,
@@ -241,433 +241,196 @@ function createStructureLineSegments(
     depthWrite: false
   })
 
-  return new LineSegments(geometry, material)
-}
+  const lines = new LineSegments(geometry, material)
 
-function createJunctionSpheres(
-  flatBranches: Branch[],
-  colorBase: Color,
-  colorTip: Color,
-  maxDepth: number
-): { meshes: Mesh[], geometry: SphereGeometry } {
-  const geometry = new SphereGeometry(0.03, 6, 6)
-  const meshes: Mesh[] = []
-  const tmpColor = new Color()
-
-  for (const b of flatBranches) {
-    const t = maxDepth > 0 ? b.depth / maxDepth : 0
-    tmpColor.copy(colorBase).lerp(colorTip, t)
-
-    const mat = new MeshBasicMaterial({
-      color: tmpColor.clone(),
-      transparent: true,
-      opacity: 0,
-      blending: AdditiveBlending,
-      depthWrite: false
+  // Junctions: a SINGLE Points field at every branch end (the odd vertex of
+  // each segment). One draw call for all glints in the constellation.
+  let junctions: Points | null = null
+  if (qs.junctions) {
+    junctions = createParticleField({
+      count: segmentCount,
+      color: tip.getHex(),
+      size: 0.07,
+      opacity: 0.0,
+      additive: true,
+      position: (i, out) => {
+        const o = i * 6 + 3 // end vertex of segment i
+        out[0] = positions[o]
+        out[1] = positions[o + 1]
+        out[2] = positions[o + 2]
+      }
     })
-
-    const mesh = new Mesh(geometry, mat)
-    mesh.position.copy(b.end)
-    meshes.push(mesh)
   }
-
-  return { meshes, geometry }
-}
-
-function spawnStructure(maxDepth: number): Structure {
-  const seed = randomSeed()
-  // Random initial direction (biased upward slightly)
-  const direction = new Vector3(
-    (Math.random() - 0.5) * 0.6,
-    0.4 + Math.random() * 0.4,
-    (Math.random() - 0.5) * 0.6
-  ).normalize()
-
-  const flatIndex = { value: 0 }
-  const root = generateBranch(seed, direction, 0, maxDepth, flatIndex)
-  const flatBranches = flattenBranches(root)
-
-  const pIdx = paletteCounter++ % PALETTES.length
-  const palette = PALETTES[pIdx]
-  const colorBase = palette.base.clone()
-  const colorTip = palette.tip.clone()
-
-  const lines = createStructureLineSegments(flatBranches, colorBase, colorTip, maxDepth)
-
-  const junctionResult = cachedQS.junctions
-    ? createJunctionSpheres(flatBranches, colorBase, colorTip, maxDepth)
-    : null
 
   return {
-    seed,
-    root,
-    flatBranches,
+    lines,
+    junctions,
+    segmentCount,
     phase: Phase.GROWING,
     phaseTime: 0,
-    lines,
-    junctions: junctionResult?.meshes ?? null,
-    junctionGeometry: junctionResult?.geometry ?? null,
-    colorBase,
-    colorTip,
-    paletteIndex: pIdx,
-    markedForRemoval: false
-  }
-}
-
-function addStructureToScene(s: Structure) {
-  const group = sceneGroup.value
-  if (!group) return
-  if (s.lines) group.add(s.lines)
-  if (s.junctions) {
-    for (const mesh of s.junctions) {
-      group.add(mesh)
-    }
-  }
-}
-
-function removeStructureFromScene(s: Structure) {
-  const group = sceneGroup.value
-  if (!group) return
-  if (s.lines) group.remove(s.lines)
-  if (s.junctions) {
-    for (const mesh of s.junctions) {
-      group.remove(mesh)
-    }
+    shimmerSeed: Math.random() * Math.PI * 2
   }
 }
 
 function disposeStructure(s: Structure) {
-  if (s.lines) {
-    s.lines.geometry.dispose()
-    ;(s.lines.material as LineBasicMaterial).dispose()
-    s.lines = null
-  }
-  if (s.junctions) {
-    for (const mesh of s.junctions) {
-      ;(mesh.material as MeshBasicMaterial).dispose()
-    }
-    s.junctions = null
-  }
-  if (s.junctionGeometry) {
-    s.junctionGeometry.dispose()
-    s.junctionGeometry = null
-  }
+  s.lines.geometry.dispose()
+  ;(s.lines.material as LineBasicMaterial).dispose()
+  disposeParticleField(s.junctions)
+  s.junctions = null
 }
 
-// ── Animation: easing helpers ───────────────────────────────────────────────
+// ── (Re)build all structures + dust on quality change ────────────────────────
 
-function easeOutCubic(t: number): number {
-  return 1 - Math.pow(1 - t, 3)
-}
+function rebuild() {
+  // Tear down any existing structures.
+  for (const s of structures.value) disposeStructure(s)
 
-// ── Structure lifecycle update ──────────────────────────────────────────────
+  disposeParticleField(ambientDust.value)
+  ambientDust.value = null
 
-function updateStructure(s: Structure, delta: number, elapsed: number) {
-  s.phaseTime += delta
+  const qs = getQualitySettings(props.quality)
 
-  const totalBranches = s.flatBranches.length
-  if (totalBranches === 0 || !s.lines) return
-
-  const mat = s.lines.material as LineBasicMaterial
-
-  switch (s.phase) {
-    case Phase.GROWING: {
-      const progress = Math.min(1, s.phaseTime / PHASE_DURATIONS[Phase.GROWING])
-      const eased = easeOutCubic(progress)
-      // Sequentially reveal branches: each branch appears when eased progress reaches its slot
-      const visibleCount = Math.floor(eased * totalBranches)
-      s.lines.geometry.setDrawRange(0, visibleCount * 2) // 2 verts per segment
-
-      // Junction spheres fade in
-      if (s.junctions) {
-        for (let i = 0; i < s.junctions.length; i++) {
-          const branchProgress = i / totalBranches
-          const sphereOpacity = branchProgress < eased ? Math.min(0.6, (eased - branchProgress) * 3) : 0
-          ;(s.junctions[i].material as MeshBasicMaterial).opacity = sphereOpacity
-        }
-      }
-
-      mat.opacity = 1
-      if (progress >= 1) {
-        s.phase = Phase.HOLDING
-        s.phaseTime = 0
-      }
-      break
-    }
-
-    case Phase.HOLDING: {
-      // Full structure visible with gentle shimmer
-      s.lines.geometry.setDrawRange(0, totalBranches * 2)
-      const shimmer = 0.85 + Math.sin(elapsed * 3 + s.seed.x * 10) * 0.15
-      mat.opacity = shimmer
-
-      if (s.junctions) {
-        for (const mesh of s.junctions) {
-          ;(mesh.material as MeshBasicMaterial).opacity = 0.4 + Math.sin(elapsed * 2.5) * 0.2
-        }
-      }
-
-      if (s.phaseTime >= PHASE_DURATIONS[Phase.HOLDING]) {
-        s.phase = Phase.DISSOLVING
-        s.phaseTime = 0
-      }
-      break
-    }
-
-    case Phase.DISSOLVING: {
-      const progress = Math.min(1, s.phaseTime / PHASE_DURATIONS[Phase.DISSOLVING])
-      const eased = easeOutCubic(progress)
-      // Reverse: fade tips first (highest flatIndex first)
-      const visibleCount = Math.max(0, Math.floor((1 - eased) * totalBranches))
-      s.lines.geometry.setDrawRange(0, visibleCount * 2)
-      mat.opacity = 1 - eased * 0.5
-
-      if (s.junctions) {
-        for (let i = 0; i < s.junctions.length; i++) {
-          const branchProgress = i / totalBranches
-          ;(s.junctions[i].material as MeshBasicMaterial).opacity =
-            branchProgress < (1 - eased) ? 0.4 * (1 - eased) : 0
-        }
-      }
-
-      if (progress >= 1) {
-        s.phase = Phase.DEAD
-        s.phaseTime = 0
-      }
-      break
-    }
-
-    case Phase.DEAD:
-      // Will be respawned by the manager
-      break
-  }
-}
-
-// ── Ambient dust particles ──────────────────────────────────────────────────
-
-function createAmbientDust(count: number): Points {
-  const positions = new Float32Array(count * 3)
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 12
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 8
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 6
-  }
-
-  const geometry = new BufferGeometry()
-  geometry.setAttribute('position', new BufferAttribute(positions, 3))
-
-  const material = new PointsMaterial({
-    color: 0x8B5CF6,
-    size: 0.03,
-    transparent: true,
-    opacity: 0.35,
-    blending: AdditiveBlending,
-    depthWrite: false
-  })
-
-  return new Points(geometry, material)
-}
-
-function disposeAmbientDust() {
-  if (ambientDust.value) {
-    ambientDust.value.geometry.dispose()
-    ;(ambientDust.value.material as PointsMaterial).dispose()
-    ambientDust.value = null
-  }
-}
-
-// ── Scene lifecycle ─────────────────────────────────────────────────────────
-
-function initStructures() {
-  cachedQS = getQualitySettings(props.quality)
-  currentMaxDepth = cachedQS.maxDepth
-
-  // Stagger initial structures across lifecycle phases
-  for (let i = 0; i < cachedQS.structureCount; i++) {
-    const s = spawnStructure(currentMaxDepth)
-
-    // Stagger: offset phase timing so scene is never empty
-    const totalCycle = PHASE_DURATIONS[Phase.GROWING] + PHASE_DURATIONS[Phase.HOLDING] + PHASE_DURATIONS[Phase.DISSOLVING]
-    const offset = (i / cachedQS.structureCount) * totalCycle
-
-    // Pre-advance the structure through its lifecycle
-    if (offset < PHASE_DURATIONS[Phase.GROWING]) {
+  const next: Structure[] = []
+  for (let i = 0; i < qs.structures; i++) {
+    const s = spawnStructure(qs)
+    // Stagger initial phases so the scene is never empty and never fully synced.
+    const offset = (i / qs.structures) * CYCLE
+    if (offset < GROW_DURATION) {
       s.phase = Phase.GROWING
       s.phaseTime = offset
-    } else if (offset < PHASE_DURATIONS[Phase.GROWING] + PHASE_DURATIONS[Phase.HOLDING]) {
+    } else if (offset < GROW_DURATION + HOLD_DURATION) {
       s.phase = Phase.HOLDING
-      s.phaseTime = offset - PHASE_DURATIONS[Phase.GROWING]
-      // Show all branches for HOLDING
-      s.lines!.geometry.setDrawRange(0, s.flatBranches.length * 2)
+      s.phaseTime = offset - GROW_DURATION
+      s.lines.geometry.setDrawRange(0, s.segmentCount * 2)
     } else {
       s.phase = Phase.DISSOLVING
-      s.phaseTime = offset - PHASE_DURATIONS[Phase.GROWING] - PHASE_DURATIONS[Phase.HOLDING]
+      s.phaseTime = offset - GROW_DURATION - HOLD_DURATION
     }
+    next.push(s)
+  }
+  structures.value = next
 
-    structures.push(s)
-    addStructureToScene(s)
+  if (qs.particles > 0) {
+    ambientDust.value = createParticleField({
+      count: qs.particles,
+      color: 0x8b5cf6,
+      size: 0.035,
+      opacity: 0.3,
+      additive: true,
+      position: (_i, out) => {
+        out[0] = (Math.random() - 0.5) * 13
+        out[1] = (Math.random() - 0.5) * 8
+        out[2] = (Math.random() - 0.5) * 6
+      }
+    })
   }
 }
 
-function rebuildDust() {
-  const group = sceneGroup.value
-  if (!group) return
+watch(() => props.quality, rebuild, { immediate: true })
 
-  // Remove old dust
+// ── Easing ───────────────────────────────────────────────────────────────────
+
+function easeOutCubic(t: number): number {
+  return 1 - (1 - t) * (1 - t) * (1 - t)
+}
+
+// ── Per-frame update (no heap allocations) ───────────────────────────────────
+
+const update = (elapsed: number, deltaMs: number) => {
+  const delta = deltaMs / 1000
+
+  const list = structures.value
+  for (let i = 0; i < list.length; i++) {
+    const s = list[i]
+    s.phaseTime += delta
+    const total = s.segmentCount
+    const mat = s.lines.material as LineBasicMaterial
+
+    if (s.phase === Phase.GROWING) {
+      const p = Math.min(1, s.phaseTime / GROW_DURATION)
+      const eased = easeOutCubic(p)
+      const visible = Math.floor(eased * total)
+      s.lines.geometry.setDrawRange(0, visible * 2)
+      mat.opacity = 0.9
+      if (s.junctions) {
+        // Glints brighten as the network completes.
+        ;(s.junctions.material as PointsMaterial).opacity = eased * 0.7
+      }
+      if (p >= 1) { s.phase = Phase.HOLDING; s.phaseTime = 0 }
+
+    } else if (s.phase === Phase.HOLDING) {
+      s.lines.geometry.setDrawRange(0, total * 2)
+      const shimmer = 0.82 + Math.sin(elapsed * 2.4 + s.shimmerSeed) * 0.16
+      mat.opacity = shimmer
+      if (s.junctions) {
+        ;(s.junctions.material as PointsMaterial).opacity =
+          0.55 + Math.sin(elapsed * 2.0 + s.shimmerSeed) * 0.2
+      }
+      if (s.phaseTime >= HOLD_DURATION) { s.phase = Phase.DISSOLVING; s.phaseTime = 0 }
+
+    } else { // DISSOLVING — fade tips first by shrinking the draw range
+      const p = Math.min(1, s.phaseTime / DISSOLVE_DURATION)
+      const eased = easeOutCubic(p)
+      const visible = Math.floor((1 - eased) * total)
+      s.lines.geometry.setDrawRange(0, visible * 2)
+      mat.opacity = (1 - eased) * 0.9
+      if (s.junctions) {
+        ;(s.junctions.material as PointsMaterial).opacity = (1 - eased) * 0.5
+      }
+      if (p >= 1) {
+        // Regrow: dispose this constellation, spawn a fresh one (new colour).
+        // Replacing the element in a shallowRef array does NOT auto-trigger
+        // reactivity, so the <primitive> v-for would keep rendering the old
+        // (now-disposed) object and the constellation would vanish forever.
+        // triggerRef forces the swap into the scene graph. This fires once per
+        // dissolve cycle (~7.8s), not per frame, so the cost is negligible.
+        const qs = getQualitySettings(props.quality)
+        disposeStructure(s)
+        list[i] = spawnStructure(qs)
+        triggerRef(structures)
+      }
+    }
+
+    // Gentle drift so constellations feel alive without per-vertex work.
+    s.lines.rotation.y = Math.sin(elapsed * 0.05 + s.shimmerSeed) * 0.08
+    if (s.junctions) s.junctions.rotation.y = s.lines.rotation.y
+  }
+
   if (ambientDust.value) {
-    group.remove(ambientDust.value)
-    disposeAmbientDust()
-  }
-
-  if (cachedQS.particleCount > 0) {
-    ambientDust.value = createAmbientDust(cachedQS.particleCount)
-    group.add(ambientDust.value)
+    ambientDust.value.rotation.y = elapsed * 0.018
+    ambientDust.value.rotation.x = Math.sin(elapsed * 0.025) * 0.04
   }
 }
 
-function teardownAll() {
-  for (const s of structures) {
-    removeStructureFromScene(s)
-    disposeStructure(s)
-  }
-  structures = []
+// ── Lifecycle ────────────────────────────────────────────────────────────────
 
-  const group = sceneGroup.value
-  if (group && ambientDust.value) {
-    group.remove(ambientDust.value)
-  }
-  disposeAmbientDust()
+const cleanup = () => {
+  for (const s of structures.value) disposeStructure(s)
+  structures.value = []
+  disposeParticleField(ambientDust.value)
+  ambientDust.value = null
 }
 
-// ── Main animation loop ─────────────────────────────────────────────────────
-
-let startTime = 0
-
-function updateAnimations(elapsed: number, delta: number) {
-  // Update each structure and handle dead ones
-  for (let i = structures.length - 1; i >= 0; i--) {
-    const s = structures[i]
-    updateStructure(s, delta, elapsed)
-
-    if (s.phase === Phase.DEAD) {
-      removeStructureFromScene(s)
-      disposeStructure(s)
-
-      if (s.markedForRemoval) {
-        // Excess structure finished dissolving — remove from array
-        structures.splice(i, 1)
-      } else {
-        // Normal lifecycle — respawn at new position
-        const newS = spawnStructure(currentMaxDepth)
-        structures[i] = newS
-        addStructureToScene(newS)
-      }
-    }
-  }
-
-  // Mark excess structures for dissolve (quality downgrade)
-  const targetCount = cachedQS.structureCount
-  let activeCount = structures.filter(s => !s.markedForRemoval).length
-  for (let i = structures.length - 1; i >= 0 && activeCount > targetCount; i--) {
-    const s = structures[i]
-    if (!s.markedForRemoval) {
-      s.markedForRemoval = true
-      if (s.phase !== Phase.DISSOLVING && s.phase !== Phase.DEAD) {
-        s.phase = Phase.DISSOLVING
-        s.phaseTime = 0
-      }
-      activeCount--
-    }
-  }
-
-  // Spawn new structures if needed (quality upgrade)
-  while (activeCount < targetCount) {
-    const s = spawnStructure(currentMaxDepth)
-    structures.push(s)
-    addStructureToScene(s)
-    activeCount++
-  }
-
-  // Rotate ambient dust slowly
-  if (ambientDust.value) {
-    ambientDust.value.rotation.y = elapsed * 0.02
-    ambientDust.value.rotation.x = Math.sin(elapsed * 0.03) * 0.05
-  }
-
-  // Gentle scene rotation
-  if (sceneGroup.value) {
-    sceneGroup.value.rotation.y = Math.sin(elapsed * 0.08) * 0.06
-  }
-}
-
-// ── Quality change watcher ──────────────────────────────────────────────────
-
-watch(() => props.quality, (newQ) => {
-  cachedQS = getQualitySettings(newQ)
-  currentMaxDepth = cachedQS.maxDepth
-  rebuildDust()
-
-  // Handle junction sphere add/remove on quality change
-  for (const s of structures) {
-    if (cachedQS.junctions && !s.junctions && s.lines) {
-      const result = createJunctionSpheres(s.flatBranches, s.colorBase, s.colorTip, currentMaxDepth)
-      s.junctions = result.meshes
-      s.junctionGeometry = result.geometry
-      const group = sceneGroup.value
-      if (group) {
-        for (const mesh of s.junctions) group.add(mesh)
-      }
-    } else if (!cachedQS.junctions && s.junctions) {
-      const group = sceneGroup.value
-      if (group) {
-        for (const mesh of s.junctions) group.remove(mesh)
-      }
-      for (const mesh of s.junctions) {
-        ;(mesh.material as MeshBasicMaterial).dispose()
-      }
-      s.junctions = null
-      if (s.junctionGeometry) {
-        s.junctionGeometry.dispose()
-        s.junctionGeometry = null
-      }
-    }
-  }
-})
-
-// ── Mount & unmount ─────────────────────────────────────────────────────────
-
-onMounted(() => {
-  const canvas = document.querySelector('[data-section="projects"]')
-  if (canvas) {
-    sectionElement.value = canvas as HTMLElement
-  }
-
-  startTime = Date.now()
-
-  initStructures()
-  rebuildDust()
-
-  animationController.start((_elapsed, delta) => {
-    const totalElapsed = (Date.now() - startTime) / 1000
-    // delta from controller is in ms, convert to seconds
-    updateAnimations(totalElapsed, delta / 1000)
-  })
-})
+useSceneAnimation('projects', update, cleanup)
 
 onBeforeUnmount(() => {
-  animationController.stop()
-  teardownAll()
+  disposeParticleField(ambientDust.value)
 })
 </script>
 
 <template>
   <TresPerspectiveCamera :position="[0, 0, 8]" :look-at="[0, 0, 0]" />
 
-  <!-- Minimal lighting — structures are self-lit via additive blending -->
-  <TresAmbientLight :intensity="0.15" />
-  <TresPointLight :position="[0, 3, 5]" :intensity="0.4" color="#7C3AED" />
+  <!-- Self-lit additive scene: at most 2 lights -->
+  <TresAmbientLight :intensity="0.18" />
+  <TresPointLight v-if="!isMinimal" :position="[0, 3, 5]" :intensity="0.4" color="#7C3AED" :distance="20" />
 
-  <TresGroup ref="sceneGroup">
-    <!-- Structures, dust, and junctions are added programmatically -->
-  </TresGroup>
+  <!-- Constellations + their junction glints (one draw call each) -->
+  <template v-for="(s, i) in structures" :key="i">
+    <primitive :object="s.lines" />
+    <primitive v-if="s.junctions" :object="s.junctions" />
+  </template>
+
+  <!-- Ambient dust (single Points draw call) -->
+  <primitive v-if="ambientDust" :object="ambientDust" />
 </template>

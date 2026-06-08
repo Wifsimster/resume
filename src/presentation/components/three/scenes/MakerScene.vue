@@ -133,13 +133,15 @@ const generateDustParticles = () => {
 // Only regenerate particles when quality changes
 watch(() => props.quality, generateDustParticles, { immediate: true })
 
-// Dust particle animation
+// Dust particle animation.
+// Reuses a single scratch object: the consumer reads x/y/z synchronously before
+// the next call, so we avoid allocating a fresh object per particle per frame.
+const dustScratch = { x: 0, y: 0, z: 0 }
 const getDustPos = (particle: typeof dustParticles.value[0]) => {
-  return {
-    x: particle.x + Math.sin(anim.time * particle.speed + particle.phase) * 0.4,
-    y: particle.y + Math.sin(anim.time * particle.speed * 0.7 + particle.phase) * 0.25,
-    z: particle.z
-  }
+  dustScratch.x = particle.x + Math.sin(anim.time * particle.speed + particle.phase) * 0.4
+  dustScratch.y = particle.y + Math.sin(anim.time * particle.speed * 0.7 + particle.phase) * 0.25
+  dustScratch.z = particle.z
+  return dustScratch
 }
 
 // Handle server rack unit refs
