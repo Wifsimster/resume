@@ -1,201 +1,240 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, reactive, computed } from 'vue'
+import { ref, shallowRef, computed, watch, onBeforeUnmount } from 'vue'
 import type { QualityLevel } from '@application/composables/useQuality'
+import { useSceneAnimation } from '@application/composables/useSceneAnimation'
 import { resumeData } from '@domain/data/resume'
-import { useAnimationController } from '@application/composables/useAnimationController'
+import { createParticleField, disposeParticleField, type ParticleFieldOptions } from '../utils/particleField'
+import type { Points } from 'three'
 
-defineProps<{
+const props = defineProps<{
   quality: QualityLevel
 }>()
 
-// Get section element for visibility detection
-const sectionElement = ref<HTMLElement | null>(null)
-
-// Animation controller
-const animationController = useAnimationController(sectionElement)
-
-const orbitGroupRef = ref()
-
-// Category config with vertical offset for better visibility
-const categoryConfig: Record<string, { color: string, orbitRadius: number, speed: number, yOffset: number }> = {
-  soft: { color: '#FFD93D', orbitRadius: 1.2, speed: 0.08, yOffset: 0.4 },
-  ia: { color: '#10B981', orbitRadius: 2.0, speed: -0.06, yOffset: 0 },
-  hardskills: { color: '#42B883', orbitRadius: 3.0, speed: 0.04, yOffset: -0.5 }
+// "The Orbital Skill Tree" — a central faceted core with three concentric,
+// differently-tilted orbit rings, one per skill category (soft / IA / hard).
+// Each skill rides its category ring as a small emissive octahedron gem that
+// self-rotates and gently pulses. The strict ring grouping and colour-coding
+// reads as an orderly taxonomy, distinct from Hero's free elliptical swarm.
+const themeColors = {
+  core: '#42B883',
+  dust: '#42B883'
 }
 
-// Build skill nodes from actual resume data
-const skillNodes = computed(() => {
-  const nodesByCategory: Record<string, typeof resumeData.skills> = {
+// One config per category ring: colour, base radius, vertical lift, orbital
+// speed (signed → alternating spin direction) and tilt of the ring plane.
+const categoryConfig: Record<
+  string,
+  { color: string; radius: number; yOffset: number; speed: number; tilt: number }
+> = {
+  soft: { color: '#FFD93D', radius: 1.6, yOffset: 0.55, speed: 0.22, tilt: 0.35 },
+  ia: { color: '#10B981', radius: 2.5, yOffset: 0.0, speed: -0.16, tilt: -0.22 },
+  hardskills: { color: '#42B883', radius: 3.4, yOffset: -0.55, speed: 0.12, tilt: 0.18 }
+}
+
+const categoryOrder = ['soft', 'ia', 'hardskills'] as const
+
+// Static, NON-reactive per-node params, computed once from resume data. The
+// old scene kept a `reactive` nodeStates array and called Vue reactivity every
+// frame for every node; here positions are mutated directly on the meshes.
+interface NodeParam {
+  id: string
+  color: string
+  radius: number
+  yOffset: number
+  baseAngle: number
+  speed: number
+  spin: number // self-rotation rate
+  phase: number // pulse phase offset
+}
+
+const nodeParams: NodeParam[] = (() => {
+  const byCategory: Record<string, typeof resumeData.skills> = {
     soft: [],
     ia: [],
     hardskills: []
   }
-  
-  // Group skills by category
-  resumeData.skills.forEach(skill => {
-    if (nodesByCategory[skill.category]) {
-      nodesByCategory[skill.category].push(skill)
-    }
-  })
-  
-  // Create positioned nodes
-  const nodes: Array<{
-    id: string
-    name: string
-    color: string
-    orbitRadius: number
-    angle: number
-    speed: number
-    size: number
-    yOffset: number
-  }> = []
-  
-  Object.entries(nodesByCategory).forEach(([category, skills]) => {
-    const config = categoryConfig[category]
+  for (const skill of resumeData.skills) {
+    if (byCategory[skill.category]) byCategory[skill.category].push(skill)
+  }
+  const params: NodeParam[] = []
+  for (const category of categoryOrder) {
+    const cfg = categoryConfig[category]
+    const skills = byCategory[category]
     skills.forEach((skill, i) => {
-      const angle = (i / skills.length) * Math.PI * 2
-      nodes.push({
+      params.push({
         id: skill.id,
-        name: skill.name,
-        color: config.color,
-        orbitRadius: config.orbitRadius,
-        angle,
-        speed: config.speed,
-        size: 0.12,
-        yOffset: config.yOffset
+        color: cfg.color,
+        radius: cfg.radius,
+        yOffset: cfg.yOffset,
+        baseAngle: (i / skills.length) * Math.PI * 2,
+        speed: cfg.speed,
+        spin: 0.4 + (i % 3) * 0.15,
+        phase: i * 0.7
       })
     })
-  })
-  
-  return nodes
-})
-
-// Reactive states for positions
-const nodeStates = reactive(
-  skillNodes.value.map((node) => ({
-    x: Math.cos(node.angle) * node.orbitRadius,
-    y: node.yOffset,
-    z: Math.sin(node.angle) * node.orbitRadius
-  }))
-)
-
-// Core rotation
-const coreState = reactive({
-  rotationY: 0
-})
-
-// Category orbit rings with tilt
-const orbitRings = computed(() => 
-  Object.entries(categoryConfig).map(([id, config]) => ({
-    id,
-    radius: config.orbitRadius,
-    color: config.color,
-    yOffset: config.yOffset
-  }))
-)
-
-let startTime = 0
-
-const updateAnimations = (elapsed: number, _delta: number) => {
-  // Core rotation
-  coreState.rotationY = elapsed * 0.15
-  
-  // Update node positions
-  skillNodes.value.forEach((node, index) => {
-    const currentAngle = node.angle + elapsed * node.speed
-    nodeStates[index].x = Math.cos(currentAngle) * node.orbitRadius
-    nodeStates[index].z = Math.sin(currentAngle) * node.orbitRadius
-  })
-  
-  // Orbit group rotation
-  if (orbitGroupRef.value) {
-    orbitGroupRef.value.rotation.y = elapsed * 0.02
   }
+  return params
+})()
+
+// Plain array of template refs (mirrors HeroScene's nodeRefs) — no reactivity
+// per node, just direct mesh handles we mutate in `update`.
+const nodeRefs = nodeParams.map(() => ref())
+
+const coreRef = ref()
+const shellRef = ref()
+// One group ref per category ring so its plane tilt stays static and we only
+// advance node positions inside it.
+const ringGroupRefs = categoryOrder.map(() => ref())
+
+const isMinimal = computed(() => props.quality === 'minimal')
+
+// Geometry detail scales with quality, capped per the perf budget.
+const coreSegments = computed(() => (props.quality === 'high' ? 32 : props.quality === 'low' ? 16 : 8))
+const ringSegments = computed(() => (props.quality === 'high' ? 96 : props.quality === 'low' ? 48 : 24))
+
+// Guide-ring descriptors for the template (static).
+const guideRings = categoryOrder.map((id) => ({
+  id,
+  color: categoryConfig[id].color,
+  radius: categoryConfig[id].radius,
+  yOffset: categoryConfig[id].yOffset,
+  tilt: categoryConfig[id].tilt
+}))
+
+// Subtle background dust (single Points draw call).
+const dust = shallowRef<Points | null>(null)
+const buildDust = () => {
+  disposeParticleField(dust.value)
+  dust.value = null
+  if (isMinimal.value) return
+  const count = props.quality === 'high' ? 400 : 120
+  const opts: ParticleFieldOptions = {
+    count,
+    color: themeColors.dust,
+    size: props.quality === 'high' ? 0.03 : 0.05,
+    opacity: 0.4,
+    additive: true,
+    position: (_i, out) => {
+      const theta = Math.random() * Math.PI * 2
+      const phi = Math.acos(2 * Math.random() - 1)
+      const r = 7 + Math.random() * 12
+      out[0] = r * Math.sin(phi) * Math.cos(theta)
+      out[1] = r * Math.sin(phi) * Math.sin(theta)
+      out[2] = r * Math.cos(phi)
+    }
+  }
+  dust.value = createParticleField(opts)
 }
 
-onMounted(() => {
-  // Find the parent section element
-  const canvas = document.querySelector('[data-section="skills"]')
-  if (canvas) {
-    sectionElement.value = canvas as HTMLElement
+watch(() => props.quality, buildDust, { immediate: true })
+
+// Reused scratch for orbit math — no per-frame allocations.
+const scratch = { x: 0, z: 0 }
+
+const update = (elapsed: number) => {
+  // Advance each skill gem along its category ring (in the ring's local plane).
+  for (let i = 0; i < nodeRefs.length; i++) {
+    const obj = nodeRefs[i].value
+    if (!obj) continue
+    const p = nodeParams[i]
+    const angle = p.baseAngle + elapsed * p.speed
+    scratch.x = Math.cos(angle) * p.radius
+    scratch.z = Math.sin(angle) * p.radius
+    obj.position.set(scratch.x, p.yOffset, scratch.z)
+    obj.rotation.y = elapsed * p.spin
+    obj.rotation.x = elapsed * p.spin * 0.5
+    const s = 1 + Math.sin(elapsed * 1.4 + p.phase) * 0.18
+    obj.scale.setScalar(s)
   }
-  
-  startTime = Date.now()
-  
-  // Start animation loop with controller
-  animationController.start((_elapsed, delta) => {
-    const totalElapsed = (Date.now() - startTime) / 1000
-    updateAnimations(totalElapsed, delta)
-  })
+
+  // Faceted core: slow tumble + breathing pulse (matches Hero's language).
+  if (coreRef.value) {
+    coreRef.value.rotation.y = elapsed * 0.18
+    coreRef.value.rotation.x = Math.sin(elapsed * 0.15) * 0.1
+    const pulse = 1 + Math.sin(elapsed * 1.1) * 0.08
+    coreRef.value.scale.setScalar(pulse)
+  }
+  if (shellRef.value) {
+    shellRef.value.rotation.y = -elapsed * 0.12
+  }
+
+  if (dust.value) dust.value.rotation.y = elapsed * 0.01
+}
+
+useSceneAnimation('skills', update, () => {
+  disposeParticleField(dust.value)
 })
 
-onUnmounted(() => {
-  animationController.stop()
+onBeforeUnmount(() => {
+  disposeParticleField(dust.value)
 })
 </script>
 
 <template>
-  <!-- Camera positioned for angled view -->
-  <TresPerspectiveCamera :position="[4, 3, 5]" :look-at="[0, 0, 0]" />
-  
-  <!-- Lighting -->
-  <TresAmbientLight :intensity="0.5" />
-  <TresPointLight :position="[3, 4, 3]" :intensity="1.2" color="#FFFFFF" />
-  <TresPointLight :position="[-3, 2, -3]" :intensity="0.5" color="#42B883" />
-  
-  <!-- Central core -->
-  <TresGroup :rotation="[0, coreState.rotationY, 0]">
+  <TresPerspectiveCamera :position="[4, 3, 6]" :look-at="[0, 0, 0]" />
+
+  <!-- 3-light rig -->
+  <TresAmbientLight :intensity="0.4" />
+  <TresPointLight :position="[0, 0, 2]" :intensity="2.2" :color="themeColors.core" :distance="14" />
+  <TresPointLight :position="[5, 4, -3]" :intensity="0.8" color="#FFD93D" :distance="18" />
+
+  <!-- Central faceted core + a single glow shell (like Hero) -->
+  <TresGroup ref="coreRef">
     <TresMesh>
-      <TresIcosahedronGeometry :args="[0.35, 0]" />
+      <TresIcosahedronGeometry :args="[0.7, 1]" />
       <TresMeshStandardMaterial
-        color="#00FF41"
-        emissive="#00FF41"
-        :emissive-intensity="0.6"
-        :roughness="0.3"
-        :metalness="0.7"
+        :color="themeColors.core"
+        :emissive="themeColors.core"
+        :emissive-intensity="0.9"
+        :metalness="0.9"
+        :roughness="0.15"
+        :flat-shading="true"
       />
     </TresMesh>
-    
-    <!-- Core ring -->
-    <TresMesh :rotation="[Math.PI / 2, 0, 0]">
-      <TresTorusGeometry :args="[0.55, 0.012, 8, 24]" />
-      <TresMeshBasicMaterial color="#00FF41" :opacity="0.5" :transparent="true" />
-    </TresMesh>
-  </TresGroup>
-  
-  <!-- Skill nodes orbiting by category - tilted for 3D effect -->
-  <TresGroup ref="orbitGroupRef" :rotation="[0.3, 0, 0.1]">
-    <!-- Actual skill nodes -->
-    <TresMesh 
-      v-for="(node, index) in skillNodes" 
-      :key="node.id"
-      :position="[nodeStates[index].x, nodeStates[index].y, nodeStates[index].z]"
-    >
-      <TresBoxGeometry :args="[node.size, node.size, node.size]" />
-      <TresMeshStandardMaterial
-        :color="node.color"
-        :emissive="node.color"
-        :emissive-intensity="0.4"
-        :roughness="0.4"
-        :metalness="0.6"
+    <TresMesh v-if="!isMinimal" ref="shellRef">
+      <TresIcosahedronGeometry :args="[1.0, coreSegments > 16 ? 1 : 0]" />
+      <TresMeshBasicMaterial
+        :color="themeColors.core"
+        :opacity="0.12"
+        :transparent="true"
+        :depth-write="false"
       />
     </TresMesh>
-    
-    <!-- Orbit rings per category at different heights -->
-    <TresMesh 
-      v-for="ring in orbitRings" 
-      :key="`orbit-${ring.id}`"
-      :position="[0, ring.yOffset, 0]"
-      :rotation="[-Math.PI / 2, 0, 0]"
-    >
-      <TresTorusGeometry :args="[ring.radius, 0.006, 4, 48]" />
-      <TresMeshBasicMaterial :color="ring.color" :opacity="0.2" :transparent="true" />
-    </TresMesh>
   </TresGroup>
-  
-  <!-- Floor -->
-  <TresMesh :position="[0, -1.8, 0]" :rotation="[-Math.PI / 2, 0, 0]">
-    <TresPlaneGeometry :args="[10, 10]" />
-    <TresMeshStandardMaterial color="#0a0a12" :roughness="0.95" />
+
+  <!-- Thin guide ring per category (single torus each, depthWrite off) -->
+  <TresMesh
+    v-for="ring in guideRings"
+    :key="`guide-${ring.id}`"
+    :position="[0, ring.yOffset, 0]"
+    :rotation="[Math.PI / 2 + ring.tilt, 0, 0]"
+  >
+    <TresTorusGeometry :args="[ring.radius, 0.008, 6, ringSegments]" />
+    <TresMeshBasicMaterial :color="ring.color" :opacity="0.22" :transparent="true" :depth-write="false" />
   </TresMesh>
+
+  <!-- Skill gems: one tilted group per category ring, gems mutated directly -->
+  <TresGroup
+    v-for="(category, ci) in categoryOrder"
+    :key="`ring-${category}`"
+    :ref="(el: unknown) => (ringGroupRefs[ci].value = el)"
+    :rotation="[categoryConfig[category].tilt, 0, 0]"
+  >
+    <template v-for="(param, i) in nodeParams" :key="param.id">
+      <TresMesh v-if="param.radius === categoryConfig[category].radius" :ref="(el: unknown) => (nodeRefs[i].value = el)">
+        <TresOctahedronGeometry :args="[0.16, 0]" />
+        <TresMeshStandardMaterial
+          :color="param.color"
+          :emissive="param.color"
+          :emissive-intensity="0.7"
+          :roughness="0.25"
+          :metalness="0.6"
+          :flat-shading="true"
+        />
+      </TresMesh>
+    </template>
+  </TresGroup>
+
+  <!-- Background dust (single draw call) -->
+  <primitive v-if="dust" :object="dust" />
 </template>

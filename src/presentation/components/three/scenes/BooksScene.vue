@@ -1,48 +1,52 @@
 <script setup lang="ts">
-import { ref, computed, shallowRef, triggerRef, watch, onMounted, onBeforeUnmount } from 'vue'
-import {
-  BufferAttribute,
-  BufferGeometry,
-  Points,
-  PointsMaterial,
-  AdditiveBlending,
-  Vector3,
-} from 'three'
+import { ref, computed, shallowRef, watch, onBeforeUnmount } from 'vue'
+import { Points } from 'three'
 import { useTres } from '@tresjs/core'
 import type { QualityLevel } from '@application/composables/useQuality'
 import { resumeData } from '@domain/data/resume'
-import { useAnimationController } from '@application/composables/useAnimationController'
+import { useSceneAnimation } from '@application/composables/useSceneAnimation'
+import { createParticleField, disposeParticleField } from '../utils/particleField'
 
 const props = defineProps<{
   quality: QualityLevel
 }>()
 
 // ---------------------------------------------------------------------------
-// Section visibility + animation controller
+// "Reading Nook" — floating shelves of upright books along a gentle corridor,
+// warm lamp + candle glow, a slow cinematic camera drift, and a calm field of
+// rising motes. Cozy library identity, modernised and tightened for perf:
+//   - 4 lights total (1 ambient + 1 warm key + 2 dynamic candles, single sine)
+//   - motes are ONE createParticleField Points, animated by translating the
+//     whole object (no per-frame BufferAttribute uploads)
+//   - per-book breathing mutates mesh refs directly (no reactive arrays)
 // ---------------------------------------------------------------------------
-const sectionElement = ref<HTMLElement | null>(null)
-const animationController = useAnimationController(sectionElement)
 
-// ---------------------------------------------------------------------------
-// TresJS context — camera access for manual drift
-// ---------------------------------------------------------------------------
+// TresJS context — camera access for the manual cinematic drift.
 const { camera } = useTres()
 
 // ---------------------------------------------------------------------------
-// Palette — one per book index, cycling
+// Warm palette — one per book index, cycling. Read status keeps its meaning:
+// 'read' books get a soft glow + brighter emissive; others stay quietly lit.
 // ---------------------------------------------------------------------------
 const bookPalette = [
-  { cover: '#2C3E50', spine: '#1A252F', emissive: '#3498DB' },
-  { cover: '#8B4513', spine: '#5C2D0E', emissive: '#D2691E' },
-  { cover: '#1A237E', spine: '#0D1242', emissive: '#3949AB' },
-  { cover: '#4A148C', spine: '#2E0D57', emissive: '#9C27B0' },
-  { cover: '#1B5E20', spine: '#0E3311', emissive: '#4CAF50' },
-  { cover: '#B71C1C', spine: '#7A1212', emissive: '#E53935' },
-  { cover: '#E65100', spine: '#993600', emissive: '#FF9800' },
-  { cover: '#01579B', spine: '#003A66', emissive: '#29B6F6' },
-  { cover: '#4E342E', spine: '#2E1F1B', emissive: '#8D6E63' },
-  { cover: '#263238', spine: '#141B1F', emissive: '#78909C' },
+  { cover: '#3B4A6B', spine: '#27314A', emissive: '#7FA8FF' },
+  { cover: '#8A4B2C', spine: '#5C2F18', emissive: '#FFB070' },
+  { cover: '#2E3A8C', spine: '#1B2356', emissive: '#8E9BFF' },
+  { cover: '#5A3A7A', spine: '#372149', emissive: '#C49BFF' },
+  { cover: '#2F6B3A', spine: '#1B3F23', emissive: '#86E0A0' },
+  { cover: '#9A3636', spine: '#5F1F1F', emissive: '#FF9090' },
+  { cover: '#B8702A', spine: '#7A4717', emissive: '#FFCC7A' },
+  { cover: '#2A6F9A', spine: '#17435F', emissive: '#7FD0FF' },
+  { cover: '#6B4A3A', spine: '#3F2A20', emissive: '#D8A98C' },
+  { cover: '#3A4750', spine: '#222B30', emissive: '#A8C0CC' },
 ]
+
+const theme = {
+  ambient: '#5A4A3A',
+  key: '#FFE3B3',
+  candleA: '#FFD194',
+  candleB: '#FFC978',
+}
 
 // ---------------------------------------------------------------------------
 // Corridor constants
@@ -53,7 +57,7 @@ const CORRIDOR_Z_MIN = -12
 const CORRIDOR_Z_MAX = 2
 const CORRIDOR_DEPTH = CORRIDOR_Z_MAX - CORRIDOR_Z_MIN
 
-// Camera drift parameters
+// Cinematic camera drift parameters
 const CAM_Z_CENTER = -5
 const CAM_Z_AMP = 4
 const CAM_Z_FREQ = 0.08
@@ -64,20 +68,14 @@ const CAM_X_AMP = 0.15
 const CAM_X_FREQ = 0.12
 const CAM_LOOK_AHEAD = 1.5
 
-// Candle light configs
-const CANDLE_COLORS = ['#FFE4B5', '#FFD194', '#FFDAB9', '#FFC978']
+// Two warm candle/lamp glows, each driven by a SINGLE sine.
 const CANDLE_POSITIONS: [number, number, number][] = [
-  [0, 2.8, -2],
-  [0, 2.8, -5],
-  [0, 2.8, -8],
-  [0, 2.8, -11],
+  [0, 2.8, -3],
+  [0, 2.8, -9],
 ]
-// Per-candle flicker parameters (phase offsets + frequency multipliers)
-const CANDLE_FLICKER_PARAMS = [
-  { f1: 3.0, f2: 7.1, f3: 13.0, p1: 0.0, p2: 1.7, p3: 3.2, base: 1.2 },
-  { f1: 2.7, f2: 6.3, f3: 11.5, p1: 0.8, p2: 2.5, p3: 0.4, base: 1.0 },
-  { f1: 3.3, f2: 8.0, f3: 12.2, p1: 1.5, p2: 0.3, p3: 2.1, base: 1.1 },
-  { f1: 2.5, f2: 7.7, f3: 14.0, p1: 2.2, p2: 1.0, p3: 0.9, base: 1.0 },
+const CANDLE_PARAMS = [
+  { color: theme.candleA, base: 1.3, freq: 3.0, phase: 0.0, amp: 0.25 },
+  { color: theme.candleB, base: 1.1, freq: 2.6, phase: 1.7, amp: 0.22 },
 ]
 
 // ---------------------------------------------------------------------------
@@ -87,19 +85,21 @@ const isMinimal = computed(() => props.quality === 'minimal')
 const isLow = computed(() => props.quality === 'low')
 const isHigh = computed(() => props.quality === 'high')
 
-const bookCount = computed(() => isMinimal.value ? 4 : isLow.value ? 6 : 8)
-const dustCount = computed(() => isMinimal.value ? 0 : isLow.value ? 100 : 400)
-const candleCount = computed(() => isMinimal.value ? 1 : isLow.value ? 2 : 4)
-const spineSegments = computed(() => isMinimal.value ? 6 : isLow.value ? 12 : 16)
-const fogDensity = computed(() => isMinimal.value ? 0 : isLow.value ? 0.04 : 0.06)
-const showMoonlight = computed(() => isHigh.value)
-const showGlowSpheres = computed(() => isHigh.value)
+const bookCount = computed(() => (isMinimal.value ? 4 : isLow.value ? 6 : 8))
+// Motes capped well under budget: <=200 high / <=80 low, 0 on minimal.
+const moteCount = computed(() => (isMinimal.value ? 0 : isLow.value ? 80 : 200))
+// Candle lights: minimal uses none (key light carries it), low 1, high 2 — at
+// most 2 dynamic lights so the rig stays at 4 total (ambient + key + 2).
+const candleCount = computed(() => (isMinimal.value ? 0 : isLow.value ? 1 : 2))
+// Radial segments for spine cylinders: <=16 high / <=8 low.
+const spineSegments = computed(() => (isMinimal.value ? 6 : isLow.value ? 8 : 16))
+const fogDensity = computed(() => (isMinimal.value ? 0 : isLow.value ? 0.035 : 0.05))
 
 // Shelf material properties
-const shelfOpacity = computed(() => isMinimal.value ? 1.0 : isLow.value ? 0.6 : 0.35)
-const shelfColor = computed(() => isMinimal.value ? '#2A2A3A' : '#4A6A8A')
-const shelfMetalness = computed(() => isMinimal.value ? 0.0 : isLow.value ? 0.3 : 0.6)
-const shelfRoughness = computed(() => isMinimal.value ? 0.8 : isLow.value ? 0.3 : 0.1)
+const shelfOpacity = computed(() => (isMinimal.value ? 1.0 : isLow.value ? 0.6 : 0.4))
+const shelfColor = computed(() => (isMinimal.value ? '#2A2A3A' : '#6A5A48'))
+const shelfMetalness = computed(() => (isMinimal.value ? 0.0 : 0.3))
+const shelfRoughness = computed(() => (isMinimal.value ? 0.8 : 0.4))
 
 // ---------------------------------------------------------------------------
 // Book layout — distribute across 4 shelf quadrants
@@ -111,10 +111,11 @@ interface BookPlacement {
   status: string
   index: number
   colors: { cover: string; spine: string; emissive: string }
+  isRead: boolean
   showGlow: boolean
   position: [number, number, number]
   rotationY: number
-  // Per-book breathing animation params
+  // Per-book breathing animation params (consumed directly in update())
   breathFreq: number
   breathPhase: number
   wobbleFreq: number
@@ -125,29 +126,25 @@ const visibleBooks = computed<BookPlacement[]>(() => {
   const count = bookCount.value
   const books = resumeData.books.slice(0, count)
 
-  // 4 quadrants: left-lower, left-upper, right-lower, right-upper
   const quadrants: { wallX: number; shelfY: number; faceDir: number }[] = [
-    { wallX: -WALL_X, shelfY: SHELF_LEVELS[0], faceDir: 1 },   // left wall, lower shelf
-    { wallX: -WALL_X, shelfY: SHELF_LEVELS[1], faceDir: 1 },   // left wall, upper shelf
-    { wallX: WALL_X, shelfY: SHELF_LEVELS[0], faceDir: -1 },  // right wall, lower shelf
-    { wallX: WALL_X, shelfY: SHELF_LEVELS[1], faceDir: -1 },  // right wall, upper shelf
+    { wallX: -WALL_X, shelfY: SHELF_LEVELS[0], faceDir: 1 },
+    { wallX: -WALL_X, shelfY: SHELF_LEVELS[1], faceDir: 1 },
+    { wallX: WALL_X, shelfY: SHELF_LEVELS[0], faceDir: -1 },
+    { wallX: WALL_X, shelfY: SHELF_LEVELS[1], faceDir: -1 },
   ]
 
   return books.map((book, i) => {
     const colors = bookPalette[i % bookPalette.length]
     const quad = quadrants[i % quadrants.length]
 
-    // Distribute books along Z within corridor, evenly spaced per quadrant
     const booksInQuad = Math.ceil(count / quadrants.length)
     const indexInQuad = Math.floor(i / quadrants.length)
     const zSpacing = CORRIDOR_DEPTH / (booksInQuad + 1)
     const z = CORRIDOR_Z_MIN + zSpacing * (indexInQuad + 1)
 
-    // X: offset slightly from wall toward center so books sit on shelf edge
     const x = quad.wallX + quad.faceDir * 0.3
-
-    // Y: book center sits above shelf surface (book half-height ~0.54)
     const y = quad.shelfY + 0.58
+    const isRead = book.status === 'read'
 
     return {
       id: book.id,
@@ -156,7 +153,9 @@ const visibleBooks = computed<BookPlacement[]>(() => {
       status: book.status,
       index: i,
       colors,
-      showGlow: showGlowSpheres.value && book.status === 'read',
+      isRead,
+      // One glow layer max, only for read books on high quality.
+      showGlow: isHigh.value && isRead,
       position: [x, y, z] as [number, number, number],
       rotationY: quad.faceDir > 0 ? Math.PI * 0.15 : -Math.PI * 0.15,
       breathFreq: 0.4 + i * 0.07,
@@ -168,7 +167,7 @@ const visibleBooks = computed<BookPlacement[]>(() => {
 })
 
 // ---------------------------------------------------------------------------
-// Shelf definitions — 4 floating glass shelves
+// Shelf definitions — 4 floating shelves
 // ---------------------------------------------------------------------------
 const shelves = computed(() => {
   const shelfWidth = 4.0
@@ -177,240 +176,132 @@ const shelves = computed(() => {
   const zCenter = (CORRIDOR_Z_MIN + CORRIDOR_Z_MAX) / 2
 
   return [
-    // Left wall shelves
     { pos: [-WALL_X + 0.3, SHELF_LEVELS[0], zCenter] as [number, number, number], size: [shelfWidth * 0.4, shelfThickness, shelfDepth] as [number, number, number] },
     { pos: [-WALL_X + 0.3, SHELF_LEVELS[1], zCenter] as [number, number, number], size: [shelfWidth * 0.4, shelfThickness, shelfDepth] as [number, number, number] },
-    // Right wall shelves
     { pos: [WALL_X - 0.3, SHELF_LEVELS[0], zCenter] as [number, number, number], size: [shelfWidth * 0.4, shelfThickness, shelfDepth] as [number, number, number] },
     { pos: [WALL_X - 0.3, SHELF_LEVELS[1], zCenter] as [number, number, number], size: [shelfWidth * 0.4, shelfThickness, shelfDepth] as [number, number, number] },
   ]
 })
 
 // ---------------------------------------------------------------------------
-// Reactive animation state
+// Per-book group refs (mutated directly in update — no reactive per-frame data)
 // ---------------------------------------------------------------------------
-interface BookAnimState {
-  dy: number       // breathing Y offset
-  dRotY: number    // wobble rotation offset
-}
+const bookRefs = resumeData.books.map(() => ref())
 
-const bookAnimStates = shallowRef<BookAnimState[]>(
-  Array.from({ length: resumeData.books.length }, () => ({ dy: 0, dRotY: 0 }))
-)
-
-// Candle intensities (reactive for template binding)
-const candleIntensities = ref<number[]>([1.2, 1.0, 1.1, 1.0])
+// Candle intensities (reactive only for template binding; written in update).
+const candleIntensities = ref<number[]>([1.3, 1.1])
 
 // ---------------------------------------------------------------------------
-// Dust particle system
+// Rising motes — ONE createParticleField Points. Animated purely by slowly
+// translating/rotating the whole object: NO per-frame buffer mutation.
 // ---------------------------------------------------------------------------
-const dustParticles = shallowRef<Points | null>(null)
-let dustPositions: Float32Array | null = null
-let dustVelocities: { vy: number; wx: number; wz: number; px: number; pz: number }[] = []
+const motes = shallowRef<Points | null>(null)
+const MOTE_Y_SPAN = 4.0
 
-const createDustParticles = () => {
-  // Dispose existing
-  if (dustParticles.value) {
-    dustParticles.value.geometry.dispose()
-    ;(dustParticles.value.material as PointsMaterial).dispose()
-    dustParticles.value = null
-    dustPositions = null
-    dustVelocities = []
-  }
+const buildMotes = () => {
+  disposeParticleField(motes.value)
+  motes.value = null
+  if (isMinimal.value) return
 
-  const count = dustCount.value
+  const count = moteCount.value
   if (count === 0) return
 
-  dustPositions = new Float32Array(count * 3)
-  dustVelocities = []
-
-  for (let i = 0; i < count; i++) {
-    // Spawn within corridor volume
-    dustPositions[i * 3] = (Math.random() - 0.5) * (WALL_X * 2 - 0.5)
-    dustPositions[i * 3 + 1] = Math.random() * 3.5
-    dustPositions[i * 3 + 2] = CORRIDOR_Z_MIN + Math.random() * CORRIDOR_DEPTH
-
-    dustVelocities.push({
-      vy: 0.02 + Math.random() * 0.03,          // upward drift speed
-      wx: 0.3 + Math.random() * 0.5,             // X wander frequency
-      wz: 0.2 + Math.random() * 0.4,             // Z wander frequency
-      px: Math.random() * Math.PI * 2,            // X phase
-      pz: Math.random() * Math.PI * 2,            // Z phase
-    })
-  }
-
-  const geo = new BufferGeometry()
-  geo.setAttribute('position', new BufferAttribute(dustPositions, 3))
-
-  const mat = new PointsMaterial({
-    color: 0xFFD700,
+  motes.value = createParticleField({
+    count,
+    color: 0xffd9a0,
     size: isHigh.value ? 0.03 : 0.045,
     opacity: 0.5,
-    transparent: true,
-    blending: AdditiveBlending,
-    depthWrite: false,
+    additive: true,
+    position: (_i, out) => {
+      out[0] = (Math.random() - 0.5) * (WALL_X * 2 - 0.5)
+      out[1] = Math.random() * MOTE_Y_SPAN
+      out[2] = CORRIDOR_Z_MIN + Math.random() * CORRIDOR_DEPTH
+    },
   })
-
-  dustParticles.value = new Points(geo, mat)
 }
 
-watch(() => props.quality, createDustParticles)
+watch(() => props.quality, buildMotes, { immediate: true })
 
 // ---------------------------------------------------------------------------
-// Camera lookAt target (reuse to avoid GC)
+// Main animation loop — uses controller elapsed/delta, never Date.now().
+// Scratch values reused; no per-frame heap allocations.
 // ---------------------------------------------------------------------------
-const lookAtTarget = new Vector3()
-
-// ---------------------------------------------------------------------------
-// Main animation loop
-// ---------------------------------------------------------------------------
-const updateAnimations = (elapsed: number, _delta: number) => {
-  // 1. Camera drift
+const update = (elapsed: number) => {
+  // 1. Cinematic camera drift
   const cam = camera.value
   if (cam) {
     const cx = Math.sin(elapsed * CAM_X_FREQ) * CAM_X_AMP
     const cy = CAM_Y_CENTER + Math.sin(elapsed * CAM_Y_FREQ) * CAM_Y_AMP
     const cz = CAM_Z_CENTER + Math.sin(elapsed * CAM_Z_FREQ) * CAM_Z_AMP
-
     cam.position.set(cx, cy, cz)
-
-    // Look slightly ahead along corridor
-    lookAtTarget.set(cx * 0.5, cy - 0.1, cz - CAM_LOOK_AHEAD)
-    cam.lookAt(lookAtTarget)
+    cam.lookAt(cx * 0.5, cy - 0.1, cz - CAM_LOOK_AHEAD)
   }
 
-  // 2. Candle flicker
+  // 2. Candle flicker — a SINGLE sine per dynamic light
   const cCount = candleCount.value
   for (let i = 0; i < cCount; i++) {
-    const p = CANDLE_FLICKER_PARAMS[i]
-    const flicker =
-      Math.sin(elapsed * p.f1 + p.p1) * 0.15 +
-      Math.sin(elapsed * p.f2 + p.p2) * 0.1 +
-      Math.sin(elapsed * p.f3 + p.p3) * 0.05
-    candleIntensities.value[i] = Math.max(0.3, p.base + flicker)
+    const p = CANDLE_PARAMS[i]
+    candleIntensities.value[i] = p.base + Math.sin(elapsed * p.freq + p.phase) * p.amp
   }
 
-  // 3. Book breathing animation
+  // 3. Per-book breathing — mutate group refs directly
   const bCount = bookCount.value
   for (let i = 0; i < bCount; i++) {
-    const state = bookAnimStates.value[i]
+    const obj = bookRefs[i].value
     const book = visibleBooks.value[i]
-    if (!book || !state) continue
-
-    state.dy = Math.sin(elapsed * book.breathFreq + book.breathPhase) * 0.015
-    state.dRotY = Math.sin(elapsed * book.wobbleFreq + book.wobblePhase) * 0.02
+    if (!obj || !book) continue
+    obj.position.y = book.position[1] + Math.sin(elapsed * book.breathFreq + book.breathPhase) * 0.015
+    obj.rotation.y = book.rotationY + Math.sin(elapsed * book.wobbleFreq + book.wobblePhase) * 0.02
   }
-  triggerRef(bookAnimStates)
 
-  // 4. Dust particle movement
-  if (dustPositions && dustParticles.value) {
-    const count = dustCount.value
-    const halfX = WALL_X - 0.25
-    const maxY = 3.8
-    const dt = _delta / 1000 // delta is in ms from RAF
-
-    for (let i = 0; i < count; i++) {
-      const v = dustVelocities[i]
-      const i3 = i * 3
-
-      // Upward drift
-      dustPositions[i3 + 1] += v.vy * dt * 30
-
-      // XZ wander (frame-rate independent)
-      dustPositions[i3] += Math.sin(elapsed * v.wx + v.px) * 0.002 * dt * 60
-      dustPositions[i3 + 2] += Math.cos(elapsed * v.wz + v.pz) * 0.002 * dt * 60
-
-      // Wrap Y
-      if (dustPositions[i3 + 1] > maxY) {
-        dustPositions[i3 + 1] = -0.2
-      }
-
-      // Clamp X
-      if (dustPositions[i3] > halfX) dustPositions[i3] = -halfX
-      if (dustPositions[i3] < -halfX) dustPositions[i3] = halfX
-
-      // Wrap Z
-      if (dustPositions[i3 + 2] > CORRIDOR_Z_MAX) {
-        dustPositions[i3 + 2] = CORRIDOR_Z_MIN
-      }
-      if (dustPositions[i3 + 2] < CORRIDOR_Z_MIN) {
-        dustPositions[i3 + 2] = CORRIDOR_Z_MAX
-      }
-    }
-
-    // Signal Three.js to re-upload positions
-    const posAttr = dustParticles.value.geometry.getAttribute('position')
-    if (posAttr) {
-      ;(posAttr as BufferAttribute).needsUpdate = true
-    }
+  // 4. Rising motes — translate the whole Points object only (no buffer upload).
+  //    A slow upward crawl that wraps within the mote Y span, plus a gentle sway.
+  const m = motes.value
+  if (m) {
+    const y = (elapsed * 0.12) % MOTE_Y_SPAN
+    m.position.y = y
+    m.position.x = Math.sin(elapsed * 0.06) * 0.25
+    m.rotation.y = elapsed * 0.01
   }
 }
 
-// ---------------------------------------------------------------------------
-// Lifecycle
-// ---------------------------------------------------------------------------
-onMounted(() => {
-  const canvas = document.querySelector('[data-section="books"]')
-  if (canvas) {
-    sectionElement.value = canvas as HTMLElement
-  }
-
-  createDustParticles()
-
-  animationController.start((elapsed, delta) => {
-    updateAnimations(elapsed, delta)
-  })
+useSceneAnimation('books', update, () => {
+  disposeParticleField(motes.value)
 })
 
 onBeforeUnmount(() => {
-  animationController.stop()
-  if (dustParticles.value) {
-    dustParticles.value.geometry.dispose()
-    ;(dustParticles.value.material as PointsMaterial).dispose()
-    dustParticles.value = null
-  }
-  dustPositions = null
-  dustVelocities = []
+  disposeParticleField(motes.value)
 })
 </script>
 
 <template>
-  <!-- Camera: positioned at corridor entrance, will be overridden by animation -->
+  <!-- Camera at corridor entrance; overridden each frame by the drift. -->
   <TresPerspectiveCamera :position="[0, 1.2, 0]" :fov="65" :near="0.1" :far="50" />
 
-  <!-- ================================================================== -->
-  <!-- Fog (quality-gated via density, 0 = no fog)                         -->
-  <!-- ================================================================== -->
-  <TresFogExp2 v-if="fogDensity > 0" :args="['#0A0A0A', fogDensity]" />
+  <!-- Warm haze pulling the corridor into a cozy depth -->
+  <TresFogExp2 v-if="fogDensity > 0" :args="['#120D08', fogDensity]" />
 
   <!-- ================================================================== -->
-  <!-- Lighting                                                            -->
+  <!-- Lighting — 4 total max: ambient + warm key + up to 2 candles        -->
   <!-- ================================================================== -->
+  <TresAmbientLight :intensity="0.18" :color="theme.ambient" />
 
-  <!-- Dim ambient — deep enchanted darkness -->
-  <TresAmbientLight :intensity="0.05" color="#FFFFFF" />
+  <!-- Warm key light (the room lamp) — carries minimal tier on its own -->
+  <TresPointLight :position="[0, 3.2, -5]" :intensity="1.4" :color="theme.key" :distance="22" :decay="1.5" />
 
-  <!-- Candle point lights along corridor -->
+  <!-- Dynamic candle glows (each a single-sine flicker) -->
   <TresPointLight
     v-for="(pos, ci) in CANDLE_POSITIONS.slice(0, candleCount)"
     :key="`candle-${ci}`"
     :position="pos"
     :intensity="candleIntensities[ci]"
-    :color="CANDLE_COLORS[ci]"
-    :distance="8"
+    :color="CANDLE_PARAMS[ci].color"
+    :distance="9"
     :decay="2"
   />
 
-  <!-- Moonlight from above — high quality only -->
-  <TresDirectionalLight
-    v-if="showMoonlight"
-    :position="[1, 6, -5]"
-    :intensity="0.12"
-    color="#B0C4DE"
-  />
-
   <!-- ================================================================== -->
-  <!-- Floating glass shelves (4 total)                                    -->
+  <!-- Floating shelves (4 total)                                          -->
   <!-- ================================================================== -->
   <TresMesh
     v-for="(shelf, si) in shelves"
@@ -422,52 +313,41 @@ onBeforeUnmount(() => {
       :color="shelfColor"
       :opacity="shelfOpacity"
       :transparent="shelfOpacity < 1"
+      :depth-write="shelfOpacity >= 1"
       :metalness="shelfMetalness"
       :roughness="shelfRoughness"
     />
   </TresMesh>
 
   <!-- ================================================================== -->
-  <!-- Books — upright standing on shelves                                 -->
+  <!-- Books — upright, standing on shelves                                -->
   <!-- ================================================================== -->
   <TresGroup
     v-for="book in visibleBooks"
     :key="book.id"
-    :position="[
-      book.position[0],
-      book.position[1] + bookAnimStates[book.index].dy,
-      book.position[2],
-    ]"
-    :rotation="[0, book.rotationY + bookAnimStates[book.index].dRotY, 0]"
+    :ref="el => (bookRefs[book.index].value = el)"
+    :position="book.position"
+    :rotation="[0, book.rotationY, 0]"
   >
     <!-- Front Cover -->
     <TresMesh :position="[0, 0, 0.065]">
       <TresBoxGeometry :args="[0.76, 1.08, 0.025]" />
-      <TresMeshStandardMaterial
-        :color="book.colors.cover"
-        :roughness="0.55"
-        :metalness="0.15"
-      />
+      <TresMeshStandardMaterial :color="book.colors.cover" :roughness="0.55" :metalness="0.15" />
     </TresMesh>
 
     <!-- Back Cover -->
     <TresMesh :position="[0, 0, -0.065]">
       <TresBoxGeometry :args="[0.76, 1.08, 0.025]" />
-      <TresMeshStandardMaterial
-        :color="book.colors.cover"
-        :roughness="0.55"
-        :metalness="0.15"
-      />
+      <TresMeshStandardMaterial :color="book.colors.cover" :roughness="0.55" :metalness="0.15" />
     </TresMesh>
 
-    <!-- Spine -->
-    <TresMesh
-      :position="[-0.38, 0, 0]"
-      :rotation="[Math.PI / 2, 0, 0]"
-    >
+    <!-- Spine (half cylinder) -->
+    <TresMesh :position="[-0.38, 0, 0]" :rotation="[Math.PI / 2, 0, 0]">
       <TresCylinderGeometry :args="[0.09, 0.09, 1.08, spineSegments, 1, false, 0, Math.PI]" />
       <TresMeshStandardMaterial
         :color="book.colors.spine"
+        :emissive="book.colors.emissive"
+        :emissive-intensity="book.isRead ? 0.3 : 0.08"
         :roughness="0.5"
         :metalness="0.2"
       />
@@ -476,11 +356,7 @@ onBeforeUnmount(() => {
     <!-- Page Block -->
     <TresMesh :position="[0.02, 0, 0]">
       <TresBoxGeometry :args="[0.68, 1.0, 0.12]" />
-      <TresMeshStandardMaterial
-        color="#FFF8E7"
-        :roughness="0.9"
-        :metalness="0.0"
-      />
+      <TresMeshStandardMaterial color="#FFF8E7" :roughness="0.9" :metalness="0.0" />
     </TresMesh>
 
     <!-- Page Edges -->
@@ -497,49 +373,32 @@ onBeforeUnmount(() => {
       <TresMeshStandardMaterial color="#E8DCC8" :roughness="0.85" />
     </TresMesh>
 
-    <!-- Spine Bands (non-minimal) -->
-    <template v-if="!isMinimal">
-      <TresMesh
-        :position="[-0.38, 0.35, 0]"
-        :rotation="[Math.PI / 2, 0, 0]"
-      >
-        <TresCylinderGeometry :args="[0.095, 0.095, 0.06, spineSegments, 1, false, 0, Math.PI]" />
-        <TresMeshStandardMaterial
-          :color="book.colors.emissive"
-          :emissive="book.colors.emissive"
-          :emissive-intensity="0.4"
-          :roughness="0.4"
-          :metalness="0.5"
-        />
-      </TresMesh>
-      <TresMesh
-        :position="[-0.38, -0.35, 0]"
-        :rotation="[Math.PI / 2, 0, 0]"
-      >
-        <TresCylinderGeometry :args="[0.095, 0.095, 0.06, spineSegments, 1, false, 0, Math.PI]" />
-        <TresMeshStandardMaterial
-          :color="book.colors.emissive"
-          :emissive="book.colors.emissive"
-          :emissive-intensity="0.4"
-          :roughness="0.4"
-          :metalness="0.5"
-        />
-      </TresMesh>
-    </template>
+    <!-- Spine band (one accent, non-minimal) -->
+    <TresMesh v-if="!isMinimal" :position="[-0.38, 0, 0]" :rotation="[Math.PI / 2, 0, 0]">
+      <TresCylinderGeometry :args="[0.095, 0.095, 0.06, spineSegments, 1, false, 0, Math.PI]" />
+      <TresMeshStandardMaterial
+        :color="book.colors.emissive"
+        :emissive="book.colors.emissive"
+        :emissive-intensity="0.4"
+        :roughness="0.4"
+        :metalness="0.5"
+      />
+    </TresMesh>
 
-    <!-- Emissive glow sphere — read books, high quality only -->
+    <!-- Single soft glow shell — read books, high quality only -->
     <TresMesh v-if="book.showGlow">
-      <TresSphereGeometry :args="[0.7, 16, 16]" />
+      <TresSphereGeometry :args="[0.7, 12, 12]" />
       <TresMeshBasicMaterial
         :color="book.colors.emissive"
         :opacity="0.08"
         :transparent="true"
+        :depth-write="false"
       />
     </TresMesh>
   </TresGroup>
 
   <!-- ================================================================== -->
-  <!-- Dust particles                                                      -->
+  <!-- Rising motes (single draw call, translated not re-buffered)         -->
   <!-- ================================================================== -->
-  <primitive v-if="dustParticles" :object="dustParticles" />
+  <primitive v-if="motes" :object="motes" />
 </template>

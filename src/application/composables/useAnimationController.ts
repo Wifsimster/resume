@@ -66,7 +66,7 @@ export function useAnimationController(elementRef?: { value: HTMLElement | null 
   let intersectionObserver: IntersectionObserver | null = null
 
   const setupVisibilityObserver = () => {
-    if (!elementRef?.value) return
+    if (!elementRef?.value || intersectionObserver) return
 
     intersectionObserver = new IntersectionObserver(
       (entries) => {
@@ -183,12 +183,25 @@ export function useAnimationController(elementRef?: { value: HTMLElement | null 
     }
   )
 
+  // Set up the visibility observer as soon as the element is available.
+  // Scenes assign their section element inside their own onMounted, which runs
+  // AFTER this composable's onMounted, so observing eagerly here would miss it
+  // and visibility-based pausing would silently never work. Watching the ref
+  // guarantees the observer is attached the moment the element appears.
+  if (elementRef) {
+    watch(
+      () => elementRef.value,
+      (el) => {
+        if (el) setupVisibilityObserver()
+      },
+      { immediate: true }
+    )
+  }
+
   // Initialize
   onMounted(() => {
     detectBattery()
-    if (elementRef?.value) {
-      setupVisibilityObserver()
-    }
+    setupVisibilityObserver()
   })
 
   onBeforeUnmount(() => {

@@ -1,411 +1,265 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed, shallowRef, watch } from 'vue'
-import { BufferAttribute, BufferGeometry, Points, PointsMaterial, AdditiveBlending } from 'three'
+import { ref, shallowRef, computed, watch, onBeforeUnmount } from 'vue'
+import {
+  BufferAttribute,
+  BufferGeometry,
+  LineBasicMaterial,
+  LineSegments,
+  Points,
+  AdditiveBlending,
+  type MeshBasicMaterial
+} from 'three'
 import type { QualityLevel } from '@application/composables/useQuality'
-import { useAnimationController } from '@application/composables/useAnimationController'
+import { useSceneAnimation } from '@application/composables/useSceneAnimation'
+import { createParticleField, disposeParticleField } from '../utils/particleField'
 
 const props = defineProps<{
   quality: QualityLevel
 }>()
 
-// Get section element for visibility detection
-const sectionElement = ref<HTMLElement | null>(null)
-
-// Animation controller
-const animationController = useAnimationController(sectionElement)
-
-const sceneRef = ref()
-const hubRef = ref()
-const innerHubRef = ref()
-const contactCardRefs = Array.from({ length: 4 }, () => ref())
-const shareParticleRefs = Array.from({ length: 6 }, () => ref())
-const rippleRing1Ref = ref()
-const rippleRing2Ref = ref()
-const rippleRing3Ref = ref()
-const qrCodeRef = ref()
-
-// Particle systems for communication signals
-const signalParticles = shallowRef<Points | null>(null)
-const networkParticles = shallowRef<Points | null>(null)
-
-let startTime = 0
-
-// Contact theme colors
-const contactColors = {
-  primary: '#00FF41',      // Terminal green (matches contact section)
-  secondary: '#A855F7',    // Purple
-  accent: '#3B82F6',       // Blue
-  signal: '#00FFFF',       // Cyan
-  message: '#FFD700'       // Gold
+// "Signal Beacon / Network" — an emissive faceted node broadcasts outward.
+// Concentric signal rings pulse out and fade, while contact-channel nodes
+// (email / GitHub / LinkedIn / …) orbit and stay wired to the beacon by a
+// single live spoke network. This broadcasting, outward motif is deliberately
+// distinct from Hero's inward, gravitational constellation.
+const themeColors = {
+  core: '#00FF41',   // terminal green beacon
+  signal: '#00FFFF', // cyan signal rings
+  spoke: '#3B82F6'   // blue uplinks
 }
-void contactColors // Used in template
 
-const createParticleSystems = () => {
-  // Dispose existing particles
-  if (signalParticles.value) {
-    signalParticles.value.geometry.dispose()
-    ;(signalParticles.value.material as PointsMaterial).dispose()
-    signalParticles.value = null
+// Each orbiting node is a contact channel; distinct emissive colors read as
+// distinct destinations rather than identical satellites.
+const channelNodes = [
+  { color: '#00FFFF' }, // email
+  { color: '#A855F7' }, // GitHub
+  { color: '#3B82F6' }, // LinkedIn
+  { color: '#FBBF24' }, // resume / phone
+  { color: '#EC4899' }  // social
+]
+
+const coreRef = ref()
+const shellRef = ref()
+const ringGuideRef = ref()
+const nodeRefs = channelNodes.map(() => ref())
+const rippleRefs = [ref(), ref(), ref()]
+
+const isMinimal = computed(() => props.quality === 'minimal')
+
+// Detail capped well below the old 64/128 values; invisible cost at this scale.
+const coreSegments = computed(() => (props.quality === 'high' ? 32 : props.quality === 'low' ? 16 : 8))
+const ringRadialSegments = computed(() => (props.quality === 'high' ? 96 : props.quality === 'low' ? 48 : 24))
+
+// Channel orbit configuration (gentle shared ring, individually paced)
+const orbitRadius = 2.4
+const tilts = [0, 0.18, -0.14, 0.1, -0.2]
+const speeds = [0.16, 0.2, 0.14, 0.22, 0.18]
+
+const nodePos = { x: 0, y: 0, z: 0 }
+const computeOrbit = (i: number, t: number) => {
+  const angle = (i / channelNodes.length) * Math.PI * 2 + t * speeds[i]
+  const breathe = 1 + Math.sin(t * 0.3 + i * 0.8) * 0.05
+  nodePos.x = Math.cos(angle) * orbitRadius * breathe
+  nodePos.y = Math.sin(t * 0.35 + i * 0.9) * 0.3 + Math.sin(angle) * tilts[i] * 1.4
+  nodePos.z = Math.sin(angle) * orbitRadius * breathe
+}
+
+// Single-draw-call uplink network: one segment from the beacon to each node.
+const spokeLines = shallowRef<LineSegments | null>(null)
+let spokePositions: Float32Array | null = null
+
+const buildSpokes = () => {
+  if (spokeLines.value) {
+    spokeLines.value.geometry.dispose()
+    ;(spokeLines.value.material as LineBasicMaterial).dispose()
+    spokeLines.value = null
   }
-  if (networkParticles.value) {
-    networkParticles.value.geometry.dispose()
-    ;(networkParticles.value.material as PointsMaterial).dispose()
-    networkParticles.value = null
+  if (isMinimal.value) {
+    spokePositions = null
+    return
   }
-
-  if (props.quality === 'minimal') return
-
-  const isHigh = props.quality === 'high'
-  const signalCount = isHigh ? 80 : 25
-  const networkCount = isHigh ? 60 : 20
-
-  // Contact sharing particles - representing contact info being shared
-  const signalPositions = new Float32Array(signalCount * 3)
-  for (let i = 0; i < signalCount; i++) {
-    const angle = Math.random() * Math.PI * 2
-    const radius = 0.8 + Math.random() * 1.2
-    const height = (Math.random() - 0.5) * 0.8
-    signalPositions[i * 3] = Math.cos(angle) * radius
-    signalPositions[i * 3 + 1] = height
-    signalPositions[i * 3 + 2] = Math.sin(angle) * radius
-  }
-
-  const signalGeometry = new BufferGeometry()
-  signalGeometry.setAttribute('position', new BufferAttribute(signalPositions, 3))
-  const signalMaterial = new PointsMaterial({
-    color: 0x00FFFF,
-    size: isHigh ? 0.02 : 0.03,
-    opacity: 0.5,
+  spokePositions = new Float32Array(channelNodes.length * 2 * 3)
+  const geometry = new BufferGeometry()
+  geometry.setAttribute('position', new BufferAttribute(spokePositions, 3))
+  const material = new LineBasicMaterial({
+    color: themeColors.spoke,
     transparent: true,
-    blending: AdditiveBlending
+    opacity: 0.24,
+    blending: AdditiveBlending,
+    depthWrite: false
   })
-  signalParticles.value = new Points(signalGeometry, signalMaterial)
-
-  // Network particles - subtle background
-  const networkPositions = new Float32Array(networkCount * 3)
-  for (let i = 0; i < networkCount; i++) {
-    const angle = Math.random() * Math.PI * 2
-    const radius = 1.2 + Math.random() * 0.8
-    const height = (Math.random() - 0.5) * 0.6
-    networkPositions[i * 3] = Math.cos(angle) * radius
-    networkPositions[i * 3 + 1] = height
-    networkPositions[i * 3 + 2] = Math.sin(angle) * radius
-  }
-
-  const networkGeometry = new BufferGeometry()
-  networkGeometry.setAttribute('position', new BufferAttribute(networkPositions, 3))
-  const networkMaterial = new PointsMaterial({
-    color: 0x00FF41,
-    size: isHigh ? 0.015 : 0.025,
-    opacity: 0.3,
-    transparent: true,
-    blending: AdditiveBlending
-  })
-  networkParticles.value = new Points(networkGeometry, networkMaterial)
+  spokeLines.value = new LineSegments(geometry, material)
 }
 
-const updateAnimations = (elapsed: number, _delta: number) => {
-  // Very gentle scene rotation (slowed down)
-  if (sceneRef.value) {
-    sceneRef.value.rotation.y = elapsed * 0.015
-  }
-  
-  // Central hub pulsing (contact center) - slower and smaller
-  if (hubRef.value) {
-    const pulse = 1 + Math.sin(elapsed * 0.4) * 0.05
-    hubRef.value.scale.set(pulse, pulse, pulse)
-    hubRef.value.rotation.y = elapsed * 0.06
-  }
-  
-  // Inner hub counter-rotation - slower
-  if (innerHubRef.value) {
-    innerHubRef.value.rotation.y = -elapsed * 0.1
-    innerHubRef.value.rotation.x = Math.sin(elapsed * 0.15) * 0.05
-  }
-  
-  // Contact cards floating around center (representing business cards being shared)
-  contactCardRefs.forEach((cardRef, i) => {
-    if (cardRef.value) {
-      const angle = elapsed * 0.08 + (i * Math.PI * 2) / 4
-      const radius = 1.0 + Math.sin(elapsed * 0.2 + i) * 0.1
-      const height = Math.sin(elapsed * 0.25 + i * 0.6) * 0.3
-      cardRef.value.position.x = Math.cos(angle) * radius
-      cardRef.value.position.z = Math.sin(angle) * radius
-      cardRef.value.position.y = height
-      cardRef.value.rotation.y = elapsed * 0.15 + i
-      cardRef.value.rotation.z = Math.sin(elapsed * 0.2 + i) * 0.1
-      // Gentle floating
-      const float = 1 + Math.sin(elapsed * 0.3 + i) * 0.05
-      cardRef.value.scale.set(float, float, float)
+// One subtle network dust field (single Points draw call).
+const dustField = shallowRef<Points | null>(null)
+const buildDust = () => {
+  disposeParticleField(dustField.value)
+  dustField.value = null
+  if (isMinimal.value) return
+  const count = props.quality === 'high' ? 220 : 70
+  dustField.value = createParticleField({
+    count,
+    color: 0x00ff88,
+    size: props.quality === 'high' ? 0.025 : 0.04,
+    opacity: 0.4,
+    additive: true,
+    position: (_i, out) => {
+      const theta = Math.random() * Math.PI * 2
+      const phi = Math.acos(2 * Math.random() - 1)
+      const r = 4 + Math.random() * 8
+      out[0] = r * Math.sin(phi) * Math.cos(theta)
+      out[1] = r * Math.sin(phi) * Math.sin(theta)
+      out[2] = r * Math.cos(phi)
     }
   })
-  
-  // Share particles (contact info being shared) - slower movement
-  shareParticleRefs.forEach((particleRef, i) => {
-    if (particleRef.value) {
-      const cardIndex = i % 4
-      const phase = (elapsed * 0.25 + (i * 0.1)) % 1
-      const baseAngle = (cardIndex * Math.PI * 2) / 4
-      const angle = baseAngle + elapsed * 0.08
-      const startRadius = 1.0
-      const endRadius = 0.15
-      const radius = startRadius - (startRadius - endRadius) * phase
-      const baseHeight = Math.sin(elapsed * 0.25 + cardIndex * 0.6) * 0.3
-      const height = baseHeight * (1 - phase * 0.5)
-      
-      particleRef.value.position.x = Math.cos(angle) * radius
-      particleRef.value.position.z = Math.sin(angle) * radius
-      particleRef.value.position.y = height
-      
-      // Scale based on distance
-      const scale = 0.15 + phase * 0.3
-      particleRef.value.scale.set(scale, scale, scale)
-      
-      // Slow rotation
-      particleRef.value.rotation.y = elapsed * 0.5 + i
-      particleRef.value.rotation.x = elapsed * 0.4 + i * 0.3
+}
+
+const rebuild = () => {
+  buildSpokes()
+  buildDust()
+}
+watch(() => props.quality, rebuild, { immediate: true })
+
+// Phase offsets for the three signal rings so they broadcast in a staggered cycle.
+const ripplePhase = [0, 1 / 3, 2 / 3]
+
+const update = (elapsed: number) => {
+  // Orbiting channel nodes + live uplinks
+  for (let i = 0; i < nodeRefs.length; i++) {
+    const obj = nodeRefs[i].value
+    computeOrbit(i, elapsed)
+    if (obj) {
+      obj.position.x += (nodePos.x - obj.position.x) * 0.08
+      obj.position.y += (nodePos.y - obj.position.y) * 0.08
+      obj.position.z += (nodePos.z - obj.position.z) * 0.08
+      obj.rotation.y = elapsed * (0.4 + i * 0.1)
+      const s = 1 + Math.sin(elapsed * 1.3 + i * 0.6) * 0.12
+      obj.scale.setScalar(s)
     }
-  })
-  
-  // Contact sharing ripples - slower and smaller
-  const animateRipple = (ringRef: any, phase: number, speed: number) => {
-    if (ringRef.value) {
-      const cycle = ((elapsed * speed + phase) % 1)
-      const scale = 1 + cycle * 2
-      const opacity = (1 - cycle) * 0.25
-      ringRef.value.scale.set(scale, scale, 1)
-      if (ringRef.value.material) {
-        ringRef.value.material.opacity = Math.max(0, opacity)
-      }
+    if (spokePositions) {
+      const o = i * 6
+      // start vertex stays at the beacon (0,0,0); end vertex tracks the node
+      spokePositions[o + 3] = obj ? obj.position.x : nodePos.x
+      spokePositions[o + 4] = obj ? obj.position.y : nodePos.y
+      spokePositions[o + 5] = obj ? obj.position.z : nodePos.z
     }
   }
-  
-  animateRipple(rippleRing1Ref, 0, 0.15)
-  animateRipple(rippleRing2Ref, 0.33, 0.15)
-  animateRipple(rippleRing3Ref, 0.66, 0.15)
-  
-  // QR code rotation - very slow
-  if (qrCodeRef.value) {
-    qrCodeRef.value.rotation.y = elapsed * 0.05
-    qrCodeRef.value.position.y = Math.sin(elapsed * 0.2) * 0.05
+  if (spokeLines.value && spokePositions) {
+    ;(spokeLines.value.geometry.getAttribute('position') as BufferAttribute).needsUpdate = true
   }
-  
-  // Animate particle systems - slower
-  if (signalParticles.value) {
-    signalParticles.value.rotation.y = elapsed * 0.03
-    signalParticles.value.rotation.x = Math.sin(elapsed * 0.05) * 0.02
+
+  // Central beacon
+  if (coreRef.value) {
+    coreRef.value.rotation.y = elapsed * 0.2
+    coreRef.value.rotation.x = Math.sin(elapsed * 0.15) * 0.1
+    const p = 1 + Math.sin(elapsed * 1.4) * 0.1
+    coreRef.value.scale.setScalar(p)
   }
-  if (networkParticles.value) {
-    networkParticles.value.rotation.y = -elapsed * 0.025
+  if (shellRef.value) shellRef.value.rotation.y = -elapsed * 0.12
+  if (ringGuideRef.value) ringGuideRef.value.rotation.z = elapsed * 0.05
+
+  // Signal rings: expand outward and fade on a looping cycle. Mutating
+  // material.opacity directly is cheap for only three rings.
+  for (let i = 0; i < rippleRefs.length; i++) {
+    const ring = rippleRefs[i].value
+    if (!ring) continue
+    const cycle = (elapsed * 0.2 + ripplePhase[i]) % 1
+    const scale = 1 + cycle * 3.5
+    ring.scale.set(scale, scale, 1)
+    const mat = ring.material as MeshBasicMaterial | undefined
+    if (mat) mat.opacity = (1 - cycle) * 0.3
+  }
+
+  // Animate the dust by rotating the whole Points object (no per-vertex work).
+  if (dustField.value) {
+    dustField.value.rotation.y = elapsed * 0.01
+    dustField.value.rotation.x = Math.sin(elapsed * 0.04) * 0.02
   }
 }
 
-watch(() => props.quality, createParticleSystems, { immediate: true })
-
-onMounted(() => {
-  // Find the parent section element
-  const canvas = document.querySelector('[data-section="contact"]')
-  if (canvas) {
-    sectionElement.value = canvas as HTMLElement
+useSceneAnimation('contact', update, () => {
+  disposeParticleField(dustField.value)
+  if (spokeLines.value) {
+    spokeLines.value.geometry.dispose()
+    ;(spokeLines.value.material as LineBasicMaterial).dispose()
   }
-  
-  startTime = Date.now()
-  createParticleSystems()
-  
-  // Start animation loop with controller
-  animationController.start((_elapsed, delta) => {
-    const totalElapsed = (Date.now() - startTime) / 1000
-    updateAnimations(totalElapsed, delta)
-  })
 })
 
 onBeforeUnmount(() => {
-  animationController.stop()
-  if (signalParticles.value) {
-    signalParticles.value.geometry.dispose()
-    ;(signalParticles.value.material as PointsMaterial).dispose()
-  }
-  if (networkParticles.value) {
-    networkParticles.value.geometry.dispose()
-    ;(networkParticles.value.material as PointsMaterial).dispose()
-  }
+  disposeParticleField(dustField.value)
 })
-
-const segmentCount = computed(() => props.quality === 'high' ? 64 : 32)
-const ringSegments = computed(() => props.quality === 'high' ? 128 : 64)
-const isMinimal = computed(() => props.quality === 'minimal')
-void ringSegments // Used in template
-void isMinimal // Used in template
 </script>
 
 <template>
-  <TresPerspectiveCamera :position="[0, 0.5, 4]" :look-at="[0, 0, 0]" />
-  
-  <!-- Contact sharing lighting - softer and more focused -->
+  <TresPerspectiveCamera :position="[0, 0.6, 8]" :look-at="[0, 0, 0]" />
+
+  <!-- 3-light rig (was 4 + floor lighting) -->
   <TresAmbientLight :intensity="0.4" />
-  <TresPointLight :position="[0, 0, 1.5]" :intensity="1.2" :color="contactColors.primary" />
-  <TresPointLight :position="[1, 1, 1.5]" :intensity="0.5" :color="contactColors.signal" />
-  <TresPointLight :position="[-1, 0.8, 1.5]" :intensity="0.4" :color="contactColors.secondary" />
-  
-  <TresGroup ref="sceneRef">
-    <!-- Central Contact Hub (smaller, more intimate) -->
-    <TresGroup ref="hubRef">
-      <!-- Inner core -->
-      <TresGroup ref="innerHubRef">
-        <TresMesh>
-          <TresIcosahedronGeometry :args="[0.15, 1]" />
-          <TresMeshStandardMaterial 
-            :color="'#FFFFFF'"
-            :emissive="contactColors.primary"
-            :emissive-intensity="1.2"
-            :metalness="0.95"
-            :roughness="0.05"
-          />
-        </TresMesh>
-      </TresGroup>
-      
-      <!-- Main hub sphere (smaller) -->
-      <TresMesh>
-        <TresSphereGeometry :args="[0.3, segmentCount, segmentCount]" />
-        <TresMeshStandardMaterial 
-          :color="contactColors.primary"
-          :emissive="contactColors.primary"
-          :emissive-intensity="1"
-          :metalness="0.9"
-          :roughness="0.1"
-        />
-      </TresMesh>
-      
-      <!-- Outer glow layers (smaller) -->
-      <TresMesh>
-        <TresSphereGeometry :args="[0.4, 32, 32]" />
-        <TresMeshBasicMaterial :color="contactColors.primary" :opacity="0.2" :transparent="true" />
-      </TresMesh>
-      <TresMesh>
-        <TresSphereGeometry :args="[0.5, 32, 32]" />
-        <TresMeshBasicMaterial :color="contactColors.signal" :opacity="0.12" :transparent="true" />
-      </TresMesh>
-    </TresGroup>
-    
-    <!-- QR Code representation (contact sharing) -->
-    <TresGroup ref="qrCodeRef" :position="[0, 0, 0.35]">
-      <!-- QR code base -->
-      <TresMesh>
-        <TresBoxGeometry :args="[0.25, 0.25, 0.02]" />
-        <TresMeshStandardMaterial 
-          color="#FFFFFF"
-          :roughness="0.3"
-          :metalness="0.1"
-        />
-      </TresMesh>
-      <!-- QR code pattern (simplified) -->
-      <TresMesh v-if="!isMinimal" :position="[-0.08, 0.08, 0.015]">
-        <TresBoxGeometry :args="[0.05, 0.05, 0.01]" />
-        <TresMeshStandardMaterial color="#000000" />
-      </TresMesh>
-      <TresMesh v-if="!isMinimal" :position="[0.08, -0.08, 0.015]">
-        <TresBoxGeometry :args="[0.05, 0.05, 0.01]" />
-        <TresMeshStandardMaterial color="#000000" />
-      </TresMesh>
-      <!-- Glow effect -->
-      <TresMesh>
-        <TresBoxGeometry :args="[0.3, 0.3, 0.01]" />
-        <TresMeshBasicMaterial :color="contactColors.primary" :opacity="0.15" :transparent="true" />
-      </TresMesh>
-    </TresGroup>
-    
-    <!-- Contact sharing ripples (smaller, slower) -->
-    <TresMesh ref="rippleRing1Ref" :rotation="[Math.PI / 2, 0, 0]">
-      <TresRingGeometry :args="[0.6, 0.7, ringSegments]" />
-      <TresMeshBasicMaterial 
-        :color="contactColors.primary" 
-        :opacity="0.2" 
-        :transparent="true" 
-        :side="2" 
-      />
-    </TresMesh>
-    <TresMesh ref="rippleRing2Ref" :rotation="[Math.PI / 2, 0, 0]">
-      <TresRingGeometry :args="[0.6, 0.7, ringSegments]" />
-      <TresMeshBasicMaterial 
-        :color="contactColors.signal" 
-        :opacity="0.15" 
-        :transparent="true" 
-        :side="2" 
-      />
-    </TresMesh>
-    <TresMesh ref="rippleRing3Ref" :rotation="[Math.PI / 2, 0, 0]">
-      <TresRingGeometry :args="[0.6, 0.7, ringSegments]" />
-      <TresMeshBasicMaterial 
-        :color="contactColors.secondary" 
-        :opacity="0.12" 
-        :transparent="true" 
-        :side="2" 
-      />
-    </TresMesh>
-    
-    <!-- Contact Cards (business cards being shared) -->
-    <TresGroup 
-      v-for="(_, i) in 4" 
-      :key="`card-${i}`"
-      :ref="el => contactCardRefs[i].value = el"
-    >
-      <!-- Card body -->
-      <TresMesh>
-        <TresBoxGeometry :args="[0.35, 0.22, 0.02]" />
-        <TresMeshStandardMaterial 
-          color="#F8F4E8"
-          :roughness="0.8"
-          :metalness="0.1"
-        />
-      </TresMesh>
-      <!-- Card glow -->
-      <TresMesh v-if="!isMinimal">
-        <TresBoxGeometry :args="[0.4, 0.27, 0.01]" />
-        <TresMeshBasicMaterial 
-          :color="i % 2 === 0 ? contactColors.primary : contactColors.accent" 
-          :opacity="0.15" 
-          :transparent="true" 
-        />
-      </TresMesh>
-      <!-- Contact icon on card -->
-      <TresMesh v-if="!isMinimal" :position="[0, 0, 0.015]">
-        <TresSphereGeometry :args="[0.04, 8, 8]" />
-        <TresMeshStandardMaterial 
-          :color="contactColors.primary"
-          :emissive="contactColors.primary"
-          :emissive-intensity="0.6"
-        />
-      </TresMesh>
-    </TresGroup>
-    
-    <!-- Share Particles (contact info being shared) -->
-    <TresMesh 
-      v-for="(_, i) in 6" 
-      :key="`share-${i}`"
-      :ref="el => shareParticleRefs[i].value = el"
-    >
-      <TresOctahedronGeometry :args="[0.05]" />
-      <TresMeshStandardMaterial 
-        :color="contactColors.message"
-        :emissive="contactColors.message"
-        :emissive-intensity="0.8"
+  <TresPointLight :position="[0, 0, 2]" :intensity="2.2" :color="themeColors.core" :distance="14" />
+  <TresPointLight :position="[5, 3, -2]" :intensity="0.8" :color="themeColors.signal" :distance="18" />
+
+  <!-- Central beacon: faceted emissive node + a single glow shell -->
+  <TresGroup ref="coreRef">
+    <TresMesh>
+      <TresIcosahedronGeometry :args="[0.55, 1]" />
+      <TresMeshStandardMaterial
+        :color="themeColors.core"
+        :emissive="themeColors.core"
+        :emissive-intensity="1.1"
         :metalness="0.9"
-        :roughness="0.1"
+        :roughness="0.12"
+        :flat-shading="true"
+      />
+    </TresMesh>
+    <TresMesh v-if="!isMinimal" ref="shellRef">
+      <TresIcosahedronGeometry :args="[0.85, coreSegments > 16 ? 1 : 0]" />
+      <TresMeshBasicMaterial
+        :color="themeColors.core"
+        :opacity="0.12"
+        :transparent="true"
+        :depth-write="false"
       />
     </TresMesh>
   </TresGroup>
-  
-  <!-- Particle systems -->
-  <primitive v-if="signalParticles" :object="signalParticles" />
-  <primitive v-if="networkParticles" :object="networkParticles" />
-  
-  <!-- Subtle floor -->
-  <TresMesh :position="[0, -2.5, 0]" :rotation="[-Math.PI / 2, 0, 0]">
-    <TresPlaneGeometry :args="[15, 15]" />
-    <TresMeshStandardMaterial 
-      color="#0A0A12" 
-      :roughness="0.85"
-      :metalness="0.15"
+
+  <!-- Concentric signal rings broadcasting outward (≤3, thin, depthWrite off) -->
+  <TresMesh
+    v-for="(_, i) in 3"
+    :key="`ripple-${i}`"
+    :ref="el => (rippleRefs[i].value = el)"
+    :rotation="[Math.PI / 2, 0, 0]"
+  >
+    <TresRingGeometry :args="[0.7, 0.72, ringRadialSegments]" />
+    <TresMeshBasicMaterial
+      :color="i === 1 ? themeColors.signal : themeColors.core"
+      :opacity="0.3"
+      :transparent="true"
+      :depth-write="false"
+      :side="2"
     />
   </TresMesh>
+
+  <!-- Single orbital guide ring -->
+  <TresMesh ref="ringGuideRef" :rotation="[Math.PI / 2, 0, 0]">
+    <TresTorusGeometry :args="[orbitRadius, 0.008, 6, ringRadialSegments]" />
+    <TresMeshBasicMaterial :color="themeColors.spoke" :opacity="0.16" :transparent="true" :depth-write="false" />
+  </TresMesh>
+
+  <!-- Orbiting contact-channel nodes (one solid emissive shape each) -->
+  <TresMesh v-for="(node, i) in channelNodes" :key="i" :ref="el => (nodeRefs[i].value = el)">
+    <TresOctahedronGeometry :args="[0.2, 0]" />
+    <TresMeshStandardMaterial
+      :color="node.color"
+      :emissive="node.color"
+      :emissive-intensity="0.7"
+      :roughness="0.25"
+      :metalness="0.7"
+      :flat-shading="true"
+    />
+  </TresMesh>
+
+  <!-- Live uplink network + network dust (single draw call each) -->
+  <primitive v-if="spokeLines" :object="spokeLines" />
+  <primitive v-if="dustField" :object="dustField" />
 </template>
