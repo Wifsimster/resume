@@ -18,7 +18,7 @@ const switchLanguage = () => {
 
 <template>
   <button
-    class="relative flex items-center justify-between w-[70px] h-8 p-0.5 bg-[#1A1410]/80 backdrop-blur-md border border-white/10 rounded-2xl cursor-pointer transition-all duration-200 hover:border-white/20 sm:w-16 sm:h-9"
+    class="relative flex items-center justify-between w-[70px] h-8 p-0.5 bg-[var(--color-surface-overlay)] backdrop-blur-md border border-white/10 rounded-2xl cursor-pointer transition-all duration-200 hover:border-white/20 sm:w-16 sm:h-9"
     @click="switchLanguage"
     :aria-label="isFrench ? 'Switch to English' : 'Passer en français'"
   >

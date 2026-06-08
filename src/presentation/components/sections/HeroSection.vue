@@ -31,7 +31,7 @@ const handleCanvasReady = () => {
 </script>
 
 <template>
-  <section id="hero" class="section bg-transparent p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="hero">
+  <section id="hero" class="section bg-transparent section-padding" data-section="hero">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas

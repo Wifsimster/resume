@@ -64,7 +64,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <section id="contact" class="section bg-transparent min-h-screen p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="contact">
+  <section id="contact" class="section bg-transparent min-h-screen section-padding" data-section="contact">
     <!-- Content -->
     <div class="section-content flex flex-col justify-center items-center h-full">
       <div class="text-center mb-12">

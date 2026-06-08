@@ -20,7 +20,7 @@ const skillsByCategory = computed(() => {
 </script>
 
 <template>
-  <section id="skills" class="section bg-transparent p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="skills">
+  <section id="skills" class="section bg-transparent section-padding" data-section="skills">
     <DustCanvas color="#FBBF24" color-secondary="#42B883" />
     <HackOverlay />
     <!-- Content -->

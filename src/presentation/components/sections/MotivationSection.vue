@@ -6,7 +6,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <section id="motivation" class="section bg-transparent p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="motivation">
+  <section id="motivation" class="section bg-transparent section-padding" data-section="motivation">
     <DustCanvas color="#A855F7" color-secondary="#EC4899" />
     <!-- Content -->
     <div class="section-content flex flex-col justify-center items-center h-full">

@@ -18,7 +18,7 @@ const getAchievements = (expId: string): string[] => {
 </script>
 
 <template>
-  <section id="experience" class="section bg-transparent p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16" data-section="experience">
+  <section id="experience" class="section bg-transparent section-padding" data-section="experience">
     <!-- 3D Canvas -->
     <div class="section-canvas">
       <TresCanvas
