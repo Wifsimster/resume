@@ -6,7 +6,7 @@ import AchievementToast from '@presentation/components/ui/AchievementToast.vue'
 import AchievementsIndicator from '@presentation/components/ui/AchievementsIndicator.vue'
 import FPSDisplay from '@presentation/components/ui/FPSDisplay.vue'
 import TableOfContents from '@presentation/components/ui/TableOfContents.vue'
-import FloatingCompanion from '@presentation/components/ui/FloatingCompanion.vue'
+import CompanionOverlay from '@presentation/components/ui/CompanionOverlay.vue'
 import { useAchievements } from '@application/composables/useAchievements'
 import { useEasterEggs } from '@application/composables/useEasterEggs'
 import { useQuality } from '@application/composables/useQuality'
@@ -254,8 +254,8 @@ onUnmounted(() => {
     <!-- Main Content -->
     <RouterView />
 
-    <!-- Space companion cruising across every section -->
-    <FloatingCompanion />
+    <!-- Three.js space companion cruising across every section -->
+    <CompanionOverlay />
 
     <!-- Achievement Toast -->
     <AchievementToast

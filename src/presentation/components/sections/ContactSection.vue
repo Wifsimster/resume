@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import DustCanvas from '@presentation/components/ui/DustCanvas.vue'
 import { useAchievements } from '@application/composables/useAchievements'
 
 const { t } = useI18n()
@@ -66,9 +65,6 @@ onMounted(() => {
 
 <template>
   <section id="contact" class="section bg-transparent min-h-screen section-padding" data-section="contact">
-    <!-- Subtle interactive dust backdrop (2D canvas, mouse-repulsed) -->
-    <DustCanvas color="#00FF41" color-secondary="#22D3EE" :opacity="0.45" />
-
     <!-- Content -->
     <div class="section-content flex flex-col justify-center items-center h-full">
       <div class="text-center mb-12">

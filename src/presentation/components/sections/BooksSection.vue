@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { TresCanvas } from '@tresjs/core'
-import BooksScene from '@presentation/components/three/scenes/BooksScene.vue'
-import { useQuality } from '@application/composables/useQuality'
 import { useAchievements } from '@application/composables/useAchievements'
 import { resumeData } from '@domain/data/resume'
 
 const { t } = useI18n()
-const { quality, renderSettings } = useQuality()
 const { unlock } = useAchievements()
 
 const booksByStatus = computed(() => ({
@@ -29,19 +25,6 @@ const openBook = (url: string, status?: string) => {
 
 <template>
   <section id="books" class="section bg-transparent section-padding" data-section="books">
-    <!-- 3D Canvas -->
-    <div class="section-canvas">
-      <TresCanvas
-        :clear-color="'#0A0A0A'"
-        :alpha="true"
-        :dpr="renderSettings.dpr"
-        :antialias="renderSettings.antialias"
-        :power-preference="renderSettings.powerPreference"
-      >
-        <BooksScene :quality="quality" />
-      </TresCanvas>
-    </div>
-
     <!-- Content -->
     <div class="section-content mx-auto">
       <div class="text-center mb-12">
