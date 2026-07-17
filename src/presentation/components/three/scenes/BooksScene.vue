@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, shallowRef, watch, onBeforeUnmount } from 'vue'
-import { Points } from 'three'
+import { ref, computed, shallowRef, watch, nextTick, onBeforeUnmount } from 'vue'
+import { Points, type CanvasTexture } from 'three'
 import { useTres } from '@tresjs/core'
 import type { QualityLevel } from '@application/composables/useQuality'
 import { resumeData } from '@domain/data/resume'
 import { useSceneAnimation } from '@application/composables/useSceneAnimation'
 import { createParticleField, disposeParticleField } from '../utils/particleField'
+import { createBookCoverTexture } from '../utils/proceduralTextures'
 
 const props = defineProps<{
   quality: QualityLevel
@@ -193,6 +194,35 @@ const bookRefs = resumeData.books.map(() => ref())
 const candleRefs = CANDLE_PARAMS.map(() => ref())
 
 // ---------------------------------------------------------------------------
+// Procedural book cover textures — one per palette entry, generated once on
+// high quality (border frame, title/author bars, emblem). Low/minimal keep
+// plain coloured covers.
+// ---------------------------------------------------------------------------
+const coverMaps = shallowRef<(CanvasTexture | null)[]>(bookPalette.map(() => null))
+
+const buildCovers = () => {
+  const previous = coverMaps.value.filter((t): t is CanvasTexture => t !== null)
+  if (isHigh.value) {
+    coverMaps.value = bookPalette.map((p, i) =>
+      createBookCoverTexture(p.cover, p.emissive, i + 1)
+    )
+  } else {
+    coverMaps.value = bookPalette.map(() => null)
+  }
+  // Dispose old GPU textures only after Vue re-patched the materials.
+  if (previous.length > 0) {
+    nextTick(() => {
+      for (const t of previous) t.dispose()
+    })
+  }
+}
+
+const disposeCovers = () => {
+  for (const t of coverMaps.value) t?.dispose()
+  coverMaps.value = bookPalette.map(() => null)
+}
+
+// ---------------------------------------------------------------------------
 // Rising motes — ONE createParticleField Points. Animated purely by slowly
 // translating/rotating the whole object: NO per-frame buffer mutation.
 // ---------------------------------------------------------------------------
@@ -221,7 +251,11 @@ const buildMotes = () => {
   })
 }
 
-watch(() => props.quality, buildMotes, { immediate: true })
+const rebuild = () => {
+  buildMotes()
+  buildCovers()
+}
+watch(() => props.quality, rebuild, { immediate: true })
 
 // ---------------------------------------------------------------------------
 // Main animation loop — uses controller elapsed/delta, never Date.now().
@@ -270,6 +304,7 @@ const update = (elapsed: number) => {
 
 useSceneAnimation('books', update, () => {
   disposeParticleField(motes.value)
+  disposeCovers()
 })
 
 onBeforeUnmount(() => {
@@ -333,10 +368,16 @@ onBeforeUnmount(() => {
     :position="book.position"
     :rotation="[0, book.rotationY, 0]"
   >
-    <!-- Front Cover -->
+    <!-- Front Cover (procedural cover art on high quality) -->
     <TresMesh :position="[0, 0, 0.065]">
       <TresBoxGeometry :args="[0.76, 1.08, 0.025]" />
-      <TresMeshStandardMaterial :color="book.colors.cover" :roughness="0.55" :metalness="0.15" />
+      <TresMeshStandardMaterial
+        :key="coverMaps[book.index % bookPalette.length] ? 'cover-tex' : 'cover-flat'"
+        :map="coverMaps[book.index % bookPalette.length]"
+        :color="coverMaps[book.index % bookPalette.length] ? '#FFFFFF' : book.colors.cover"
+        :roughness="0.55"
+        :metalness="0.15"
+      />
     </TresMesh>
 
     <!-- Back Cover -->

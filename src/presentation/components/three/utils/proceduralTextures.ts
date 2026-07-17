@@ -181,6 +181,158 @@ export function createSunTexture(seed = 3): CanvasTexture {
 }
 
 /**
+ * Server blade front panel: dark faceplate with vent-slot rows, edge handles,
+ * screws and a small status display. 512×128, shared by all blades.
+ */
+export function createServerPanelTexture(seed = 11): CanvasTexture {
+  const { canvas, ctx } = makeCanvas(512, 128)
+  const rand = mulberry32(seed * 48271 + 13)
+
+  // Faceplate base with a subtle vertical sheen.
+  const base = ctx.createLinearGradient(0, 0, 0, 128)
+  base.addColorStop(0, '#221B33')
+  base.addColorStop(0.5, '#191226')
+  base.addColorStop(1, '#130E1D')
+  ctx.fillStyle = base
+  ctx.fillRect(0, 0, 512, 128)
+
+  // Vent slots: two rows of rounded horizontal slits in the middle area.
+  ctx.fillStyle = '#0B0714'
+  for (let row = 0; row < 2; row++) {
+    const y = 36 + row * 36
+    for (let x = 76; x < 380; x += 22) {
+      ctx.beginPath()
+      ctx.roundRect(x, y, 15, 20, 3)
+      ctx.fill()
+    }
+  }
+
+  // Edge handles (vertical bars near each side).
+  ctx.fillStyle = '#2E2545'
+  ctx.beginPath()
+  ctx.roundRect(14, 18, 14, 92, 4)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.roundRect(484, 18, 14, 92, 4)
+  ctx.fill()
+
+  // Small status display block on the right.
+  ctx.fillStyle = '#0B0714'
+  ctx.beginPath()
+  ctx.roundRect(398, 40, 64, 44, 4)
+  ctx.fill()
+  ctx.fillStyle = '#3B2F63'
+  for (let i = 0; i < 3; i++) {
+    ctx.fillRect(406, 50 + i * 11, 40 + rand() * 8, 4)
+  }
+
+  // Corner screws.
+  ctx.fillStyle = '#4C4368'
+  for (const [sx, sy] of [[44, 22], [44, 106], [468, 22], [468, 106]] as const) {
+    ctx.beginPath()
+    ctx.arc(sx, sy, 3.4, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  return toTexture(canvas)
+}
+
+/**
+ * Brushed dark metal: fine horizontal grain streaks over a near-black base.
+ * 256×256, tileable horizontally.
+ */
+export function createBrushedMetalTexture(seed = 19): CanvasTexture {
+  const { canvas, ctx } = makeCanvas(256, 256)
+  const rand = mulberry32(seed * 69621 + 29)
+
+  ctx.fillStyle = '#100C1A'
+  ctx.fillRect(0, 0, 256, 256)
+
+  for (let i = 0; i < 240; i++) {
+    const y = rand() * 256
+    const x = rand() * 256
+    const len = 30 + rand() * 120
+    const light = rand() < 0.5
+    ctx.strokeStyle = light ? 'rgba(120,105,160,0.10)' : 'rgba(0,0,0,0.16)'
+    ctx.lineWidth = 0.8 + rand() * 0.8
+    for (const wx of [x - 256, x, x + 256]) {
+      ctx.beginPath()
+      ctx.moveTo(wx, y)
+      ctx.lineTo(wx + len, y)
+      ctx.stroke()
+    }
+  }
+
+  const texture = toTexture(canvas, true)
+  return texture
+}
+
+/**
+ * Book cover: coloured base with an inset border frame, title/author bars and
+ * a small emblem — enough detail to read as a real book at arm's length.
+ * 256×256.
+ */
+export function createBookCoverTexture(
+  cover: string,
+  accent: string,
+  seed: number
+): CanvasTexture {
+  const { canvas, ctx } = makeCanvas(256, 256)
+  const rand = mulberry32(seed * 25214903917 + 41)
+
+  // Cover base with soft vertical shading.
+  const base = ctx.createLinearGradient(0, 0, 256, 0)
+  base.addColorStop(0, cover)
+  base.addColorStop(0.5, cover)
+  base.addColorStop(1, 'rgba(0,0,0,0.25)')
+  ctx.fillStyle = cover
+  ctx.fillRect(0, 0, 256, 256)
+  ctx.fillStyle = base
+  ctx.fillRect(0, 0, 256, 256)
+
+  // Subtle paper grain.
+  for (let i = 0; i < 130; i++) {
+    ctx.fillStyle = rand() < 0.5 ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.05)'
+    ctx.fillRect(rand() * 256, rand() * 256, 1.5 + rand() * 2, 1.5 + rand() * 2)
+  }
+
+  // Inset border frame.
+  ctx.strokeStyle = accent
+  ctx.globalAlpha = 0.55
+  ctx.lineWidth = 3
+  ctx.strokeRect(18, 18, 220, 220)
+  ctx.globalAlpha = 1
+
+  // Title bars (top) and author line (bottom).
+  ctx.fillStyle = accent
+  ctx.globalAlpha = 0.9
+  ctx.beginPath()
+  ctx.roundRect(38, 48, 150 + rand() * 30, 14, 4)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.roundRect(38, 74, 100 + rand() * 50, 10, 4)
+  ctx.fill()
+  ctx.globalAlpha = 0.6
+  ctx.beginPath()
+  ctx.roundRect(38, 208, 80 + rand() * 30, 8, 3)
+  ctx.fill()
+
+  // Small centred emblem.
+  ctx.globalAlpha = 0.5
+  ctx.strokeStyle = accent
+  ctx.lineWidth = 2.4
+  ctx.beginPath()
+  ctx.arc(128, 148, 24, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.arc(128, 148, 13, 0, Math.PI * 2)
+  ctx.stroke()
+
+  ctx.globalAlpha = 1
+  return toTexture(canvas)
+}
+
+/**
  * Planetary ring: concentric translucent bands with a gap, drawn centred so
  * RingGeometry's planar UVs sample it correctly. 256×256 RGBA.
  */

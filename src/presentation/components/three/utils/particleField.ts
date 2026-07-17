@@ -2,10 +2,32 @@ import {
   AdditiveBlending,
   BufferAttribute,
   BufferGeometry,
+  CanvasTexture,
   Points,
   PointsMaterial,
   type ColorRepresentation
 } from 'three'
+
+// Shared soft-dot sprite so every particle renders as a round, feathered glow
+// instead of the default hard square. Created lazily once and NEVER disposed —
+// all fields reference the same texture.
+let softSprite: CanvasTexture | null = null
+function getSoftSprite(): CanvasTexture {
+  if (!softSprite) {
+    const canvas = document.createElement('canvas')
+    canvas.width = 64
+    canvas.height = 64
+    const ctx = canvas.getContext('2d')!
+    const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32)
+    g.addColorStop(0, 'rgba(255,255,255,1)')
+    g.addColorStop(0.35, 'rgba(255,255,255,0.7)')
+    g.addColorStop(1, 'rgba(255,255,255,0)')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, 64, 64)
+    softSprite = new CanvasTexture(canvas)
+  }
+  return softSprite
+}
 
 export interface ParticleFieldOptions {
   count: number
@@ -45,8 +67,9 @@ export function createParticleField(opts: ParticleFieldOptions): Points {
   const material = new PointsMaterial({
     color: opts.color,
     size: opts.size,
+    map: getSoftSprite(),
     opacity: opts.opacity ?? 1,
-    transparent: (opts.opacity ?? 1) < 1 || opts.additive === true,
+    transparent: true,
     depthWrite: false,
     blending: opts.additive ? AdditiveBlending : undefined
   })
