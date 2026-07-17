@@ -21,11 +21,11 @@ interface CompanionDef {
 }
 
 const COMPANIONS: CompanionDef[] = [
-  { emoji: '🚀', facing: 'direction', angleOffset: Math.PI / 4, speed: 110, bob: 4, size: '30px' },
-  { emoji: '🛸', facing: 'upright', angleOffset: 0, speed: 85, bob: 9, size: '30px' },
-  { emoji: '☄️', facing: 'direction', angleOffset: (3 * Math.PI) / 4, speed: 150, bob: 3, size: '28px' },
-  { emoji: '🛰️', facing: 'spin', angleOffset: 0, speed: 55, bob: 5, size: '27px' },
-  { emoji: '🪐', facing: 'spin', angleOffset: 0, speed: 45, bob: 6, size: '30px' }
+  { emoji: '🚀', facing: 'direction', angleOffset: Math.PI / 4, speed: 130, bob: 4, size: '44px' },
+  { emoji: '🛸', facing: 'upright', angleOffset: 0, speed: 100, bob: 10, size: '44px' },
+  { emoji: '☄️', facing: 'direction', angleOffset: (3 * Math.PI) / 4, speed: 170, bob: 3, size: '42px' },
+  { emoji: '🛰️', facing: 'spin', angleOffset: 0, speed: 65, bob: 5, size: '40px' },
+  { emoji: '🪐', facing: 'spin', angleOffset: 0, speed: 55, bob: 6, size: '44px' }
 ]
 
 /** Waypoints per companion before handing over to the next one. */
@@ -60,9 +60,9 @@ let trailAccumulator = 0
 const pickTarget = () => {
   const w = window.innerWidth
   const h = window.innerHeight
-  // Bias waypoints toward the outer bands so the companion mostly frames the
-  // content instead of parking on top of it.
-  const edge = Math.random() < 0.65
+  // Mild bias toward the outer bands so it doesn't park on top of content,
+  // but it regularly crosses the middle of the screen where it gets seen.
+  const edge = Math.random() < 0.4
   if (edge) {
     const side = Math.floor(Math.random() * 4)
     if (side === 0) { target.x = 0.04 * w + Math.random() * 0.16 * w; target.y = 0.1 * h + Math.random() * 0.8 * h }
@@ -145,9 +145,9 @@ const tick = (now: number) => {
   for (let i = 0; i < TRAIL_LENGTH; i++) {
     const dot = trailRefs[i].value
     if (dot) {
-      const scale = ((TRAIL_LENGTH - i) / TRAIL_LENGTH) * (0.5 + boost * 0.5)
+      const scale = ((TRAIL_LENGTH - i) / TRAIL_LENGTH) * (0.7 + boost * 0.5)
       dot.style.transform = `translate3d(${trail[i].x}px, ${trail[i].y}px, 0) scale(${scale})`
-      dot.style.opacity = String(0.35 * ((TRAIL_LENGTH - i) / TRAIL_LENGTH))
+      dot.style.opacity = String(0.6 * ((TRAIL_LENGTH - i) / TRAIL_LENGTH))
     }
   }
 
@@ -205,21 +205,31 @@ onBeforeUnmount(() => {
 <style scoped>
 .companion-sprite {
   position: absolute;
-  top: -15px;
-  left: -15px;
+  top: -22px;
+  left: -22px;
   line-height: 1;
   will-change: transform;
-  filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.45));
+  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.8)) drop-shadow(0 0 22px rgba(34, 211, 238, 0.35));
+  animation: companion-glow 2.4s ease-in-out infinite;
+}
+
+@keyframes companion-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.8)) drop-shadow(0 0 22px rgba(34, 211, 238, 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(168, 85, 247, 1)) drop-shadow(0 0 30px rgba(34, 211, 238, 0.55));
+  }
 }
 
 .companion-trail-dot {
   position: absolute;
-  top: -3px;
-  left: -3px;
-  width: 6px;
-  height: 6px;
+  top: -5px;
+  left: -5px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(196, 181, 253, 0.9) 0%, rgba(124, 58, 237, 0) 70%);
+  background: radial-gradient(circle, rgba(196, 181, 253, 1) 0%, rgba(124, 58, 237, 0) 70%);
   will-change: transform, opacity;
 }
 </style>
