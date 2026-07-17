@@ -45,6 +45,7 @@ let mouseY = -9999
 let resizeObserver: ResizeObserver | null = null
 let resizePending = false
 let initialized = false
+let interactionTarget: HTMLElement | null = null
 
 // Cached RGB strings — recomputed only when props change (never in practice)
 let primaryRgb = ''
@@ -190,8 +191,13 @@ function setup() {
   }
 
   if (!initialized) {
-    container.addEventListener('mousemove', onMouseMove)
-    container.addEventListener('mouseleave', onMouseLeave)
+    // Listen on the parent SECTION, not the canvas layer: the content layer
+    // is a sibling stacked above the canvas, so events over text/cards never
+    // reach the canvas container and the repulsion effect silently never
+    // fired. On the section, moves over any child bubble up.
+    interactionTarget = (container.parentElement as HTMLElement) ?? container
+    interactionTarget.addEventListener('mousemove', onMouseMove)
+    interactionTarget.addEventListener('mouseleave', onMouseLeave)
     initialized = true
   }
 
@@ -223,10 +229,10 @@ onBeforeUnmount(() => {
   controller.stop()
   resizeObserver?.disconnect()
 
-  const container = containerRef.value
-  if (container) {
-    container.removeEventListener('mousemove', onMouseMove)
-    container.removeEventListener('mouseleave', onMouseLeave)
+  if (interactionTarget) {
+    interactionTarget.removeEventListener('mousemove', onMouseMove)
+    interactionTarget.removeEventListener('mouseleave', onMouseLeave)
+    interactionTarget = null
   }
 })
 </script>
