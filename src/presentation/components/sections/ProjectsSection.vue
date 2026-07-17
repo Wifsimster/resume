@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { TresCanvas } from '@tresjs/core'
-import ProjectsScene from '@presentation/components/three/scenes/ProjectsScene.vue'
-import { useQuality } from '@application/composables/useQuality'
 import { useAchievements } from '@application/composables/useAchievements'
 import { resumeData } from '@domain/data/resume'
 
 const { t } = useI18n()
-const { quality, renderSettings } = useQuality()
 const { unlock } = useAchievements()
 
 const openProject = (url: string) => {
@@ -25,19 +21,6 @@ const openGithubProfile = () => {
 
 <template>
   <section id="projects" class="section bg-transparent section-padding" data-section="projects">
-    <!-- 3D Canvas -->
-    <div class="section-canvas">
-      <TresCanvas
-        :clear-color="'#0A0A0A'"
-        :alpha="true"
-        :dpr="renderSettings.dpr"
-        :antialias="renderSettings.antialias"
-        :power-preference="renderSettings.powerPreference"
-      >
-        <ProjectsScene :quality="quality" />
-      </TresCanvas>
-    </div>
-
     <!-- Content -->
     <div class="section-content flex flex-col items-center justify-center pointer-events-none">
       <div class="text-center mb-6 sm:mb-8">

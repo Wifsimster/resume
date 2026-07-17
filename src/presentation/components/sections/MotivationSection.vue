@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import DustCanvas from '@presentation/components/ui/DustCanvas.vue'
 
 const { t } = useI18n()
 </script>
 
 <template>
   <section id="motivation" class="section bg-transparent section-padding" data-section="motivation">
-    <DustCanvas color="#A855F7" color-secondary="#EC4899" />
     <!-- Content -->
     <div class="section-content flex flex-col justify-center items-center h-full">
       <div class="mb-4 text-center w-full">
