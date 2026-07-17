@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { TresCanvas } from '@tresjs/core'
-import ExperienceScene from '@presentation/components/three/scenes/ExperienceScene.vue'
-import { useQuality } from '@application/composables/useQuality'
 import { resumeData } from '@domain/data/resume'
 import { i18n } from '@application/i18n'
 
 const { t, locale } = useI18n()
-const { quality, renderSettings } = useQuality()
 
 const getAchievements = (expId: string): string[] => {
   const currentLocale = locale.value as 'fr' | 'en'
@@ -19,19 +15,6 @@ const getAchievements = (expId: string): string[] => {
 
 <template>
   <section id="experience" class="section bg-transparent section-padding" data-section="experience">
-    <!-- 3D Canvas -->
-    <div class="section-canvas">
-      <TresCanvas
-        :clear-color="'#0A0A0A'"
-        :alpha="true"
-        :dpr="renderSettings.dpr"
-        :antialias="renderSettings.antialias"
-        :power-preference="renderSettings.powerPreference"
-      >
-        <ExperienceScene :quality="quality" />
-      </TresCanvas>
-    </div>
-
     <!-- Content -->
     <div class="section-content">
       <div class="text-center mb-12">

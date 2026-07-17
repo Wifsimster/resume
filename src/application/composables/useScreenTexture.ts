@@ -1,5 +1,5 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue'
-import { CanvasTexture } from 'three'
+import { CanvasTexture, SRGBColorSpace } from 'three'
 
 interface ScreenTextureProps {
   title?: string
@@ -23,6 +23,9 @@ export function useScreenTexture(props: ScreenTextureProps) {
     })
   }
 
+  // The screen plane covers only a few hundred on-screen pixels, so the layout
+  // is deliberately LARGE: big type and roomy rows read clearly at that size,
+  // where the previous dense 26-32px layout blurred into noise.
   const createScreenTexture = () => {
     const canvas = document.createElement('canvas')
     const width = 1920
@@ -32,94 +35,93 @@ export function useScreenTexture(props: ScreenTextureProps) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return null
 
-    // Background
+    // Background with a subtle top accent bar
     ctx.fillStyle = '#0D1117'
     ctx.fillRect(0, 0, width, height)
+    ctx.fillStyle = '#B87333'
+    ctx.fillRect(0, 0, width, 10)
 
     // Title
     ctx.fillStyle = '#B87333'
-    ctx.font = 'bold 72px sans-serif'
+    ctx.font = 'bold 104px sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText(props.title || 'Maker', width / 2, 120)
+    ctx.fillText(props.title || 'Maker', width / 2, 138)
 
-    // Subtitle
+    // Subtitle (max 2 lines, large)
     ctx.fillStyle = '#FFFFFF'
-    ctx.font = '32px sans-serif'
-    ctx.globalAlpha = 0.7
-    const subtitle = props.subtitle || 'J\'adore construire et expérimenter, voici quelques uns de mes projets...'
-    const subtitleLines = subtitle.match(/.{1,60}/g) || [subtitle]
+    ctx.font = '46px sans-serif'
+    ctx.globalAlpha = 0.75
+    const subtitle = props.subtitle || "J'adore construire et expérimenter, voici quelques uns de mes projets..."
+    const subtitleLines = (subtitle.match(/.{1,52}(\s|$)/g) || [subtitle]).slice(0, 2)
     subtitleLines.forEach((line, i) => {
-      ctx.fillText(line, width / 2, 180 + i * 40)
+      ctx.fillText(line.trim(), width / 2, 214 + i * 58)
     })
     ctx.globalAlpha = 1
 
     // Projects section
     ctx.fillStyle = '#B87333'
-    ctx.font = 'bold 48px sans-serif'
+    ctx.font = 'bold 58px sans-serif'
     ctx.textAlign = 'left'
-    ctx.fillText('Projets', 80, 300)
+    ctx.fillText('Projets', 60, 400)
 
-    // Projects
     const projects = props.projects || []
-    projects.forEach((project, idx) => {
-      const x = 80 + (idx % 2) * 920
-      const y = 380 + Math.floor(idx / 2) * 140
+    projects.slice(0, 6).forEach((project, idx) => {
+      const x = 60 + (idx % 2) * 920
+      const y = 500 + Math.floor(idx / 2) * 160
 
       // Project card background
       ctx.fillStyle = '#B87333'
-      ctx.globalAlpha = 0.15
-      ctx.fillRect(x, y - 60, 850, 100)
+      ctx.globalAlpha = 0.16
+      ctx.beginPath()
+      ctx.roundRect(x, y - 66, 880, 126, 14)
+      ctx.fill()
       ctx.globalAlpha = 1
 
       // Icon
-      ctx.font = '40px sans-serif'
-      ctx.fillText(project.icon, x + 25, y)
+      ctx.font = '56px sans-serif'
+      ctx.fillText(project.icon, x + 28, y + 4)
 
       // Label
       ctx.fillStyle = '#F5E6D3'
-      ctx.font = '32px sans-serif'
-      ctx.fillText(project.label, x + 80, y)
+      ctx.font = 'bold 46px sans-serif'
+      ctx.fillText(project.label, x + 110, y - 6)
 
       // Year
       ctx.fillStyle = '#FFFFFF'
-      ctx.globalAlpha = 0.4
-      ctx.font = '24px sans-serif'
-      ctx.fillText(project.year, x + 25, y + 40)
+      ctx.globalAlpha = 0.45
+      ctx.font = '38px sans-serif'
+      ctx.fillText(project.year, x + 110, y + 44)
       ctx.globalAlpha = 1
     })
 
-    // Tech Stack section
-    ctx.fillStyle = '#FFFFFF'
-    ctx.font = 'bold 48px sans-serif'
-    ctx.globalAlpha = 0.7
-    ctx.fillText('Technologies', 80, 800)
-    ctx.globalAlpha = 1
-
-    // Tech Stack
-    const techStack = props.techStack || []
+    // Tech stack: one row of large badges along the bottom
+    const techStack = (props.techStack || []).slice(0, 6)
     techStack.forEach((tech, idx) => {
-      const x = 80 + (idx % 3) * 620
-      const y = 880 + Math.floor(idx / 3) * 90
+      const x = 60 + idx * 305
+      const y = 1010
 
-      // Tech badge background
       ctx.fillStyle = '#FFFFFF'
       ctx.globalAlpha = 0.1
-      ctx.fillRect(x, y - 35, 580, 60)
+      ctx.beginPath()
+      ctx.roundRect(x, y - 48, 285, 72, 12)
+      ctx.fill()
       ctx.globalAlpha = 1
 
-      // Icon
-      ctx.font = '28px sans-serif'
-      ctx.fillText(tech.icon, x + 20, y)
+      ctx.font = '38px sans-serif'
+      ctx.fillText(tech.icon, x + 18, y + 4)
 
-      // Label
       ctx.fillStyle = '#FFFFFF'
-      ctx.globalAlpha = 0.6
-      ctx.font = '26px sans-serif'
-      ctx.fillText(tech.label, x + 65, y)
+      ctx.globalAlpha = 0.7
+      ctx.font = '30px sans-serif'
+      ctx.fillText(tech.label, x + 72, y + 2)
       ctx.globalAlpha = 1
     })
 
     const texture = new CanvasTexture(canvas)
+    // sRGB tag keeps the colours true (untagged canvas textures render washed
+    // out), and anisotropy keeps the text crisp at the camera's oblique angle.
+    texture.colorSpace = SRGBColorSpace
+    texture.anisotropy = 8
     texture.needsUpdate = true
     return texture
   }
