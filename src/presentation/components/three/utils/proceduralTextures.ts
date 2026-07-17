@@ -28,7 +28,9 @@ function toTexture(canvas: HTMLCanvasElement, repeatX = false): CanvasTexture {
   const texture = new CanvasTexture(canvas)
   texture.colorSpace = SRGBColorSpace
   if (repeatX) texture.wrapS = RepeatWrapping
-  texture.anisotropy = 4
+  // Higher anisotropy keeps grazing-angle texel detail stable while spheres
+  // rotate — low values shimmer at high DPR. Clamped by the GPU's max.
+  texture.anisotropy = 8
   return texture
 }
 
@@ -159,12 +161,14 @@ export function createSunTexture(seed = 3): CanvasTexture {
   ctx.fillRect(0, 0, 512, 256)
 
   // Granulation: hot white-ish cells and cooler orange pores, seam-wrapped.
-  for (let i = 0; i < 340; i++) {
+  // Cells kept large and low-contrast — small sharp dots alias and shimmer
+  // ("boil") while the sun rotates.
+  for (let i = 0; i < 260; i++) {
     const x = rand() * 512
     const y = rand() * 256
-    const r = 2 + rand() * 10
+    const r = 5 + rand() * 12
     const hot = rand() < 0.5
-    ctx.globalAlpha = 0.22 + rand() * 0.2
+    ctx.globalAlpha = 0.14 + rand() * 0.12
     for (const wx of [x - 512, x, x + 512]) {
       const g = ctx.createRadialGradient(wx, y, 0, wx, y, r)
       g.addColorStop(0, hot ? '#FFF3C4' : '#F57C00')

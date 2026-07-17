@@ -226,62 +226,65 @@ let fpsHistory: number[] = []
 let lastFrameTime = performance.now()
 let fpsMonitorEnabled = false
 let animationFrameId: number | null = null
+let lastDegradeTime = 0
+
+// RAF pauses while the tab is hidden, so the first sample after returning is
+// a multi-second delta (≈0.5 FPS). Feeding those into the history used to
+// trip the degradation checks on EVERY tab switch, rebuilding all scenes with
+// a visible flash. Outlier deltas are discarded instead.
+const MAX_SAMPLE_DELTA = 250
+// Grace period after a degradation so one hitch can't cascade straight from
+// high to minimal before the cheaper tier has had a chance to stabilise.
+const DEGRADE_COOLDOWN_MS = 3000
+
+const degradeOneStep = (now: number) => {
+  if (quality.value === 'high') quality.value = 'low'
+  else if (quality.value === 'low') quality.value = 'minimal'
+  fpsHistory = []
+  lastDegradeTime = now
+}
 
 const measureFPS = () => {
   if (!fpsMonitorEnabled) return
-  
+
   const now = performance.now()
   const delta = now - lastFrameTime
   lastFrameTime = now
-  
-  if (delta > 0) {
+
+  if (delta > 0 && delta <= MAX_SAMPLE_DELTA) {
     const fps = 1000 / delta
     fpsHistory.push(fps)
-    
+
     // Keep last 60 frames
     if (fpsHistory.length > 60) {
       fpsHistory.shift()
     }
-    
+
     // Check for auto-degradation after collecting enough samples
-    if (fpsHistory.length >= 30) {
+    if (fpsHistory.length >= 30 && now - lastDegradeTime > DEGRADE_COOLDOWN_MS) {
       const avgFPS = fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length
-      
-      // Auto-degrade if FPS is consistently low (more aggressive thresholds)
+
+      // Auto-degrade if FPS is consistently low
       const targetFPS = getRenderSettings(quality.value).targetFPS
       const threshold = targetFPS * 0.7 // Degrade if below 70% of target
-      
-      if (avgFPS < threshold && quality.value === 'high') {
-        quality.value = 'low'
-        fpsHistory = []
-      } else if (avgFPS < threshold && quality.value === 'low') {
-        quality.value = 'minimal'
-        fpsHistory = []
-      }
-      
-      // Thermal throttling detection - if FPS drops suddenly
-      if (fpsHistory.length >= 10) {
+
+      if (avgFPS < threshold && quality.value !== 'minimal') {
+        degradeOneStep(now)
+      } else {
+        // Thermal throttling detection - if FPS drops suddenly and stays low
         const recentFPS = fpsHistory.slice(-10)
         const recentAvg = recentFPS.reduce((a, b) => a + b, 0) / recentFPS.length
         const earlierFPS = fpsHistory.slice(-30, -10)
         if (earlierFPS.length > 0) {
           const earlierAvg = earlierFPS.reduce((a, b) => a + b, 0) / earlierFPS.length
-          // If FPS dropped by more than 30%, likely thermal throttling
-          if (earlierAvg > 0 && recentAvg < earlierAvg * 0.7) {
-            // Degrade quality to reduce thermal load
-            if (quality.value === 'high') {
-              quality.value = 'low'
-              fpsHistory = []
-            } else if (quality.value === 'low') {
-              quality.value = 'minimal'
-              fpsHistory = []
-            }
+          if (earlierAvg > 0 && recentAvg < earlierAvg * 0.7 && quality.value !== 'minimal') {
+            degradeOneStep(now)
           }
         }
       }
     }
   }
-  
+
   animationFrameId = requestAnimationFrame(measureFPS)
 }
 
