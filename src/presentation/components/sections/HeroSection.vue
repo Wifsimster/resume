@@ -78,3 +78,11 @@ const handleCanvasReady = () => {
   </section>
 </template>
 
+
+<style scoped>
+/* Same TresJS inline touch-action: none — allow vertical scroll from the
+   hero canvas surface. */
+.section-canvas :deep(canvas) {
+  touch-action: pan-y !important;
+}
+</style>

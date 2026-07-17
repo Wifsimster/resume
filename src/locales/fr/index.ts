@@ -187,7 +187,7 @@ export default {
     greeting: 'Bonjour, je suis',
     name: 'Damien Battistella',
     tagline: 'Je construis des applications, des objets et des équipes.',
-    subtitle: 'Tech Lead Manager chez Dedalus',
+    subtitle: 'AI Champion · Technical Lead Manager · Architect SIH',
     cta: 'Découvrir mon parcours',
     lastUpdate: 'Dernière mise à jour'
   },
