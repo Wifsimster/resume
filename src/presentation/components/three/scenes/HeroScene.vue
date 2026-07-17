@@ -135,12 +135,14 @@ const buildStars = () => {
   disposeParticleField(starField.value)
   starField.value = null
   if (isMinimal.value) return
+  // Star size stays comfortably above one on-screen pixel — sub-pixel point
+  // sprites twinkle hard at real frame rates, which reads as flickering.
   const count = props.quality === 'high' ? 700 : 200
   starField.value = createParticleField({
     count,
     color: 0xffffff,
-    size: props.quality === 'high' ? 0.03 : 0.05,
-    opacity: 0.55,
+    size: props.quality === 'high' ? 0.06 : 0.08,
+    opacity: 0.5,
     position: (_i, out) => {
       const theta = Math.random() * Math.PI * 2
       const phi = Math.acos(2 * Math.random() - 1)
@@ -164,7 +166,7 @@ const buildBelt = () => {
   belt.value = createParticleField({
     count,
     color: 0xc4b5a0,
-    size: props.quality === 'high' ? 0.035 : 0.05,
+    size: props.quality === 'high' ? 0.055 : 0.07,
     opacity: 0.6,
     position: (_i, out) => {
       const angle = Math.random() * Math.PI * 2
@@ -284,12 +286,13 @@ onBeforeUnmount(() => {
       :key="`plane-${i}`"
       :rotation="[p.inclination, p.node, 0]"
     >
-      <!-- Thin orbit guide -->
+      <!-- Orbit guide. Tube kept above ~1.5 device pixels: hairline tubes
+           break into dashes and crawl/flicker as the system precesses. -->
       <TresMesh :rotation="[Math.PI / 2, 0, 0]">
-        <TresTorusGeometry :args="[p.orbit, 0.008, 6, guideSegments]" />
+        <TresTorusGeometry :args="[p.orbit, 0.02, 6, guideSegments]" />
         <TresMeshBasicMaterial
           :color="themeColors.guide"
-          :opacity="0.14"
+          :opacity="0.11"
           :transparent="true"
           :depth-write="false"
         />
