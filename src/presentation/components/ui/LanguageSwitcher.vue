@@ -22,14 +22,48 @@ const switchLanguage = () => {
     @click="switchLanguage"
     :aria-label="isFrench ? 'Switch to English' : 'Passer en français'"
   >
-    <span 
-      class="flex items-center justify-center w-7 h-7 text-xl rounded-full transition-all duration-200 select-none sm:w-6.5 sm:h-6.5"
-      :class="isFrench ? 'opacity-100 bg-white/10' : 'opacity-50'"
-    >🇫🇷</span>
-    <span 
-      class="flex items-center justify-center w-7 h-7 text-xl rounded-full transition-all duration-200 select-none sm:w-6.5 sm:h-6.5"
-      :class="!isFrench ? 'opacity-100 bg-white/10' : 'opacity-50'"
-    >🇬🇧</span>
+    <span
+      class="flex items-center justify-center w-7 h-7 rounded-full transition-all duration-200 select-none sm:w-6.5 sm:h-6.5"
+      :class="isFrench ? 'opacity-100 ring-1 ring-white/40' : 'opacity-50'"
+    >
+      <svg
+        class="w-5 h-5 rounded-full"
+        viewBox="0 0 30 30"
+        preserveAspectRatio="xMidYMid slice"
+        role="img"
+        aria-label="Français"
+      >
+        <rect width="10" height="30" fill="#0055A4" />
+        <rect x="10" width="10" height="30" fill="#FFFFFF" />
+        <rect x="20" width="10" height="30" fill="#EF4135" />
+      </svg>
+    </span>
+    <span
+      class="flex items-center justify-center w-7 h-7 rounded-full transition-all duration-200 select-none sm:w-6.5 sm:h-6.5"
+      :class="!isFrench ? 'opacity-100 ring-1 ring-white/40' : 'opacity-50'"
+    >
+      <svg
+        class="w-5 h-5 rounded-full"
+        viewBox="15 0 30 30"
+        preserveAspectRatio="xMidYMid slice"
+        role="img"
+        aria-label="English"
+      >
+        <clipPath id="uk-flag-quadrants">
+          <path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z" />
+        </clipPath>
+        <rect width="60" height="30" fill="#012169" />
+        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#FFFFFF" stroke-width="6" />
+        <path
+          d="M0,0 L60,30 M60,0 L0,30"
+          clip-path="url(#uk-flag-quadrants)"
+          stroke="#C8102E"
+          stroke-width="4"
+        />
+        <path d="M30,0 V30 M0,15 H60" stroke="#FFFFFF" stroke-width="10" />
+        <path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6" />
+      </svg>
+    </span>
   </button>
 </template>
 
