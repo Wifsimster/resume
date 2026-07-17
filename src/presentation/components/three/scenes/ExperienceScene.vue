@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, shallowRef, computed, watch, onBeforeUnmount } from 'vue'
-import { Points, type MeshStandardMaterial } from 'three'
+import { ref, shallowRef, computed, watch, nextTick, onBeforeUnmount } from 'vue'
+import { Points, type CanvasTexture, type MeshStandardMaterial } from 'three'
 import type { QualityLevel } from '@application/composables/useQuality'
 import { useSceneAnimation } from '@application/composables/useSceneAnimation'
 import { createParticleField, disposeParticleField } from '../utils/particleField'
+import { createServerPanelTexture, createBrushedMetalTexture } from '../utils/proceduralTextures'
 
 const props = defineProps<{
   quality: QualityLevel
@@ -55,6 +56,38 @@ const scanRef = ref()
 const rackRef = ref()
 const scanTravel = rackTop + 0.4 // half-amplitude of the vertical sweep
 
+// --- Procedural surfaces (high quality only, generated once) ---
+// Blade faceplate with vents/handles/status display + brushed metal frame.
+const bladeMap = shallowRef<CanvasTexture | null>(null)
+const frameMap = shallowRef<CanvasTexture | null>(null)
+
+const buildMaps = () => {
+  // Defer disposal of the previous textures until Vue has re-patched the
+  // materials, so no frame samples a dead texture.
+  const previous = [bladeMap.value, frameMap.value].filter(
+    (t): t is CanvasTexture => t !== null
+  )
+  if (props.quality === 'high') {
+    bladeMap.value = createServerPanelTexture()
+    frameMap.value = createBrushedMetalTexture()
+  } else {
+    bladeMap.value = null
+    frameMap.value = null
+  }
+  if (previous.length > 0) {
+    nextTick(() => {
+      for (const t of previous) t.dispose()
+    })
+  }
+}
+
+const disposeMaps = () => {
+  bladeMap.value?.dispose()
+  bladeMap.value = null
+  frameMap.value?.dispose()
+  frameMap.value = null
+}
+
 // --- Background starfield (single Points draw call) ---
 const starField = shallowRef<Points | null>(null)
 const buildStars = () => {
@@ -74,7 +107,11 @@ const buildStars = () => {
     }
   })
 }
-watch(() => props.quality, buildStars, { immediate: true })
+const rebuild = () => {
+  buildStars()
+  buildMaps()
+}
+watch(() => props.quality, rebuild, { immediate: true })
 
 const update = (elapsed: number) => {
   // Whole rack: gentle continuous turn + slow vertical breathe.
@@ -107,6 +144,7 @@ const update = (elapsed: number) => {
 
 useSceneAnimation('experience', update, () => {
   disposeParticleField(starField.value)
+  disposeMaps()
 })
 
 onBeforeUnmount(() => {
@@ -124,11 +162,13 @@ onBeforeUnmount(() => {
 
   <!-- Server rack -->
   <TresGroup ref="rackRef">
-    <!-- Rack frame -->
+    <!-- Rack frame (brushed metal on high quality) -->
     <TresMesh>
       <TresBoxGeometry :args="[3, 4, 1]" />
       <TresMeshStandardMaterial
-        :color="themeColors.dark"
+        :key="frameMap ? 'frame-tex' : 'frame-flat'"
+        :map="frameMap"
+        :color="frameMap ? '#FFFFFF' : themeColors.dark"
         :emissive="themeColors.secondary"
         :emissive-intensity="0.06"
         :roughness="0.85"
@@ -136,11 +176,13 @@ onBeforeUnmount(() => {
       />
     </TresMesh>
 
-    <!-- Server blades -->
+    <!-- Server blades (vented faceplate texture on high quality) -->
     <TresMesh v-for="(blade, i) in blades" :key="`blade-${i}`" :position="[0, blade.y, 0.32]">
       <TresBoxGeometry :args="[2.6, 0.6, 0.5]" />
       <TresMeshStandardMaterial
-        color="#1A1525"
+        :key="bladeMap ? 'blade-tex' : 'blade-flat'"
+        :map="bladeMap"
+        :color="bladeMap ? '#FFFFFF' : '#1A1525'"
         :emissive="themeColors.primary"
         :emissive-intensity="0.04"
         :roughness="0.6"
