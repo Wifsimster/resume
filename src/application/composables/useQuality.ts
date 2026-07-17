@@ -1,4 +1,4 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 
 export type QualityLevel = 'minimal' | 'low' | 'high'
 
@@ -192,8 +192,10 @@ const getRenderSettings = (level: QualityLevel): RenderSettings => {
     case 'high':
     default:
       return {
-        // Cap DPR at 1.5 max - higher values kill FPS without visible quality gain
-        dpr: Math.min(caps.nativeDpr, 1.5),
+        // Desktop renders up to DPR 2 for crisp definition — the FPS
+        // auto-degradation monitor drops quality if 60fps can't be held.
+        // Mobile stays capped at 1.5 where the extra pixels cost too much.
+        dpr: Math.min(caps.nativeDpr, isMobile ? 1.5 : 2),
         antialias: !isMobile,
         powerPreference: 'high-performance',
         particleMultiplier: isMobile ? 0.5 : 1,
@@ -212,10 +214,12 @@ const deviceCapabilities = detectDeviceCapabilities()
 // Computed render settings that update when quality changes
 const renderSettings = computed<RenderSettings>(() => getRenderSettings(quality.value))
 
-// Save to localStorage when quality changes
-watch(quality, (newQuality) => {
-  localStorage.setItem(STORAGE_KEY, newQuality)
-})
+// Persist only EXPLICIT user choices (setQuality/cycleQuality). Auto-degraded
+// levels stay session-only: one janky visit (battery saver, busy machine)
+// must not permanently lock the user out of high quality.
+const persistQuality = (level: QualityLevel) => {
+  localStorage.setItem(STORAGE_KEY, level)
+}
 
 // FPS monitoring for auto-degradation
 let fpsHistory: number[] = []
@@ -287,11 +291,13 @@ export function useQuality() {
     const currentIndex = levels.indexOf(quality.value)
     const nextIndex = (currentIndex + 1) % levels.length
     quality.value = levels[nextIndex]
+    persistQuality(quality.value)
     return quality.value
   }
-  
+
   const setQuality = (level: QualityLevel) => {
     quality.value = level
+    persistQuality(level)
   }
   
   const isHighQuality = () => quality.value === 'high'

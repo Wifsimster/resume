@@ -8,11 +8,15 @@ import FPSDisplay from '@presentation/components/ui/FPSDisplay.vue'
 import TableOfContents from '@presentation/components/ui/TableOfContents.vue'
 import { useAchievements } from '@application/composables/useAchievements'
 import { useEasterEggs } from '@application/composables/useEasterEggs'
+import { useQuality } from '@application/composables/useQuality'
 
 const { currentAchievement, showAchievement, dismissAchievement, unlock, isUnlocked } = useAchievements()
 
 // Initialize easter eggs listener
 const { fpsEnabled } = useEasterEggs()
+
+// Quality auto-degradation (guards the 60fps target on every tier)
+const { startFPSMonitoring } = useQuality()
 
 // FPS display ref
 const fpsDisplayRef = ref<InstanceType<typeof FPSDisplay> | null>(null)
@@ -198,6 +202,11 @@ const handleSecretWord = (e: KeyboardEvent) => {
 }
 
 onMounted(() => {
+  // Guard the FPS target: the monitor auto-degrades quality (high → low →
+  // minimal) whenever sustained FPS falls below 70% of the target, so the
+  // higher desktop DPR/texture budget can never lock the page under 60fps.
+  startFPSMonitoring()
+
   // Auto-enable FPS display in development
   if (import.meta.env.DEV && fpsDisplayRef.value) {
     fpsDisplayRef.value.start()
