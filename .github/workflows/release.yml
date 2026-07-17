@@ -20,6 +20,12 @@ permissions:
   contents: write
   packages: write
 
+# Serialize releases: two pushes to main in quick succession used to race each
+# other and the loser failed its version-bump push (run #21).
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release:
     name: Create Release & Publish Docker Image
@@ -128,8 +134,18 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Push changes to repository
+        # The docker build above takes minutes; if a commit lands on main in
+        # the meantime a plain push is rejected (non-fast-forward). Rebase the
+        # bump commit onto the fresh main and retry a few times.
         run: |
-          git push origin main
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin main && break
+            if [ "$attempt" = "3" ]; then
+              echo "::error::Could not push version bump after 3 attempts"
+              exit 1
+            fi
+            sleep 5
+          done
           git push origin "v${{ steps.version.outputs.new_version }}"
 
       - name: Create GitHub Release
