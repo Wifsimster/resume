@@ -43,8 +43,11 @@ const getSectionLabel = (sectionId: string): string => {
 }
 
 const handleSectionClick = (sectionId: string) => {
-  // Update hash and scroll to section
-  window.location.hash = sectionId
+  // replaceState instead of assigning location.hash: a hash assignment fires
+  // router navigation + hashchange, each of which triggers ANOTHER smooth
+  // scroll on top of the explicit one below — the fighting scrolls made nav
+  // clicks stutter. replaceState updates the URL silently.
+  window.history.replaceState(null, '', `#${sectionId}`)
   currentHash.value = `#${sectionId}`
   scrollToSection(sectionId)
 }

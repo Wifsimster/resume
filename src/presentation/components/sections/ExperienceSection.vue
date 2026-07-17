@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import DustCanvas from '@presentation/components/ui/DustCanvas.vue'
 import { resumeData } from '@domain/data/resume'
 import { i18n } from '@application/i18n'
 
@@ -15,6 +16,9 @@ const getAchievements = (expId: string): string[] => {
 
 <template>
   <section id="experience" class="section bg-transparent section-padding" data-section="experience">
+    <!-- Subtle interactive dust backdrop (2D canvas, mouse-repulsed) -->
+    <DustCanvas color="#42B883" color-secondary="#00FF41" :opacity="0.45" />
+
     <!-- Content -->
     <div class="section-content">
       <div class="text-center mb-12">

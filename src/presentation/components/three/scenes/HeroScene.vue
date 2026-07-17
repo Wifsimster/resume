@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, shallowRef, computed, watch, nextTick, onBeforeUnmount } from 'vue'
+import { ref, shallowRef, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { Points, type CanvasTexture } from 'three'
+import { useTres } from '@tresjs/core'
 import type { QualityLevel } from '@application/composables/useQuality'
 import { useSceneAnimation } from '@application/composables/useSceneAnimation'
 import { createParticleField, disposeParticleField } from '../utils/particleField'
@@ -185,7 +186,31 @@ const rebuild = () => {
 }
 watch(() => props.quality, rebuild, { immediate: true })
 
-const update = (elapsed: number) => {
+// --- Pointer parallax: the camera eases toward the cursor so the whole
+// system tilts subtly under the mouse. Passive listener, no per-move work
+// beyond two normalized floats; the easing runs in the render update. ---
+const { camera } = useTres()
+const CAM_BASE = { x: 0, y: 4.2, z: 9.8 }
+const pointer = { x: 0, y: 0 }
+const onPointerMove = (e: PointerEvent) => {
+  pointer.x = (e.clientX / window.innerWidth) * 2 - 1
+  pointer.y = (e.clientY / window.innerHeight) * 2 - 1
+}
+
+onMounted(() => {
+  window.addEventListener('pointermove', onPointerMove, { passive: true })
+})
+
+const update = (elapsed: number, delta: number) => {
+  // Camera parallax (frame-rate independent easing, ~4% per 60Hz frame)
+  const cam = camera.value
+  if (cam) {
+    const s = 1 - Math.exp(-delta * 0.0026)
+    cam.position.x += (CAM_BASE.x + pointer.x * 0.9 - cam.position.x) * s
+    cam.position.y += (CAM_BASE.y - pointer.y * 0.6 - cam.position.y) * s
+    cam.lookAt(0, 0, 0)
+  }
+
   // Sun: slow roll + gentle breathing pulse; corona counter-rotates.
   if (sunRef.value) {
     sunRef.value.rotation.y = elapsed * 0.05
@@ -225,6 +250,7 @@ useSceneAnimation('hero', update, () => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('pointermove', onPointerMove)
   disposeParticleField(starField.value)
   disposeParticleField(belt.value)
 })

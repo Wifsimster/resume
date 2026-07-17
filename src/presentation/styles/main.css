@@ -185,7 +185,9 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-snap-type: y mandatory;
+  /* proximity, not mandatory: mandatory snap traps sections taller than the
+     viewport (the experience timeline) and yanks against free scrolling. */
+  scroll-snap-type: y proximity;
 }
 
 /* Disable scroll-snap on mobile for better UX */
