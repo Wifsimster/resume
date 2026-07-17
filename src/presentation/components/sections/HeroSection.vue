@@ -34,10 +34,12 @@ const handleCanvasReady = () => {
   <section id="hero" class="section bg-transparent section-padding" data-section="hero">
     <!-- 3D Canvas -->
     <div class="section-canvas">
+      <!-- Transparent clear: the solar system floats on the shared aurora
+           backdrop instead of its own opaque black plate. -->
       <TresCanvas
         v-if="isMounted"
-        :clear-color="'#0A0A0A'"
         :alpha="true"
+        :clear-alpha="0"
         :dpr="renderSettings.dpr"
         :antialias="renderSettings.antialias"
         :power-preference="renderSettings.powerPreference"

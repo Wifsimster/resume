@@ -7,6 +7,7 @@ import AchievementsIndicator from '@presentation/components/ui/AchievementsIndic
 import FPSDisplay from '@presentation/components/ui/FPSDisplay.vue'
 import TableOfContents from '@presentation/components/ui/TableOfContents.vue'
 import CompanionOverlay from '@presentation/components/ui/CompanionOverlay.vue'
+import AppBackground from '@presentation/components/ui/AppBackground.vue'
 import { useAchievements } from '@application/composables/useAchievements'
 import { useEasterEggs } from '@application/composables/useEasterEggs'
 import { useQuality } from '@application/composables/useQuality'
@@ -242,6 +243,9 @@ onUnmounted(() => {
 
 <template>
   <div class="min-h-screen bg-(--color-bg-primary)">
+    <!-- Modern aurora-mesh backdrop behind everything -->
+    <AppBackground />
+
     <!-- Fixed UI Elements -->
     <header class="fixed top-4 right-4 z-100 flex gap-3 items-center sm:top-2 sm:right-2 sm:gap-2">
       <AchievementsIndicator />
