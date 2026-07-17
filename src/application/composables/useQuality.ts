@@ -25,20 +25,28 @@ interface DeviceCapabilities {
 
 const STORAGE_KEY = 'wifsimster_quality'
 
-// Detect GPU capabilities via WebGL
+// Detect GPU capabilities via WebGL.
+// IMPORTANT: creates a WebGL probe context — must only ever run ONCE (see the
+// deviceCapabilities cache below). Browsers cap live WebGL contexts (~16) and
+// evict the OLDEST when exceeded, which kills the actual scene canvases and
+// makes every scene flicker through Context Lost/Restored cycles.
 const detectGPU = (): { renderer: string, tier: 'low' | 'medium' | 'high' } => {
   try {
     const canvas = document.createElement('canvas')
     const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl') as WebGLRenderingContext | null
-    
+
     if (!gl) {
       return { renderer: 'unknown', tier: 'low' }
     }
 
     const debugInfo = gl.getExtension('WEBGL_debug_renderer_info')
-    const renderer = debugInfo 
-      ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) 
+    const renderer = debugInfo
+      ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
       : 'unknown'
+
+    // Release the probe context immediately so it never counts against the
+    // browser's live-context limit.
+    gl.getExtension('WEBGL_lose_context')?.loseContext()
     
     // Detect GPU tier based on renderer string
     const rendererLower = renderer.toLowerCase()
@@ -95,8 +103,12 @@ const detectGPU = (): { renderer: string, tier: 'low' | 'medium' | 'high' } => {
   }
 }
 
-// Detect device capabilities
+// Detect device capabilities — memoized. Hardware doesn't change mid-session
+// and detectGPU() opens a WebGL probe context, so this must only run once no
+// matter how often callers (renderSettings, FPS monitor) ask for it.
+let cachedCapabilities: DeviceCapabilities | null = null
 const detectDeviceCapabilities = (): DeviceCapabilities => {
+  if (cachedCapabilities) return cachedCapabilities
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
   const gpuInfo = detectGPU()
@@ -104,8 +116,8 @@ const detectDeviceCapabilities = (): DeviceCapabilities => {
   const hardwareConcurrency = navigator.hardwareConcurrency || 4
   const nativeDpr = Math.min(window.devicePixelRatio || 1, 3) // Cap at 3
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  
-  return {
+
+  cachedCapabilities = {
     isMobile,
     isTouch,
     gpu: gpuInfo.renderer,
@@ -115,6 +127,7 @@ const detectDeviceCapabilities = (): DeviceCapabilities => {
     nativeDpr,
     prefersReducedMotion
   }
+  return cachedCapabilities
 }
 
 // Determine quality based on device capabilities
@@ -264,9 +277,9 @@ const measureFPS = () => {
     if (fpsHistory.length >= 30 && now - lastDegradeTime > DEGRADE_COOLDOWN_MS) {
       const avgFPS = fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length
 
-      // Auto-degrade if FPS is consistently low
-      const targetFPS = getRenderSettings(quality.value).targetFPS
-      const threshold = targetFPS * 0.7 // Degrade if below 70% of target
+      // Auto-degrade if FPS is consistently low (cached computed — must NOT
+      // call getRenderSettings here, this branch runs every frame)
+      const threshold = renderSettings.value.targetFPS * 0.7 // below 70% of target
 
       if (avgFPS < threshold && quality.value !== 'minimal') {
         degradeOneStep(now)
