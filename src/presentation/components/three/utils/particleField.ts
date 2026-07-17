@@ -3,6 +3,7 @@ import {
   BufferAttribute,
   BufferGeometry,
   CanvasTexture,
+  NormalBlending,
   Points,
   PointsMaterial,
   type ColorRepresentation
@@ -71,7 +72,7 @@ export function createParticleField(opts: ParticleFieldOptions): Points {
     opacity: opts.opacity ?? 1,
     transparent: true,
     depthWrite: false,
-    blending: opts.additive ? AdditiveBlending : undefined
+    blending: opts.additive ? AdditiveBlending : NormalBlending
   })
 
   return new Points(geometry, material)
