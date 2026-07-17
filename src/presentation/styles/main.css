@@ -20,15 +20,16 @@
   --palette-gray-700: #3F3F46;
   --palette-gray-600: #525252;
   --palette-gray-550: #3D3D3D;
-  --palette-gray-500: #71717A;
+  --palette-gray-500: #8B8B96; /* lifted from #71717A: >=4.6:1 on near-black (WCAG AA) */
   --palette-gray-400: #A1A1AA;
   --palette-gray-100: #E5E5E5;
   --palette-white: #FAFAFA;
 
-  /* Brand — Cursor-inspired purple/indigo */
+  /* Brand — Cursor-inspired purple/indigo + scene cyan */
   --palette-purple-400: #A855F7;
   --palette-purple-500: #7C3AED;
   --palette-indigo-500: #6366F1;
+  --palette-cyan-400: #22D3EE;
 
   /* Functional hues */
   --palette-orange: #F97316;
@@ -58,6 +59,12 @@
   --color-accent-primary: var(--palette-purple-500);
   --color-accent-secondary: var(--palette-purple-400);
   --color-accent-tertiary: var(--palette-indigo-500);
+  /* Cool accent: the cyan already carried by the aurora, hero fill light and
+     companion visor — now available to the DOM palette. */
+  --color-accent-cool: var(--palette-cyan-400);
+  /* Text-safe accent for small type (violet-400 ~6.3:1 on bg-primary);
+     accent-primary at 3.5:1 is fills/borders only. */
+  --color-accent-text: var(--palette-purple-400);
 
   /* ============================================
      Semantic — Feedback / Status
@@ -73,6 +80,9 @@
   --color-text-primary: var(--palette-white);
   --color-text-secondary: var(--palette-gray-400);
   --color-text-muted: var(--palette-gray-500);
+  /* Lowest-emphasis text that still clears WCAG 4.5:1 on near-black.
+     Use instead of text-white/30–/50 utilities. */
+  --color-text-faint: rgba(250, 250, 250, 0.62);
 
   /* ============================================
      Semantic — Borders
@@ -84,8 +94,10 @@
      Domain accents (per resume section)
      ============================================ */
   --color-team-orange: var(--palette-orange);
-  --color-growth-yellow: var(--palette-amber);
-  --color-book-amber: var(--palette-amber-deep);
+  /* Skills/Books headings join the cool cyan run (amber clashed between the
+     violet-headed neighbours); achievement gold stays the sole warm accent. */
+  --color-growth-yellow: var(--color-accent-cool);
+  --color-book-amber: var(--color-accent-cool);
   --color-paper-cream: var(--palette-gray-100);
   --color-led-red: var(--palette-red);
   --color-led-green: var(--palette-green);
@@ -99,6 +111,8 @@
      Shadows & Glows
      ============================================ */
   --shadow-glow-accent: 0 0 20px rgba(124, 58, 237, 0.4);
+  --shadow-glow-cool: 0 0 20px rgba(34, 211, 238, 0.3);
+  --shadow-glow-indigo: 0 6px 20px rgba(99, 102, 241, 0.18);
   --shadow-glow-orange: 0 0 20px rgba(249, 115, 22, 0.3);
   --shadow-glow-gold: 0 0 30px rgba(255, 215, 0, 0.3);
   --shadow-elevated: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -183,6 +197,18 @@
   box-sizing: border-box;
 }
 
+/* Keyboard focus feedback — applies to every interactive element site-wide.
+   Mouse/touch focus (:focus without :focus-visible) stays outline-free. */
+:where(a, button, [role='button'], [tabindex='0']):focus-visible {
+  outline: 2px solid var(--color-accent-secondary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 6px);
+}
+
+:where(a, button):focus:not(:focus-visible) {
+  outline: none;
+}
+
 html {
   scroll-behavior: smooth;
   /* proximity, not mandatory: mandatory snap traps sections taller than the
@@ -239,15 +265,30 @@ code, pre {
    ============================================ */
 
 .section {
+  /* svh: sized to the small mobile viewport so nothing hides behind the
+     browser chrome; 100vh stays as the fallback line. */
   min-height: 100vh;
+  min-height: 100svh;
   scroll-snap-align: start;
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  /* clip, not hidden: overflow:hidden creates a scroll container which would
+     capture animation-timeline: view() of the reveal utility below. */
+  overflow: clip;
   /* Padding handled by Tailwind utilities: p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16 */
+}
+
+/* Below lg the header (achievements + language) is fixed top-right; give the
+   content wrapper clearance so section titles never slide under it. (On
+   .section-content, not .section — the section-padding utility would win the
+   cascade over .section.) */
+@media (max-width: 1023px) {
+  .section-content {
+    padding-top: 4rem;
+  }
 }
 
 .section-content {
@@ -588,8 +629,56 @@ code, pre {
   }
 }
 
+/* ============================================
+   Scroll-driven reveals (2026 baseline)
+   ============================================
+   Content below the fold fades/slides in as it enters the viewport, entirely
+   on the compositor (animation-timeline: view(), zero JS, zero layout shift —
+   opacity + transform only). Doubly gated: browsers without support and
+   reduced-motion users get fully-visible static content because the hidden
+   `from` state only exists inside this block (fill-mode: both). Stagger by
+   setting --reveal-i per item in v-for. */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      --reveal-i: 0;
+      animation: reveal-up ease-out both;
+      animation-timeline: view();
+      animation-range: entry calc(5% + var(--reveal-i) * 6%) entry
+        calc(40% + var(--reveal-i) * 6%);
+    }
+  }
+}
+
+/* Tactile press states: quick 80ms press vs 150ms release asymmetry */
+.btn:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 80ms;
+}
+
 /* Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  /* Interaction transitions collapse to instant colour/border changes */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
   .animate-float,
   .animate-pulse-glow,
   .animate-rotate,
@@ -604,6 +693,7 @@ code, pre {
   .animate-fadeInUp,
   .animate-fadeIn {
     animation-duration: 0.01ms !important; /* Instant for reduced motion */
+    animation-delay: 0s !important; /* delays would keep content invisible */
   }
 }
 
@@ -666,13 +756,9 @@ code, pre {
    Responsive
    ============================================ */
 
-@media (max-width: 768px) {
-  .fixed-header {
-    top: 0.5rem;
-    right: 0.5rem;
-  }
-  
-  /* Ensure minimum touch target size for interactive elements */
+/* Touch-target floor keyed to touch capability (covers tablets at any width),
+   not viewport width. */
+@media (pointer: coarse) {
   .btn,
   button {
     min-height: 44px;

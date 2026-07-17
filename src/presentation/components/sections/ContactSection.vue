@@ -67,42 +67,44 @@ onMounted(() => {
   <section id="contact" class="section bg-transparent min-h-screen section-padding" data-section="contact">
     <!-- Content -->
     <div class="section-content flex flex-col justify-center items-center h-full">
-      <div class="text-center mb-12">
+      <div class="text-center mb-8 sm:mb-12 reveal">
         <h2 class="text-[var(--color-terminal-green)] mb-2">{{ t('contact.title') }}</h2>
         <p class="font-(--font-display) text-2xl text-white/70">{{ t('contact.subtitle') }}</p>
       </div>
 
-      <div
-        class="glass max-w-[400px] xl:max-w-[500px] 2xl:max-w-[600px] mx-auto mb-12 md:mx-4 sm:mx-2 sm:mb-8 p-8 sm:p-6 flex flex-col items-center gap-6 cursor-pointer transition-all duration-150 border-2 border-transparent hover:border-[var(--color-terminal-green)] hover:-translate-y-1 hover:shadow-[var(--shadow-glow-green)]"
+      <!-- Real button for keyboard access; sizes are mobile-first -->
+      <button
+        type="button"
+        class="glass reveal max-w-[400px] xl:max-w-[500px] 2xl:max-w-[600px] mx-2 sm:mx-auto mb-8 sm:mb-12 p-6 sm:p-8 flex flex-col items-center gap-6 cursor-pointer transition-[border-color,box-shadow,transform] duration-150 border-2 border-transparent hover:border-[var(--color-terminal-green)] hover:-translate-y-1 hover:shadow-[var(--shadow-glow-green)] active:translate-y-0 active:scale-[0.99]"
         @click="openLinkedIn">
-        <div class="p-4 sm:p-3 bg-white rounded-xl">
+        <div class="p-3 sm:p-4 bg-white rounded-xl">
           <img :src="qrCodeUrl" alt="LinkedIn QR Code"
-            class="block rounded-lg w-[200px] h-[200px] sm:w-40 sm:h-40 bg-white" />
+            class="block rounded-lg w-40 h-40 sm:w-[200px] sm:h-[200px] bg-white" />
         </div>
         <div class="text-center flex flex-col items-center gap-2">
-          <span class="text-4xl sm:text-3xl">💼</span>
-          <h3 class="font-(--font-display) text-2xl sm:text-xl text-[var(--color-terminal-green)] m-0">{{ t('contact.cta') }}
+          <span class="text-3xl sm:text-4xl">💼</span>
+          <h3 class="font-(--font-display) text-xl sm:text-2xl text-[var(--color-terminal-green)] m-0">{{ t('contact.cta') }}
           </h3>
           <p class="text-lg text-[var(--color-paper-cream)] m-0">Damien Battistella</p>
           <span class="font-(--font-code) text-sm text-[var(--color-frontend-blue)] mt-2">{{ t('contact.linkedin') }}
             →</span>
         </div>
-      </div>
+      </button>
 
       <!-- Locked Achievements Preview -->
-      <div v-if="lockedAchievementsPreview.length > 0" class="w-full max-w-[600px] xl:max-w-[800px] 2xl:max-w-[1000px] mx-auto mb-8 px-4">
-        <div class="glass p-6 sm:p-4 rounded-xl border border-white/10">
+      <div v-if="lockedAchievementsPreview.length > 0" class="w-full max-w-[600px] xl:max-w-[800px] 2xl:max-w-[1000px] mx-auto mb-8 px-4 reveal" :style="{ '--reveal-i': 1 }">
+        <div class="glass p-4 sm:p-6 rounded-xl border border-white/10">
           <h3 class="text-center font-(--font-display) text-lg text-[var(--color-terminal-green)] mb-4">
             {{ t('contact.achievementsPreview') }}
           </h3>
-          <div class="grid grid-cols-3 gap-4 sm:gap-2">
+          <div class="grid grid-cols-1 min-[480px]:grid-cols-3 gap-2 sm:gap-4">
             <div v-for="achievement in lockedAchievementsPreview" :key="achievement.id"
-              class="flex flex-col items-center gap-2 p-3 sm:p-2 rounded-lg bg-black/20 border border-purple-400/20 hover:border-purple-400/40 transition-all duration-150">
-              <div class="text-3xl sm:text-2xl opacity-70">{{ achievement.icon }}</div>
-              <span class="font-(--font-display) text-xs sm:text-[0.7rem] text-purple-400/70 text-center leading-tight">
+              class="flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg bg-black/20 border border-purple-400/20 hover:border-purple-400/40 transition-[border-color] duration-150">
+              <div class="text-2xl sm:text-3xl opacity-70">{{ achievement.icon }}</div>
+              <span class="font-(--font-display) text-xs text-purple-400/70 text-center leading-tight">
                 {{ t(`achievements.${achievement.id}.name`) }}
               </span>
-              <span class="text-[0.65rem] sm:text-[0.6rem] text-white/50 text-center leading-tight">
+              <span class="text-xs text-[var(--color-text-faint)] text-center leading-tight">
                 {{ t(`achievements.${achievement.id}.hint`) }}
               </span>
             </div>
@@ -111,12 +113,12 @@ onMounted(() => {
       </div>
 
       <!-- Footer -->
-      <footer class="text-center py-8 sm:py-6 sm:px-2 border-t border-white/10 mt-8">
+      <footer class="text-center py-6 px-2 sm:py-8 border-t border-white/10 mt-8">
         <p class="text-base text-white/70 mb-2">
           {{ t('footer.madeWith') }} 💚 {{ t('footer.and') }} {{ t('footer.passion') }}
         </p>
-        <p class="font-(--font-code) text-xs text-white/50 mb-2">{{ t('footer.builtWith') }}</p>
-        <p class="text-xs text-white/40">{{ t('footer.copyright') }}</p>
+        <p class="font-(--font-code) text-xs text-[var(--color-text-faint)] mb-2">{{ t('footer.builtWith') }}</p>
+        <p class="text-xs text-[var(--color-text-faint)]">{{ t('footer.copyright') }}</p>
       </footer>
     </div>
   </section>

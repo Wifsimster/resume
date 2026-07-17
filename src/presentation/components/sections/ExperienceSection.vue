@@ -17,17 +17,18 @@ const getAchievements = (expId: string): string[] => {
   <section id="experience" class="section bg-transparent section-padding" data-section="experience">
     <!-- Content -->
     <div class="section-content">
-      <div class="text-center mb-12">
+      <div class="text-center mb-8 sm:mb-12 reveal">
         <h2 class="text-[var(--color-terminal-green)] mb-2">{{ t('experience.title') }}</h2>
         <p class="font-(--font-display) text-2xl text-white/70">{{ t('experience.subtitle') }}</p>
       </div>
 
       <div class="max-w-[800px] xl:max-w-[1000px] 2xl:max-w-[1200px] mx-auto">
-        <div 
-          v-for="exp in resumeData.experiences" 
+        <div
+          v-for="(exp, index) in resumeData.experiences"
           :key="exp.id"
-          class="glass flex flex-col md:flex-row gap-4 md:gap-6 p-4 sm:p-6 mb-4 sm:mb-6 relative"
+          class="glass reveal flex flex-col md:flex-row gap-4 md:gap-6 p-4 sm:p-6 mb-4 sm:mb-6 relative transition-[background-color,border-color,box-shadow] duration-150 hover:bg-black/20 hover:border-[var(--color-terminal-green)]/30"
           :class="exp.current ? 'border-[var(--color-terminal-green)] shadow-[var(--shadow-glow-green)]' : ''"
+          :style="{ '--reveal-i': Math.min(index, 4) }"
         >
           <div class="flex flex-row md:flex-col items-center shrink-0 gap-2">
             <div 
@@ -49,16 +50,16 @@ const getAchievements = (expId: string): string[] => {
               </div>
             </div>
             
-            <h3 class="font-(--font-display) text-[1.75rem] sm:text-[1.4rem] text-[var(--color-paper-cream)] mb-2">{{ t(`experience.${exp.id}.title`) }}</h3>
-            <p class="text-white/70 mb-4 leading-relaxed sm:text-sm">{{ t(`experience.${exp.id}.description`) }}</p>
+            <h3 class="font-(--font-display) text-[1.4rem] sm:text-[1.75rem] text-[var(--color-paper-cream)] mb-2">{{ t(`experience.${exp.id}.title`) }}</h3>
+            <p class="text-sm sm:text-base text-white/70 mb-4 leading-relaxed">{{ t(`experience.${exp.id}.description`) }}</p>
             
             <div>
               <h4 class="font-(--font-code) text-xs text-[var(--color-terminal-green)] uppercase tracking-widest mb-2">{{ t('experience.achievements') }}</h4>
               <ul class="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2">
-                <li 
-                  v-for="(achievement, index) in getAchievements(exp.id)" 
+                <li
+                  v-for="(achievement, index) in getAchievements(exp.id)"
                   :key="index"
-                  class="flex items-start gap-2 text-sm sm:text-[0.85rem] text-white/80"
+                  class="flex items-start gap-2 text-sm text-white/80"
                 >
                   <span class="text-[var(--color-terminal-green)] font-bold">✓</span>
                   {{ achievement }}
