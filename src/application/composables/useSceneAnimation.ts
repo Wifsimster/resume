@@ -1,4 +1,5 @@
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useLoop } from '@tresjs/core'
 import { useAnimationController } from './useAnimationController'
 
 /**
@@ -10,6 +11,12 @@ import { useAnimationController } from './useAnimationController'
  * with `Date.now()` and recomputed elapsed time every frame. The controller
  * already provides a high-resolution `elapsed` (seconds) and `delta`
  * (milliseconds), so scenes can stay purely declarative.
+ *
+ * Beyond the scene's own update callback, this also freezes the owning
+ * TresCanvas's WebGL render loop while the section is off-screen. Each
+ * section hosts its own canvas and Tres renders every canvas at full frame
+ * rate regardless of visibility, so without this the GPU keeps compositing
+ * every scene during scrolling and frames drop.
  *
  * @param sectionId  value of the `data-section` attribute on the owning
  *                   section, used to locate the element for the
@@ -25,6 +32,16 @@ export function useSceneAnimation(
 ) {
   const sectionElement = ref<HTMLElement | null>(null)
   const controller = useAnimationController(sectionElement)
+
+  const { start: startRenderLoop, stop: stopRenderLoop } = useLoop()
+  watch(
+    [controller.isVisible, controller.isPaused],
+    ([visible, paused]) => {
+      if (visible && !paused) startRenderLoop()
+      else stopRenderLoop()
+    },
+    { immediate: true }
+  )
 
   onMounted(() => {
     const el = document.querySelector(`[data-section="${sectionId}"]`)

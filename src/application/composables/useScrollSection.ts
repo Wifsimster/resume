@@ -30,14 +30,25 @@ let scrollListenerRegistered = false
 let scrollListenerCleanup: (() => void) | null = null
 let unlockAchievement: ((achievementId: string) => void) | null = null
 
-const handleScroll = () => {
+// Cached section elements — the section list is static after mount, so the
+// scroll handler never needs to re-query the DOM.
+let cachedSectionElements: HTMLElement[] = []
+
+const getSectionElements = (): HTMLElement[] => {
+  if (cachedSectionElements.length === 0) {
+    cachedSectionElements = Array.from(document.querySelectorAll<HTMLElement>('[data-section]'))
+  }
+  return cachedSectionElements
+}
+
+const updateScrollState = () => {
   // Calculate overall scroll progress
   const scrollTop = window.scrollY
   const docHeight = document.documentElement.scrollHeight - window.innerHeight
   scrollProgress.value = (scrollTop / docHeight) * 100
-  
+
   // Determine current section based on scroll position
-  const sectionElements = document.querySelectorAll('[data-section]')
+  const sectionElements = getSectionElements()
   if (sectionElements.length === 0) return
   
   const viewportMiddle = window.innerHeight / 2
@@ -97,6 +108,17 @@ const handleScroll = () => {
   }
 }
 
+// Coalesce scroll events into at most one state update per animation frame,
+// so the handler's layout reads never run more than once per rendered frame.
+let scrollRafId: number | null = null
+const handleScroll = () => {
+  if (scrollRafId !== null) return
+  scrollRafId = requestAnimationFrame(() => {
+    scrollRafId = null
+    updateScrollState()
+  })
+}
+
 const markSectionVisited = (sectionId: string) => {
   if (!visitedSections.value.has(sectionId)) {
     visitedSections.value.add(sectionId)
@@ -119,11 +141,16 @@ const registerScrollListener = () => {
   
   startTime.value = Date.now()
   window.addEventListener('scroll', handleScroll, { passive: true })
-  handleScroll() // Initial check
-  
+  updateScrollState() // Initial check
+
   scrollListenerRegistered = true
   scrollListenerCleanup = () => {
     window.removeEventListener('scroll', handleScroll)
+    if (scrollRafId !== null) {
+      cancelAnimationFrame(scrollRafId)
+      scrollRafId = null
+    }
+    cachedSectionElements = []
     scrollListenerRegistered = false
   }
 }

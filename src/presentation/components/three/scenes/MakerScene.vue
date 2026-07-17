@@ -8,7 +8,7 @@ import { useMakerCamera } from '@application/composables/useMakerCamera'
 import { useMakerAnimations } from '@application/composables/useMakerAnimations'
 import { useMakerInteraction } from '@application/composables/useMakerInteraction'
 import { useQuality } from '@application/composables/useQuality'
-import { useTres } from '@tresjs/core'
+import { useTres, useLoop } from '@tresjs/core'
 import { rackUnits, makerColors } from '@domain/data/makerRack'
 import DeskComponent from './maker/DeskComponent.vue'
 import MonitorComponent from './maker/MonitorComponent.vue'
@@ -46,6 +46,20 @@ const sectionElement = ref<HTMLElement | null>(null)
 
 // Animation controller
 const animationController = useAnimationController(sectionElement)
+
+// Freeze this canvas's WebGL render loop while the maker section is
+// off-screen — Tres otherwise keeps rendering every canvas at full frame
+// rate during scrolling. Also silences the useLoop-driven rack LED/fan
+// animations, which run on the same loop.
+const { start: startRenderLoop, stop: stopRenderLoop } = useLoop()
+watch(
+  [animationController.isVisible, animationController.isPaused],
+  ([visible, paused]) => {
+    if (visible && !paused) startRenderLoop()
+    else stopRenderLoop()
+  },
+  { immediate: true }
+)
 
 const sceneRef = ref()
 const serverUnitMeshes = ref<Map<string, any>>(new Map())
