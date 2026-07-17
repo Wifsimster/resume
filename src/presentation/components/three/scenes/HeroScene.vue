@@ -121,15 +121,19 @@ const rebuild = () => {
 }
 watch(() => props.quality, rebuild, { immediate: true })
 
-const update = (elapsed: number) => {
+const update = (elapsed: number, delta: number) => {
+  // Delta-scaled exponential smoothing (~0.08/frame at 60Hz) so the node
+  // easing speed is identical at 30, 60 or 144 Hz.
+  const smoothing = 1 - Math.exp(-delta * 0.005)
+
   // Orbiting passion nodes + live spokes
   for (let i = 0; i < nodeRefs.length; i++) {
     const obj = nodeRefs[i].value
     computeOrbit(i, elapsed)
     if (obj) {
-      obj.position.x += (nodePos.x - obj.position.x) * 0.08
-      obj.position.y += (nodePos.y - obj.position.y) * 0.08
-      obj.position.z += (nodePos.z - obj.position.z) * 0.08
+      obj.position.x += (nodePos.x - obj.position.x) * smoothing
+      obj.position.y += (nodePos.y - obj.position.y) * smoothing
+      obj.position.z += (nodePos.z - obj.position.z) * smoothing
       obj.rotation.y = elapsed * (0.4 + i * 0.1)
       const s = 1 + Math.sin(elapsed * 1.2 + i * 0.6) * 0.1
       obj.scale.setScalar(s)

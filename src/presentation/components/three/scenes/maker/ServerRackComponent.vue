@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-// import { useLoop } from '@tresjs/core' // DISABLED FOR TESTING
+import { useLoop } from '@tresjs/core'
 import type { ServerUnit, ServerUnitType } from '@domain/types/makerRack'
 import type { makerColors } from '@domain/data/makerRack'
 import { sharedMaterials, sharedGeometries } from '@application/composables/useSharedGeometries'
@@ -33,21 +33,25 @@ const props = defineProps<{
 const fanGroupRefs = ref<any[]>([])
 const ledMeshRefs = ref<any[]>([])
 
-// DISABLED FOR PERFORMANCE TESTING
-// const { onBeforeRender } = useLoop()
-// onBeforeRender(({ elapsed }) => {
-//     const fanRotation = elapsed * 8
-//     fanGroupRefs.value.forEach((fanGroup, index) => {
-//         if (fanGroup) {
-//             fanGroup.rotation.z = fanRotation * (index % 2 === 0 ? 1 : -1)
-//         }
-//     })
-//     ledMeshRefs.value.forEach((led, index) => {
-//         if (led?.material) {
-//             led.material.opacity = Math.sin(elapsed * (5 + index) + index * 2) > 0.3 ? 1 : 0.2
-//         }
-//     })
-// })
+// Cooling fans spin (alternating direction) and rear port LEDs blink.
+// Runs on the Tres render loop and mutates Three objects directly, so no Vue
+// reactivity is triggered per frame.
+const { onBeforeRender } = useLoop()
+onBeforeRender(({ elapsed }) => {
+    const fanRotation = elapsed * 8
+    for (let i = 0; i < fanGroupRefs.value.length; i++) {
+        const fanGroup = fanGroupRefs.value[i]
+        if (fanGroup) {
+            fanGroup.rotation.z = fanRotation * (i % 2 === 0 ? 1 : -1)
+        }
+    }
+    for (let i = 0; i < ledMeshRefs.value.length; i++) {
+        const led = ledMeshRefs.value[i]
+        if (led?.material) {
+            led.material.opacity = Math.sin(elapsed * (5 + i) + i * 2) > 0.3 ? 1 : 0.2
+        }
+    }
+})
 
 const emit = defineEmits<{
     unitRef: [unitId: string, ref: any]

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-// import { useLoop } from '@tresjs/core' // DISABLED FOR TESTING
+import { useLoop } from '@tresjs/core'
 import type { ServerUnit } from '@domain/types/makerRack'
 import type { makerColors } from '@domain/data/makerRack'
 import { sharedGeometries } from '@application/composables/useSharedGeometries'
@@ -17,13 +17,13 @@ defineProps<Props>()
 // Direct Three.js ref for LED animation
 const statusLedRef = ref<any>(null)
 
-// DISABLED FOR PERFORMANCE TESTING
-// const { onBeforeRender } = useLoop()
-// onBeforeRender(({ elapsed }) => {
-//     if (statusLedRef.value?.material) {
-//         statusLedRef.value.material.opacity = Math.sin(elapsed * 2) > 0.3 ? 1 : 0.5
-//     }
-// })
+// Status blink — mutates the material directly on the Tres render loop
+const { onBeforeRender } = useLoop()
+onBeforeRender(({ elapsed }) => {
+    if (statusLedRef.value?.material) {
+        statusLedRef.value.material.opacity = Math.sin(elapsed * 2) > 0.3 ? 1 : 0.5
+    }
+})
 </script>
 
 <template>
