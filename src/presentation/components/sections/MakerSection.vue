@@ -181,3 +181,11 @@ onUnmounted(() => {
     />
   </section>
 </template>
+
+<style scoped>
+/* TresJS sets touch-action: none inline on its canvas; pan-y keeps taps for
+   the rack raycast while letting vertical scroll gestures pass through. */
+.section-canvas :deep(canvas) {
+  touch-action: pan-y !important;
+}
+</style>

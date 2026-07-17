@@ -187,7 +187,7 @@ export default {
     greeting: 'Hello, I am',
     name: 'Damien Battistella',
     tagline: 'I build software, products, and people.',
-    subtitle: 'R&D Team Leader at Dedalus',
+    subtitle: 'AI Champion · Technical Lead Manager · Architect SIH',
     cta: 'Discover my journey',
     lastUpdate: 'Last update'
   },
