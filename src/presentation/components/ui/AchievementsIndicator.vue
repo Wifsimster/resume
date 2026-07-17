@@ -76,13 +76,20 @@ const hasHint = (id: string) => {
 
     <Teleport to="body">
       <Transition name="panel">
-        <div 
-          v-if="isOpen" 
+        <div
+          v-if="isOpen"
           class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[1000] flex items-center justify-center p-4"
           @click="closePanel"
+          @keydown.escape="closePanel"
         >
-          <div 
-            class="achievements-panel bg-gradient-to-br from-[var(--color-bg-tertiary)] to-[var(--color-bg-primary)] border-2 border-[var(--color-border)] rounded-2xl sm:rounded-xl w-full max-w-[420px] max-h-[80vh] sm:max-h-[90vh] overflow-hidden flex flex-col shadow-[0_0_60px_rgba(124,58,237,0.2),0_20px_60px_rgba(0,0,0,0.6)]"
+          <!-- dvh tracks the real visible height on phones (vh can exceed it
+               while browser chrome is expanded); safe-area padding clears the
+               iOS home indicator. -->
+          <div
+            class="achievements-panel bg-gradient-to-br from-[var(--color-bg-tertiary)] to-[var(--color-bg-primary)] border-2 border-[var(--color-border)] rounded-xl sm:rounded-2xl w-full max-w-[420px] max-h-[85dvh] overflow-hidden flex flex-col pb-[env(safe-area-inset-bottom)] shadow-[0_0_60px_rgba(124,58,237,0.2),0_20px_60px_rgba(0,0,0,0.6)]"
+            role="dialog"
+            aria-modal="true"
+            tabindex="-1"
             @click.stop
           >
             <div class="flex items-center justify-between py-4 px-5 border-b border-[var(--color-border)] bg-black/30">
@@ -104,7 +111,7 @@ const hasHint = (id: string) => {
               <span class="font-(--font-code) text-sm text-[var(--color-achievement-gold)] font-semibold min-w-[50px] text-right">{{ unlockedCount }} / {{ totalCount }}</span>
             </div>
 
-            <div class="p-3 overflow-y-auto flex-1">
+            <div class="p-3 overflow-y-auto overscroll-contain flex-1">
               <div 
                 v-for="achievement in sortedAchievements" 
                 :key="achievement.id"

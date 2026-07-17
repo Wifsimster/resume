@@ -52,6 +52,10 @@ const handleMouseMove = (event: MouseEvent) => {
   mousePosition.value = { x: event.clientX, y: event.clientY }
 }
 
+// Touch devices get a fixed bottom-sheet tooltip instead of cursor-anchored
+// (there is no persistent cursor to anchor to).
+const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches
+
 // Real DIY projects from brag documents
 const projects = [
   { icon: '🏠', label: 'Cabane sur pilotis', year: '2023' },
@@ -151,13 +155,14 @@ onUnmounted(() => {
     <div
       v-if="hoveredUnitId && getTranslationKey(hoveredUnitId)"
       class="fixed z-50 pointer-events-none transition-opacity duration-200"
-      :style="{
+      :class="isCoarsePointer ? 'bottom-4 left-4 right-4 flex justify-center' : ''"
+      :style="isCoarsePointer ? undefined : {
         left: `${mousePosition.x + 15}px`,
         top: `${mousePosition.y - 10}px`,
         transform: 'translateY(-50%)'
       }"
     >
-      <div class="bg-[#0A0A0A]/95 backdrop-blur-md border border-[#B87333]/50 rounded-lg px-4 py-3 shadow-xl max-w-xs">
+      <div class="bg-[#0A0A0A]/95 backdrop-blur-md border border-[color-mix(in_srgb,var(--color-copper)_50%,transparent)] rounded-lg px-4 py-3 shadow-xl max-w-xs">
         <h3 class="text-[var(--color-copper)] font-semibold mb-1 text-sm">
           {{ t(`maker.rackUnits.${getTranslationKey(hoveredUnitId)}.name`) }}
         </h3>

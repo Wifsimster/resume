@@ -8,15 +8,15 @@ const { t } = useI18n()
   <section id="motivation" class="section bg-transparent section-padding" data-section="motivation">
     <!-- Content -->
     <div class="section-content flex flex-col justify-center items-center h-full">
-      <div class="mb-4 text-center w-full">
+      <div class="section-header w-full reveal">
         <h2 class="text-[var(--color-terminal-green)] mb-2">{{ t('motivation.title') }}</h2>
-        <p class="font-(--font-display) text-3xl text-white/70">{{ t('motivation.subtitle') }}</p>
+        <p class="section-subtitle">{{ t('motivation.subtitle') }}</p>
       </div>
 
       <div class="flex flex-col gap-4 w-full max-w-[800px] xl:max-w-[1000px] 2xl:max-w-[1200px]">
         <!-- Ideal Environment -->
-        <div class="space-y-3">
-          <div class="bg-[#0A0A0A]/60 backdrop-blur-md border border-purple-500/15 rounded-lg flex items-start gap-3 py-4 px-5 transition-all duration-150 hover:bg-[#0A0A0A]/80 hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10">
+        <div class="space-y-3 reveal">
+          <div class="bg-[#0A0A0A]/60 backdrop-blur-md border border-purple-500/15 rounded-lg flex items-start gap-3 py-4 px-5 transition-[background-color,border-color,box-shadow] duration-150 hover:bg-[#0A0A0A]/80 hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10">
             <span class="text-2xl shrink-0 mt-0.5">🌱</span>
             <p class="text-sm leading-relaxed text-white/70 m-0 flex-1">{{ t('motivation.culture.idealEnvironment.description') }}</p>
           </div>
@@ -25,7 +25,7 @@ const { t } = useI18n()
         <!-- Management Styles -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- My Management Style -->
-          <div class="space-y-3">
+          <div class="space-y-3 reveal" :style="{ '--reveal-i': 1 }">
             <h3 class="text-lg font-semibold text-white/90 text-center mb-1">{{ t('motivation.managementStyle.adopts.title') }}</h3>
             <div class="bg-[#0A0A0A]/60 backdrop-blur-md border border-purple-500/15 rounded-lg flex items-start gap-3 py-4 px-5 transition-all duration-150 hover:bg-[#0A0A0A]/80 hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10">
               <span class="text-2xl shrink-0 mt-0.5">👁️</span>
@@ -37,9 +37,9 @@ const { t } = useI18n()
           </div>
 
           <!-- Management Style I Seek -->
-          <div class="space-y-3">
+          <div class="space-y-3 reveal" :style="{ '--reveal-i': 2 }">
             <h3 class="text-lg font-semibold text-white/90 text-center mb-1">{{ t('motivation.managementStyle.seeks.title') }}</h3>
-            <div class="bg-[#0A0A0A]/60 backdrop-blur-md border border-orange-500/15 rounded-lg flex items-start gap-3 py-4 px-5 transition-all duration-150 hover:bg-[#0A0A0A]/80 hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/10">
+            <div class="bg-[#0A0A0A]/60 backdrop-blur-md border border-[color-mix(in_srgb,var(--color-accent-cool)_18%,transparent)] rounded-lg flex items-start gap-3 py-4 px-5 transition-[background-color,border-color,box-shadow] duration-150 hover:bg-[#0A0A0A]/80 hover:border-[color-mix(in_srgb,var(--color-accent-cool)_35%,transparent)] hover:shadow-lg hover:shadow-cyan-500/10">
               <span class="text-2xl shrink-0 mt-0.5">🎯</span>
               <p class="text-sm leading-relaxed text-white/70 m-0 flex-1">{{ t('motivation.managementStyle.seeks.description') }}</p>
             </div>

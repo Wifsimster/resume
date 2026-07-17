@@ -74,6 +74,9 @@ const measureItems = () => {
 // Calculate transform to center the active item
 const sidebarTransform = computed(() => {
   if (sections.length === 0 || !navRef.value) return 'translateY(-50%)'
+
+  // Mobile dot rail: stay simply centered, no active-item tracking.
+  if (window.matchMedia('(max-width: 1023px)').matches) return 'translateY(-50%)'
   
   const viewportHeight = window.innerHeight
   
@@ -154,8 +157,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <nav ref="navRef" class="table-of-contents fixed left-6 top-1/2 z-50 hidden lg:block transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" :style="{ transform: sidebarTransform }">
-    <ul ref="tocListRef" class="toc-list list-none m-0 p-0 flex flex-col gap-1.5">
+  <!-- Desktop: full labelled rail. Below lg: compact dot rail (labels hidden,
+       hit areas enlarged) so phones/tablets keep jump-to-section navigation. -->
+  <nav ref="navRef" class="table-of-contents fixed left-1 lg:left-6 top-1/2 z-50 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" :style="{ transform: sidebarTransform }">
+    <ul ref="tocListRef" class="toc-list list-none m-0 p-0 flex flex-col gap-0.5 lg:gap-1.5">
       <li
         v-for="(section, index) in sections"
         :key="section.id"
@@ -163,9 +168,9 @@ onUnmounted(() => {
         :class="{ 'toc-item-active': index === activeSectionIndex }"
       >
         <button
-          class="toc-link flex items-center gap-2.5 px-2 py-1.5 bg-transparent border-none cursor-pointer transition-all duration-150 font-(--font-code) text-[0.7rem] uppercase tracking-widest relative rounded hover:bg-[rgba(124,58,237,0.05)]"
+          class="toc-link flex items-center gap-2.5 px-3 py-2 lg:px-2 lg:py-1.5 bg-transparent border-none cursor-pointer transition-[color,background-color] duration-150 font-(--font-code) text-[0.7rem] uppercase tracking-widest relative rounded hover:bg-[rgba(124,58,237,0.05)] active:scale-95"
           :class="{
-            'text-[var(--color-accent-primary)]': index === activeSectionIndex,
+            'text-[var(--color-accent-text)]': index === activeSectionIndex,
             'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]': index !== activeSectionIndex
           }"
           :aria-label="getSectionLabel(section.id)"
@@ -176,7 +181,7 @@ onUnmounted(() => {
               'bg-[var(--color-accent-primary)] shadow-[0_0_6px_rgba(124,58,237,0.5)] scale-[1.4] opacity-100': index === activeSectionIndex,
               'bg-[var(--color-text-muted)] opacity-60 group-hover:bg-[var(--color-text-secondary)] group-hover:opacity-80': index !== activeSectionIndex
             }" />
-          <span class="toc-label transition-all duration-300 whitespace-nowrap font-medium"
+          <span class="toc-label hidden lg:inline transition-opacity duration-300 whitespace-nowrap font-medium"
             :class="{
               'opacity-100': index === activeSectionIndex,
               'opacity-70 group-hover:opacity-100': index !== activeSectionIndex
@@ -202,7 +207,13 @@ onUnmounted(() => {
   /* Opacity, transition, white-space, font-weight handled by Tailwind utilities */
 }
 
-/* Connector line between items */
+/* Connector line between items (desktop rail only) */
+@media (max-width: 1023px) {
+  .toc-item:not(:last-child)::after {
+    display: none;
+  }
+}
+
 .toc-item:not(:last-child)::after {
   content: '';
   position: absolute;

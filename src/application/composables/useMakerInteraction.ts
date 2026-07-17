@@ -119,12 +119,28 @@ export function useMakerInteraction(
     }
   }
 
+  // Tap-to-select for touch: a pointerdown runs the same raycast, so rack
+  // units are inspectable on devices that never fire mousemove.
+  const handlePointerDown = (event: PointerEvent) => {
+    if (cameraMode.value !== 'rack') return
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+    lastMousePos.x = mouse.x
+    lastMousePos.y = mouse.y
+    if (rafId === null) {
+      rafId = requestAnimationFrame(performRaycast)
+    }
+  }
+
   onMounted(() => {
-    window.addEventListener('mousemove', handleMouseMove)
+    // pointermove covers mouse, pen AND touch-drag in one listener
+    window.addEventListener('pointermove', handleMouseMove, { passive: true })
+    window.addEventListener('pointerdown', handlePointerDown, { passive: true })
   })
 
   onUnmounted(() => {
-    window.removeEventListener('mousemove', handleMouseMove)
+    window.removeEventListener('pointermove', handleMouseMove)
+    window.removeEventListener('pointerdown', handlePointerDown)
     if (rafId !== null) {
       cancelAnimationFrame(rafId)
       rafId = null

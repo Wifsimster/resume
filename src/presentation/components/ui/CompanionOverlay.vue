@@ -9,6 +9,13 @@ import { useQuality } from '@application/composables/useQuality'
 // prefers-reduced-motion.
 const { deviceCapabilities } = useQuality()
 const visible = computed(() => !deviceCapabilities.prefersReducedMotion)
+
+// On coarse-pointer (touch) devices the overlay renders at DPR 1 without
+// MSAA: a full-screen GL layer at retina DPR is a battery cost phones don't
+// need for a 44px companion.
+const isCoarse = window.matchMedia('(pointer: coarse)').matches
+const dpr: [number, number] = isCoarse ? [1, 1] : [1, 1.5]
+const antialias = !isCoarse
 </script>
 
 <template>
@@ -16,8 +23,8 @@ const visible = computed(() => !deviceCapabilities.prefersReducedMotion)
     <TresCanvas
       :alpha="true"
       :clear-alpha="0"
-      :antialias="true"
-      :dpr="[1, 1.5]"
+      :antialias="antialias"
+      :dpr="dpr"
       power-preference="low-power"
     >
       <CompanionScene />
