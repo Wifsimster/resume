@@ -155,17 +155,7 @@ const detectQuality = (): QualityLevel => {
   
   // High DPR penalty (more pixels to render)
   if (caps.nativeDpr > 2) score -= 1
-  
-  // Battery level consideration (if available)
-  try {
-    const battery = (navigator as any).getBattery?.() || (navigator as any).battery
-    if (battery && !battery.charging && battery.level < 0.3) {
-      score -= 1 // Reduce quality when battery is low and not charging
-    }
-  } catch {
-    // Battery API not available
-  }
-  
+
   // Determine quality level
   if (score >= 5) return 'high'
   if (score >= 2) return 'low'

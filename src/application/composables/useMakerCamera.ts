@@ -25,13 +25,15 @@ export function useMakerCamera(cameraOffset: CameraOffset, cameraMode: Ref<Camer
   // Track last mode to avoid redundant per-frame writes in rack mode
   let lastMode: CameraMode | null = null
 
-  const updateCamera = (elapsed: number) => {
+  const updateCamera = (elapsed: number, delta: number) => {
     if (cameraMode.value === 'desk') {
       lastMode = 'desk'
 
-      // Smooth interpolation for mouse-based offset
-      cameraOffset.x += (cameraOffset.targetX - cameraOffset.x) * 0.1
-      cameraOffset.y += (cameraOffset.targetY - cameraOffset.y) * 0.1
+      // Smooth interpolation for mouse-based offset, scaled by frame delta so
+      // the easing speed is identical at 30, 60 or 144 Hz (~0.1/frame at 60Hz).
+      const smoothing = 1 - Math.exp(-delta * 0.0063)
+      cameraOffset.x += (cameraOffset.targetX - cameraOffset.x) * smoothing
+      cameraOffset.y += (cameraOffset.targetY - cameraOffset.y) * smoothing
 
       // Automatic circular animation
       const orbitRadius = 0.8

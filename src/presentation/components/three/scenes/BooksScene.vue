@@ -188,8 +188,9 @@ const shelves = computed(() => {
 // ---------------------------------------------------------------------------
 const bookRefs = resumeData.books.map(() => ref())
 
-// Candle intensities (reactive only for template binding; written in update).
-const candleIntensities = ref<number[]>([1.3, 1.1])
+// Candle light refs — flicker mutates `intensity` directly on the Three light
+// each frame instead of routing every frame through Vue reactivity.
+const candleRefs = CANDLE_PARAMS.map(() => ref())
 
 // ---------------------------------------------------------------------------
 // Rising motes — ONE createParticleField Points. Animated purely by slowly
@@ -237,11 +238,13 @@ const update = (elapsed: number) => {
     cam.lookAt(cx * 0.5, cy - 0.1, cz - CAM_LOOK_AHEAD)
   }
 
-  // 2. Candle flicker — a SINGLE sine per dynamic light
+  // 2. Candle flicker — a SINGLE sine per dynamic light, mutated directly
   const cCount = candleCount.value
   for (let i = 0; i < cCount; i++) {
+    const light = candleRefs[i].value
+    if (!light) continue
     const p = CANDLE_PARAMS[i]
-    candleIntensities.value[i] = p.base + Math.sin(elapsed * p.freq + p.phase) * p.amp
+    light.intensity = p.base + Math.sin(elapsed * p.freq + p.phase) * p.amp
   }
 
   // 3. Per-book breathing — mutate group refs directly
@@ -293,8 +296,9 @@ onBeforeUnmount(() => {
   <TresPointLight
     v-for="(pos, ci) in CANDLE_POSITIONS.slice(0, candleCount)"
     :key="`candle-${ci}`"
+    :ref="el => (candleRefs[ci].value = el)"
     :position="pos"
-    :intensity="candleIntensities[ci]"
+    :intensity="CANDLE_PARAMS[ci].base"
     :color="CANDLE_PARAMS[ci].color"
     :distance="9"
     :decay="2"

@@ -86,7 +86,6 @@ const visibleRackUnits = computed(() => {
 
 // Animation setup
 const { anim, updateAnimations } = useMakerAnimations(
-  visibleRackUnits,
   sceneRef,
   cameraOffset,
   updateCamera

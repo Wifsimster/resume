@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-// import { useLoop } from '@tresjs/core' // DISABLED FOR TESTING
+import { useLoop } from '@tresjs/core'
 import type { ServerUnit } from '@domain/types/makerRack'
 import type { makerColors } from '@domain/data/makerRack'
 import { sharedGeometries } from '@application/composables/useSharedGeometries'
@@ -17,16 +17,17 @@ defineProps<Props>()
 // Direct Three.js refs for LED animation
 const ledRefs = ref<any[]>([])
 
-// DISABLED FOR PERFORMANCE TESTING
-// const { onBeforeRender } = useLoop()
-// onBeforeRender(({ elapsed }) => {
-//     ledRefs.value.forEach((led, index) => {
-//         if (led?.material) {
-//             const ledNum = index + 1
-//             led.material.opacity = Math.sin(elapsed * (1 + ledNum * 0.2) + ledNum) > 0.5 ? 1 : 0.4
-//         }
-//     })
-// })
+// Switch indicator blink — mutates materials directly on the Tres render loop
+const { onBeforeRender } = useLoop()
+onBeforeRender(({ elapsed }) => {
+    for (let i = 0; i < ledRefs.value.length; i++) {
+        const led = ledRefs.value[i]
+        if (led?.material) {
+            const ledNum = i + 1
+            led.material.opacity = Math.sin(elapsed * (1 + ledNum * 0.2) + ledNum) > 0.5 ? 1 : 0.4
+        }
+    }
+})
 </script>
 
 <template>

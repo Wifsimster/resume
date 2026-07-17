@@ -40,7 +40,6 @@ interface NodeParam {
   id: string
   color: string
   radius: number
-  yOffset: number
   baseAngle: number
   speed: number
   spin: number // self-rotation rate
@@ -65,7 +64,6 @@ const nodeParams: NodeParam[] = (() => {
         id: skill.id,
         color: cfg.color,
         radius: cfg.radius,
-        yOffset: cfg.yOffset,
         baseAngle: (i / skills.length) * Math.PI * 2,
         speed: cfg.speed,
         spin: 0.4 + (i % 3) * 0.15,
@@ -82,9 +80,6 @@ const nodeRefs = nodeParams.map(() => ref())
 
 const coreRef = ref()
 const shellRef = ref()
-// One group ref per category ring so its plane tilt stays static and we only
-// advance node positions inside it.
-const ringGroupRefs = categoryOrder.map(() => ref())
 
 const isMinimal = computed(() => props.quality === 'minimal')
 
@@ -140,7 +135,9 @@ const update = (elapsed: number) => {
     const angle = p.baseAngle + elapsed * p.speed
     scratch.x = Math.cos(angle) * p.radius
     scratch.z = Math.sin(angle) * p.radius
-    obj.position.set(scratch.x, p.yOffset, scratch.z)
+    // Local y stays 0: the ring group already carries the lift + tilt, which
+    // keeps every gem exactly on its (identically transformed) guide ring.
+    obj.position.set(scratch.x, 0, scratch.z)
     obj.rotation.y = elapsed * p.spin
     obj.rotation.x = elapsed * p.spin * 0.5
     const s = 1 + Math.sin(elapsed * 1.4 + p.phase) * 0.18
@@ -213,11 +210,12 @@ onBeforeUnmount(() => {
     <TresMeshBasicMaterial :color="ring.color" :opacity="0.22" :transparent="true" :depth-write="false" />
   </TresMesh>
 
-  <!-- Skill gems: one tilted group per category ring, gems mutated directly -->
+  <!-- Skill gems: one lifted+tilted group per category ring (same transform as
+       the guide ring above), gems mutated directly -->
   <TresGroup
-    v-for="(category, ci) in categoryOrder"
+    v-for="category in categoryOrder"
     :key="`ring-${category}`"
-    :ref="(el: unknown) => (ringGroupRefs[ci].value = el)"
+    :position="[0, categoryConfig[category].yOffset, 0]"
     :rotation="[categoryConfig[category].tilt, 0, 0]"
   >
     <template v-for="(param, i) in nodeParams" :key="param.id">
