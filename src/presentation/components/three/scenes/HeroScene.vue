@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { ref, shallowRef, computed, watch, onBeforeUnmount } from 'vue'
-import { Points } from 'three'
+import { ref, shallowRef, computed, watch, nextTick, onBeforeUnmount } from 'vue'
+import { Points, type CanvasTexture } from 'three'
 import type { QualityLevel } from '@application/composables/useQuality'
 import { useSceneAnimation } from '@application/composables/useSceneAnimation'
 import { createParticleField, disposeParticleField } from '../utils/particleField'
+import {
+  createRockyTexture,
+  createGasGiantTexture,
+  createSunTexture,
+  createRingTexture
+} from '../utils/proceduralTextures'
 
 const props = defineProps<{
   quality: QualityLevel
@@ -31,18 +37,30 @@ interface PlanetDef {
   spin: number
   hasRing?: boolean
   hasMoon?: boolean
+  /** Procedural surface (high quality only): rocky splotches or gas bands. */
+  kind: 'rocky' | 'gas'
+  shadow?: string
+  highlight?: string
+  bands?: string[]
 }
 
 // Orbit radii compressed to the camera frustum; speeds follow Kepler's third
 // law (ω ∝ r^-1.5) so inner planets visibly outrun outer ones.
 const planets: PlanetDef[] = [
-  { color: '#A78BFA', size: 0.13, orbit: 1.6, inclination: 0.06, node: 0.0, phase: 0.0, spin: 0.9 },
-  { color: '#F59E0B', size: 0.21, orbit: 2.2, inclination: -0.09, node: 0.6, phase: 2.1, spin: 0.7 },
-  { color: '#22D3EE', size: 0.24, orbit: 2.8, inclination: 0.04, node: 1.9, phase: 4.0, spin: 0.8, hasMoon: true },
-  { color: '#F97316', size: 0.17, orbit: 3.4, inclination: 0.12, node: 2.8, phase: 1.2, spin: 0.75 },
-  { color: '#FBBF24', size: 0.42, orbit: 4.3, inclination: -0.07, node: 4.1, phase: 5.3, spin: 0.5 },
-  { color: '#EC4899', size: 0.34, orbit: 5.1, inclination: 0.14, node: 5.0, phase: 3.0, spin: 0.45, hasRing: true },
-  { color: '#3B82F6', size: 0.26, orbit: 5.8, inclination: -0.11, node: 0.9, phase: 0.7, spin: 0.6 }
+  { color: '#A78BFA', size: 0.13, orbit: 1.6, inclination: 0.06, node: 0.0, phase: 0.0, spin: 0.9,
+    kind: 'rocky', shadow: '#6D51C8', highlight: '#D6C6FF' },
+  { color: '#F59E0B', size: 0.21, orbit: 2.2, inclination: -0.09, node: 0.6, phase: 2.1, spin: 0.7,
+    kind: 'rocky', shadow: '#B45309', highlight: '#FDE68A' },
+  { color: '#22D3EE', size: 0.24, orbit: 2.8, inclination: 0.04, node: 1.9, phase: 4.0, spin: 0.8, hasMoon: true,
+    kind: 'rocky', shadow: '#0E7490', highlight: '#A5F3FC' },
+  { color: '#F97316', size: 0.17, orbit: 3.4, inclination: 0.12, node: 2.8, phase: 1.2, spin: 0.75,
+    kind: 'rocky', shadow: '#9A3412', highlight: '#FDBA74' },
+  { color: '#FBBF24', size: 0.42, orbit: 4.3, inclination: -0.07, node: 4.1, phase: 5.3, spin: 0.5,
+    kind: 'gas', bands: ['#FBBF24', '#D97706', '#FDE68A', '#B45309', '#F59E0B'] },
+  { color: '#EC4899', size: 0.34, orbit: 5.1, inclination: 0.14, node: 5.0, phase: 3.0, spin: 0.45, hasRing: true,
+    kind: 'gas', bands: ['#EC4899', '#BE185D', '#F9A8D4', '#DB2777'] },
+  { color: '#3B82F6', size: 0.26, orbit: 5.8, inclination: -0.11, node: 0.9, phase: 0.7, spin: 0.6,
+    kind: 'gas', bands: ['#3B82F6', '#1E40AF', '#93C5FD', '#2563EB'] }
 ]
 
 const KEPLER_K = 1.15
@@ -57,11 +75,59 @@ const moonPivotRefs = planets.map(() => ref())
 
 const isMinimal = computed(() => props.quality === 'minimal')
 
-// Geometry detail scales with quality. Planets stay low-poly on purpose —
-// flat shading over ~16 segments is the stylized look, not a budget cut.
-const sunSegments = computed(() => (props.quality === 'high' ? 32 : props.quality === 'low' ? 20 : 12))
-const planetSegments = computed(() => (props.quality === 'high' ? 18 : props.quality === 'low' ? 12 : 8))
+// Geometry detail scales with quality. High tier renders smooth, textured
+// spheres; low/minimal keep the cheaper stylized flat-shaded look.
+const sunSegments = computed(() => (props.quality === 'high' ? 48 : props.quality === 'low' ? 20 : 12))
+const planetSegments = computed(() => (props.quality === 'high' ? 32 : props.quality === 'low' ? 12 : 8))
 const guideSegments = computed(() => (props.quality === 'high' ? 96 : props.quality === 'low' ? 48 : 24))
+
+// --- Procedural surface textures (high quality only, generated once) ---
+const planetMaps = shallowRef<(CanvasTexture | null)[]>(planets.map(() => null))
+const sunMap = shallowRef<CanvasTexture | null>(null)
+const ringMap = shallowRef<CanvasTexture | null>(null)
+const moonMap = shallowRef<CanvasTexture | null>(null)
+
+const collectMaps = () =>
+  [...planetMaps.value, sunMap.value, ringMap.value, moonMap.value].filter(
+    (t): t is CanvasTexture => t !== null
+  )
+
+const disposeMaps = () => {
+  for (const t of collectMaps()) t.dispose()
+  planetMaps.value = planets.map(() => null)
+  sunMap.value = null
+  ringMap.value = null
+  moonMap.value = null
+}
+
+const buildMaps = () => {
+  // Swap refs first, dispose the previous GPU textures only AFTER Vue has
+  // re-patched the materials — disposing synchronously leaves materials
+  // sampling a dead texture for a frame (renders as white artifacts).
+  const previous = collectMaps()
+
+  if (props.quality === 'high') {
+    planetMaps.value = planets.map((p, i) =>
+      p.kind === 'gas'
+        ? createGasGiantTexture(p.bands!, i + 1)
+        : createRockyTexture(p.color, p.shadow!, p.highlight!, i + 1)
+    )
+    sunMap.value = createSunTexture()
+    ringMap.value = createRingTexture('#F9A8D4')
+    moonMap.value = createRockyTexture('#94A3B8', '#64748B', '#E2E8F0', 42)
+  } else {
+    planetMaps.value = planets.map(() => null)
+    sunMap.value = null
+    ringMap.value = null
+    moonMap.value = null
+  }
+
+  if (previous.length > 0) {
+    nextTick(() => {
+      for (const t of previous) t.dispose()
+    })
+  }
+}
 
 // --- Background starfield (single Points draw call) ---
 const starField = shallowRef<Points | null>(null)
@@ -113,6 +179,7 @@ const buildBelt = () => {
 const rebuild = () => {
   buildStars()
   buildBelt()
+  buildMaps()
 }
 watch(() => props.quality, rebuild, { immediate: true })
 
@@ -152,6 +219,7 @@ const update = (elapsed: number) => {
 useSceneAnimation('hero', update, () => {
   disposeParticleField(starField.value)
   disposeParticleField(belt.value)
+  disposeMaps()
 })
 
 onBeforeUnmount(() => {
@@ -178,7 +246,13 @@ onBeforeUnmount(() => {
   <TresGroup>
     <TresMesh ref="sunRef">
       <TresSphereGeometry :args="[0.8, sunSegments, sunSegments]" />
-      <TresMeshBasicMaterial :color="themeColors.sun" />
+      <!-- :key forces a fresh material when the texture set flips (shader
+           program must be rebuilt when a map is added/removed) -->
+      <TresMeshBasicMaterial
+        :key="sunMap ? 'sun-tex' : 'sun-flat'"
+        :map="sunMap"
+        :color="sunMap ? '#FFFFFF' : themeColors.sun"
+      />
     </TresMesh>
     <TresMesh v-if="!isMinimal" ref="coronaRef">
       <TresSphereGeometry :args="[1.05, sunSegments, sunSegments]" />
@@ -223,15 +297,19 @@ onBeforeUnmount(() => {
 
       <!-- Planet (position driven per frame) -->
       <TresGroup :ref="el => (planetRefs[i].value = el)" :position="[p.orbit, 0, 0]">
+        <!-- Textured smooth sphere on high quality; stylized flat-shaded
+             solid colour on low/minimal. -->
         <TresMesh :ref="el => (spinRefs[i].value = el)">
           <TresSphereGeometry :args="[p.size, planetSegments, planetSegments]" />
           <TresMeshStandardMaterial
-            :color="p.color"
+            :key="planetMaps[i] ? 'tex' : 'flat'"
+            :map="planetMaps[i]"
+            :color="planetMaps[i] ? '#FFFFFF' : p.color"
             :emissive="p.color"
-            :emissive-intensity="0.12"
+            :emissive-intensity="planetMaps[i] ? 0.05 : 0.12"
             :roughness="0.55"
-            :metalness="0.25"
-            :flat-shading="true"
+            :metalness="planetMaps[i] ? 0.1 : 0.25"
+            :flat-shading="!planetMaps[i]"
           />
         </TresMesh>
 
@@ -239,8 +317,10 @@ onBeforeUnmount(() => {
         <TresMesh v-if="p.hasRing" :rotation="[Math.PI / 2 - 0.35, 0, 0]">
           <TresRingGeometry :args="[p.size * 1.45, p.size * 2.1, guideSegments]" />
           <TresMeshBasicMaterial
-            :color="'#F9A8D4'"
-            :opacity="0.5"
+            :key="ringMap ? 'ring-tex' : 'ring-flat'"
+            :map="ringMap"
+            :color="ringMap ? '#FFFFFF' : '#F9A8D4'"
+            :opacity="ringMap ? 0.9 : 0.5"
             :transparent="true"
             :depth-write="false"
             :side="2"
@@ -252,11 +332,13 @@ onBeforeUnmount(() => {
           <TresMesh :position="[p.size + 0.28, 0, 0]">
             <TresSphereGeometry :args="[0.07, planetSegments, planetSegments]" />
             <TresMeshStandardMaterial
-              :color="'#CBD5E1'"
+              :key="moonMap ? 'moon-tex' : 'moon-flat'"
+              :map="moonMap"
+              :color="moonMap ? '#FFFFFF' : '#CBD5E1'"
               :emissive="'#CBD5E1'"
-              :emissive-intensity="0.1"
+              :emissive-intensity="moonMap ? 0.04 : 0.1"
               :roughness="0.7"
-              :flat-shading="true"
+              :flat-shading="!moonMap"
             />
           </TresMesh>
         </TresGroup>
