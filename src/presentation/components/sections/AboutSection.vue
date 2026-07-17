@@ -9,9 +9,9 @@ const { t } = useI18n()
   <section id="about" class="section bg-transparent section-padding" data-section="about">
     <!-- Content -->
     <div class="section-content flex flex-col justify-center items-center h-full">
-      <div class="mb-4 text-center w-full reveal">
+      <div class="section-header w-full reveal">
         <h2 class="text-[var(--color-terminal-green)] mb-2">{{ t('about.title') }}</h2>
-        <p class="font-(--font-display) text-3xl text-white/70">{{ t('about.subtitle') }}</p>
+        <p class="section-subtitle">{{ t('about.subtitle') }}</p>
       </div>
 
       <div class="flex flex-col gap-3 w-full max-w-[600px] xl:max-w-[800px] 2xl:max-w-[1000px]">

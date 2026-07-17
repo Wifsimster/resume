@@ -326,6 +326,19 @@ code, pre {
   will-change: contents;
 }
 
+/* Shared section header rhythm: identical structure (centered h2 + subtitle)
+   gets identical trailing space everywhere. */
+.section-header {
+  text-align: center;
+  margin-bottom: clamp(1.5rem, 4vh, 3rem);
+}
+
+.section-subtitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: rgba(255, 255, 255, 0.7);
+}
+
 /* ============================================
    Gaming UI Elements
    ============================================ */

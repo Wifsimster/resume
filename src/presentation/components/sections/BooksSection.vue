@@ -28,9 +28,9 @@ const trackBook = (status?: string) => {
   <section id="books" class="section bg-transparent section-padding" data-section="books">
     <!-- Content -->
     <div class="section-content mx-auto">
-      <div class="text-center mb-12 reveal">
+      <div class="section-header reveal">
         <h2 class="text-[var(--color-book-amber)] mb-2">{{ t('books.title') }}</h2>
-        <p class="font-(--font-display) text-2xl text-white/70">{{ t('books.subtitle') }}</p>
+        <p class="section-subtitle">{{ t('books.subtitle') }}</p>
       </div>
 
       <div class="w-full flex justify-center">

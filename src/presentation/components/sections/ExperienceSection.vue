@@ -17,9 +17,9 @@ const getAchievements = (expId: string): string[] => {
   <section id="experience" class="section bg-transparent section-padding" data-section="experience">
     <!-- Content -->
     <div class="section-content">
-      <div class="text-center mb-8 sm:mb-12 reveal">
+      <div class="section-header reveal">
         <h2 class="text-[var(--color-terminal-green)] mb-2">{{ t('experience.title') }}</h2>
-        <p class="font-(--font-display) text-2xl text-white/70">{{ t('experience.subtitle') }}</p>
+        <p class="section-subtitle">{{ t('experience.subtitle') }}</p>
       </div>
 
       <div class="max-w-[800px] xl:max-w-[1000px] 2xl:max-w-[1200px] mx-auto">

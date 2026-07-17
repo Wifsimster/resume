@@ -23,9 +23,9 @@ const trackGithubProfile = () => {
   <section id="projects" class="section bg-transparent section-padding" data-section="projects">
     <!-- Content -->
     <div class="section-content flex flex-col items-center justify-center pointer-events-none">
-      <div class="text-center mb-6 sm:mb-8 reveal">
+      <div class="section-header reveal">
         <h2 class="text-[var(--color-frontend-blue)] mb-2">{{ t('projects.title') }}</h2>
-        <p class="font-(--font-display) text-base sm:text-lg text-white/70">{{ t('projects.subtitle') }}</p>
+        <p class="section-subtitle">{{ t('projects.subtitle') }}</p>
       </div>
 
       <div class="flex flex-col items-center gap-4 w-full px-4 sm:px-6">

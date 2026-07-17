@@ -64,12 +64,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <section id="contact" class="section bg-transparent min-h-screen section-padding" data-section="contact">
+  <section id="contact" class="section bg-transparent min-h-svh section-padding" data-section="contact">
     <!-- Content -->
     <div class="section-content flex flex-col justify-center items-center h-full">
-      <div class="text-center mb-8 sm:mb-12 reveal">
+      <div class="section-header reveal">
         <h2 class="text-[var(--color-terminal-green)] mb-2">{{ t('contact.title') }}</h2>
-        <p class="font-(--font-display) text-2xl text-white/70">{{ t('contact.subtitle') }}</p>
+        <p class="section-subtitle">{{ t('contact.subtitle') }}</p>
       </div>
 
       <!-- Real button for keyboard access; sizes are mobile-first -->

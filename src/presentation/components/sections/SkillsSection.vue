@@ -21,9 +21,9 @@ const skillsByCategory = computed(() => {
   <section id="skills" class="section bg-transparent section-padding" data-section="skills">
     <!-- Content -->
     <div class="section-content">
-      <div class="text-center mb-8 reveal">
+      <div class="section-header reveal">
         <h2 class="text-[var(--color-growth-yellow)] mb-2">{{ t('skills.title') }}</h2>
-        <p class="font-(--font-display) text-2xl text-white/70">{{ t('skills.subtitle') }}</p>
+        <p class="section-subtitle">{{ t('skills.subtitle') }}</p>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-[800px] xl:max-w-[900px] 2xl:max-w-[1000px] mx-auto justify-items-center lg:justify-items-stretch">
