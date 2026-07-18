@@ -5,24 +5,38 @@ import {
   BufferGeometry,
   AdditiveBlending,
   Points,
-  PointsMaterial
+  PointsMaterial,
+  type Mesh,
+  type MeshBasicMaterial
 } from 'three'
 import { useLoop } from '@tresjs/core'
 
-// The space companion, in real Three.js: a low-poly rocket, a UFO and a mini
-// ringed planet take turns cruising across the viewport on waypoint steering,
-// with a glowing Points trail. Rendered in a fixed transparent canvas overlay
-// so it accompanies the visitor through every section.
+// The space companions, in real Three.js: a rocket with a live flickering
+// exhaust flame and a UFO with an animated abduction ray take turns cruising
+// the viewport. Swaps are eased in/out, and every few swaps the two meet for
+// a short choreographed dogfight (chase + laser bolts + tractor-beam capture)
+// before the winner resumes the patrol. Zero per-frame allocations.
 
 const CAMERA_Z = 12
 const FOV_RAD = (45 * Math.PI) / 180
-const LEGS_PER_COMPANION = 5
 const TRAIL_LENGTH = 14
+
+const LEGS_PER_SWAP = 5
+const SWAPS_PER_FIGHT = 2
+const SWAP_OUT_S = 0.45
+const SWAP_IN_S = 0.6
+// Fight timeline (seconds): chase w/ lasers → beam capture → break free + resolve
+const FIGHT_CHASE_END = 3.5
+const FIGHT_BEAM_END = 6.0
+const FIGHT_END = 8.5
 
 const rocketRef = ref()
 const ufoRef = ref()
-const planetRef = ref()
-const activeIndex = ref(0)
+const flameOuterRef = ref()
+const flameInnerRef = ref()
+const beamRef = ref()
+const beamDotRefs = [ref(), ref(), ref()]
+const boltRefs = [ref(), ref(), ref()]
 
 // --- Trail: single Points draw call, ring buffer of recent positions ---
 const trailPositions = new Float32Array(TRAIL_LENGTH * 3)
@@ -40,17 +54,38 @@ const trailMaterial = new PointsMaterial({
 const trailPoints = new Points(trailGeometry, trailMaterial)
 trailPoints.frustumCulled = false
 
-// --- Motion state (plain objects, zero per-frame allocation) ---
-const pos = { x: 0, y: 2 }
-const vel = { x: 0.5, y: 0.1 }
-const target = { x: 0, y: 0 }
+// --- Motion state: one body per companion (both simulated during fights) ---
+interface Body {
+  pos: { x: number; y: number }
+  vel: { x: number; y: number }
+  target: { x: number; y: number }
+  scale: number
+}
+const bodies: [Body, Body] = [
+  { pos: { x: 0, y: 2 }, vel: { x: 0.5, y: 0.1 }, target: { x: 0, y: 0 }, scale: 1 }, // rocket
+  { pos: { x: -2, y: -1.5 }, vel: { x: -0.4, y: 0.2 }, target: { x: 0, y: 0 }, scale: 0 } // ufo
+]
+const SPEEDS = [1.6, 1.2]
+
+type Mode = 'cruise' | 'swapOut' | 'swapIn' | 'fight'
+let mode: Mode = 'cruise'
+let modeTime = 0
+let activeIndex = 0
 let legs = 0
+let swapsDone = 0
 let boost = 0
-let swapScale = 0
+let beamStrength = 0
+let boltCooldown = 0
+let fightWinner = 0
 let trailWrite = 0
 let trailAccumulator = 0
 
-const SPEEDS = [1.6, 1.2, 0.8] // rocket, ufo, planet — world units/s
+// Laser bolts (pooled, active only during fights)
+const bolts = [
+  { active: false, x: 0, y: 0, vx: 0, vy: 0, life: 0 },
+  { active: false, x: 0, y: 0, vx: 0, vy: 0, life: 0 },
+  { active: false, x: 0, y: 0, vx: 0, vy: 0, life: 0 }
+]
 
 // Visible world extents at z=0 for the current viewport.
 const extents = { x: 5, y: 5 }
@@ -59,87 +94,273 @@ const updateExtents = () => {
   extents.x = extents.y * (window.innerWidth / Math.max(1, window.innerHeight))
 }
 
-const pickTarget = () => {
-  // Mild edge bias, mirrored from the DOM version: mostly frames content but
-  // regularly crosses the middle.
+const pickTarget = (body: Body, countLeg: boolean) => {
   const edge = Math.random() < 0.4
   const ex = extents.x * 0.86
   const ey = extents.y * 0.82
   if (edge) {
-    target.x = (Math.random() < 0.5 ? -1 : 1) * (0.55 + Math.random() * 0.35) * ex
-    target.y = (Math.random() * 2 - 1) * ey
+    body.target.x = (Math.random() < 0.5 ? -1 : 1) * (0.55 + Math.random() * 0.35) * ex
+    body.target.y = (Math.random() * 2 - 1) * ey
   } else {
-    target.x = (Math.random() * 2 - 1) * ex * 0.7
-    target.y = (Math.random() * 2 - 1) * ey * 0.7
+    body.target.x = (Math.random() * 2 - 1) * ex * 0.7
+    body.target.y = (Math.random() * 2 - 1) * ey * 0.7
   }
-  legs += 1
-  if (legs >= LEGS_PER_COMPANION) {
-    legs = 0
-    activeIndex.value = (activeIndex.value + 1) % 3
-    swapScale = 0
-  }
+  if (countLeg) legs += 1
 }
 
 const onScroll = () => {
   boost = 1
 }
 
-const companions = () => [rocketRef.value, ufoRef.value, planetRef.value]
+const easeOutBack = (t: number) => {
+  const c1 = 1.70158
+  const c3 = c1 + 1
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
+}
+const easeInBack = (t: number) => {
+  const c1 = 1.70158
+  return (c1 + 1) * t * t * t - c1 * t * t
+}
+
+const steer = (body: Body, dt: number, speed: number) => {
+  const dx = body.target.x - body.pos.x
+  const dy = body.target.y - body.pos.y
+  const dist = Math.hypot(dx, dy) || 1
+  const s = 1 - Math.exp(-dt * 1.4)
+  body.vel.x += ((dx / dist) * speed - body.vel.x) * s
+  body.vel.y += ((dy / dist) * speed - body.vel.y) * s
+  body.pos.x += body.vel.x * dt
+  body.pos.y += body.vel.y * dt
+  return dist
+}
+
+const startFight = () => {
+  mode = 'fight'
+  modeTime = 0
+  fightWinner = Math.random() < 0.5 ? 0 : 1
+  // The idle companion warps in from the opposite side of the screen.
+  const idle = bodies[1 - activeIndex]
+  const act = bodies[activeIndex]
+  idle.pos.x = -Math.sign(act.pos.x || 1) * extents.x * 0.7
+  idle.pos.y = -act.pos.y * 0.5
+  idle.vel.x = 0
+  idle.vel.y = 0
+}
+
+// Debug hook used by the browser test harness (and curious devs).
+if (typeof window !== 'undefined') {
+  ;(window as unknown as Record<string, unknown>).__companionFight = startFight
+}
 
 const { onBeforeRender } = useLoop()
 onBeforeRender(({ delta, elapsed }) => {
   const dt = Math.min(delta, 0.1)
-
-  // Steering toward the current waypoint (frame-rate independent)
-  const dx = target.x - pos.x
-  const dy = target.y - pos.y
-  const dist = Math.hypot(dx, dy) || 1
-  const maxSpeed = SPEEDS[activeIndex.value] * (1 + boost * 1.8)
-  const steer = 1 - Math.exp(-dt * 1.4)
-  vel.x += ((dx / dist) * maxSpeed - vel.x) * steer
-  vel.y += ((dy / dist) * maxSpeed - vel.y) * steer
-  pos.x += vel.x * dt
-  pos.y += vel.y * dt
-  if (dist < 0.8) pickTarget()
-
+  modeTime += dt
   boost *= Math.exp(-dt * 1.2)
-  swapScale += (1 - swapScale) * (1 - Math.exp(-dt * 6))
+  boltCooldown -= dt
 
-  const bob = Math.sin(elapsed * 1.8) * 0.12
-  const objs = companions()
-  for (let i = 0; i < objs.length; i++) {
-    const obj = objs[i]
-    if (!obj) continue
-    const active = i === activeIndex.value
-    obj.visible = active
-    if (!active) continue
+  const rocket = bodies[0]
+  const ufo = bodies[1]
+  const active = bodies[activeIndex]
+  const idle = bodies[1 - activeIndex]
 
-    obj.position.set(pos.x, pos.y + bob, 0)
-    const scale = (0.75 + swapScale * 0.25 + boost * 0.15)
-    obj.scale.setScalar(scale)
+  // ---------------- State machine ----------------
+  if (mode === 'cruise') {
+    const dist = steer(active, dt, SPEEDS[activeIndex] * (1 + boost * 1.8))
+    if (dist < 0.8) pickTarget(active, true)
+    active.scale += (1 - active.scale) * (1 - Math.exp(-dt * 6))
+    idle.scale += (0 - idle.scale) * (1 - Math.exp(-dt * 8))
+    if (legs >= LEGS_PER_SWAP) {
+      legs = 0
+      mode = 'swapOut'
+      modeTime = 0
+    }
+  } else if (mode === 'swapOut') {
+    const t = Math.min(modeTime / SWAP_OUT_S, 1)
+    active.scale = Math.max(0, 1 - easeInBack(t))
+    // Outgoing spins on itself while shrinking
+    if (t >= 1) {
+      swapsDone += 1
+      activeIndex = 1 - activeIndex
+      const next = bodies[activeIndex]
+      next.pos.x = active.pos.x
+      next.pos.y = active.pos.y
+      next.vel.x = active.vel.x
+      next.vel.y = active.vel.y
+      pickTarget(next, false)
+      if (swapsDone % SWAPS_PER_FIGHT === 0) {
+        startFight()
+      } else {
+        mode = 'swapIn'
+        modeTime = 0
+      }
+    }
+  } else if (mode === 'swapIn') {
+    const t = Math.min(modeTime / SWAP_IN_S, 1)
+    active.scale = easeOutBack(t)
+    steer(active, dt, SPEEDS[activeIndex])
+    if (t >= 1) {
+      mode = 'cruise'
+      modeTime = 0
+    }
+  } else {
+    // ---------------- Fight choreography ----------------
+    rocket.scale += (1 - rocket.scale) * (1 - Math.exp(-dt * 6))
+    ufo.scale += (1 - ufo.scale) * (1 - Math.exp(-dt * 6))
 
-    if (i === 0) {
-      // Rocket: nose (+y of the model) banks into the travel direction
-      obj.rotation.z = Math.atan2(vel.y, vel.x) - Math.PI / 2
-      obj.rotation.y = Math.sin(elapsed * 0.9) * 0.35
-    } else if (i === 1) {
-      // UFO: upright hover with a wobble + slow saucer spin
-      obj.rotation.z = Math.sin(elapsed * 2.2) * 0.12
-      obj.rotation.y = elapsed * 1.4
+    if (modeTime < FIGHT_CHASE_END) {
+      // Chase: UFO flees between quick waypoints, rocket pursues it and fires.
+      const fleeDist = Math.hypot(ufo.target.x - ufo.pos.x, ufo.target.y - ufo.pos.y)
+      if (fleeDist < 1.2) pickTarget(ufo, false)
+      steer(ufo, dt, 2.2)
+      rocket.target.x = ufo.pos.x
+      rocket.target.y = ufo.pos.y
+      steer(rocket, dt, 2.6)
+      if (boltCooldown <= 0) {
+        boltCooldown = 0.55
+        const bolt = bolts.find((b) => !b.active)
+        if (bolt) {
+          const dx = ufo.pos.x - rocket.pos.x
+          const dy = ufo.pos.y - rocket.pos.y
+          const d = Math.hypot(dx, dy) || 1
+          bolt.active = true
+          bolt.x = rocket.pos.x
+          bolt.y = rocket.pos.y
+          bolt.vx = (dx / d) * 7
+          bolt.vy = (dy / d) * 7
+          bolt.life = 1.1
+        }
+      }
+    } else if (modeTime < FIGHT_BEAM_END) {
+      // Counter-attack: the UFO hovers above the rocket and catches it in the
+      // tractor beam; the rocket shakes, half-pulled upward.
+      ufo.target.x = rocket.pos.x
+      ufo.target.y = Math.min(rocket.pos.y + 2.1, extents.y * 0.8)
+      steer(ufo, dt, 2.8)
+      rocket.vel.x *= Math.exp(-dt * 3)
+      rocket.vel.y *= Math.exp(-dt * 3)
+      rocket.pos.x += rocket.vel.x * dt
+      rocket.pos.y += rocket.vel.y * dt + dt * 0.35 // dragged up by the beam
+    } else if (modeTime < FIGHT_END) {
+      // Break free: rocket boosts away in a loop, UFO wobbles after it.
+      rocket.target.x = -ufo.pos.x * 0.8
+      rocket.target.y = -ufo.pos.y * 0.8
+      steer(rocket, dt, 3.2)
+      steer(ufo, dt, 1.6)
     } else {
-      // Planet: lazy axial spin, fixed tilt
-      obj.rotation.y = elapsed * 0.5
-      obj.rotation.z = 0.4
+      // Resolve: winner keeps flying, loser warps out via swapOut easing.
+      activeIndex = fightWinner
+      bodies[1 - fightWinner].scale = Math.max(
+        0,
+        bodies[1 - fightWinner].scale - dt / SWAP_OUT_S
+      )
+      if (bodies[1 - fightWinner].scale <= 0) {
+        mode = 'cruise'
+        modeTime = 0
+        legs = 0
+        pickTarget(bodies[fightWinner], false)
+      }
     }
   }
 
-  // Trail breadcrumbs (~every 60ms) into the ring buffer
+  // ---------------- Bolt simulation ----------------
+  for (let i = 0; i < bolts.length; i++) {
+    const b = bolts[i]
+    if (b.active) {
+      b.x += b.vx * dt
+      b.y += b.vy * dt
+      b.life -= dt
+      if (b.life <= 0) b.active = false
+    }
+    const meshRef = boltRefs[i].value as Mesh | undefined
+    if (meshRef) {
+      meshRef.visible = b.active
+      if (b.active) meshRef.position.set(b.x, b.y, 0)
+    }
+  }
+
+  // ---------------- Beam strength ----------------
+  const inBeamPhase = mode === 'fight' && modeTime >= FIGHT_CHASE_END && modeTime < FIGHT_BEAM_END
+  // In cruise the UFO shows off its ray on a slow duty cycle.
+  const cruiseBeamOn = mode === 'cruise' && activeIndex === 1 && Math.sin(elapsed * 0.45) > 0.35
+  const beamTarget = inBeamPhase || cruiseBeamOn ? 1 : 0
+  beamStrength += (beamTarget - beamStrength) * (1 - Math.exp(-dt * 4))
+
+  // ---------------- Draw ----------------
+  const bobR = Math.sin(elapsed * 1.8) * 0.12
+  const bobU = Math.sin(elapsed * 1.6 + 1.3) * 0.14
+
+  const rocketObj = rocketRef.value
+  if (rocketObj) {
+    rocketObj.visible = rocket.scale > 0.01
+    rocketObj.position.set(rocket.pos.x, rocket.pos.y + bobR, 0)
+    let s = rocket.scale * (0.75 + boost * 0.15)
+    if (mode === 'swapOut' && activeIndex === 0) {
+      rocketObj.rotation.z += dt * 14 // exit pirouette
+    } else {
+      rocketObj.rotation.z = Math.atan2(rocket.vel.y, rocket.vel.x) - Math.PI / 2
+    }
+    if (inBeamPhase) {
+      // Caught in the beam: shake + point down helplessly
+      rocketObj.position.x += Math.sin(elapsed * 42) * 0.05
+      rocketObj.rotation.z += Math.sin(elapsed * 31) * 0.25
+    }
+    rocketObj.scale.setScalar(Math.max(s, 0.0001))
+    rocketObj.rotation.y = Math.sin(elapsed * 0.9) * 0.35
+  }
+
+  // Flame: layered cones flicker fast; longer under boost or while fighting
+  const flick = 0.5 + 0.35 * Math.sin(elapsed * 34) + 0.15 * Math.sin(elapsed * 61 + 2)
+  const flameLen = 0.85 + flick * 0.5 + boost * 0.9 + (mode === 'fight' ? 0.45 : 0)
+  const outer = flameOuterRef.value as Mesh | undefined
+  if (outer) {
+    outer.scale.set(0.9 + flick * 0.25, flameLen, 0.9 + flick * 0.25)
+    ;(outer.material as MeshBasicMaterial).opacity = 0.5 + flick * 0.3
+  }
+  const inner = flameInnerRef.value as Mesh | undefined
+  if (inner) {
+    inner.scale.set(0.85 + flick * 0.2, flameLen * 1.12, 0.85 + flick * 0.2)
+    ;(inner.material as MeshBasicMaterial).opacity = 0.65 + flick * 0.3
+  }
+
+  const ufoObj = ufoRef.value
+  if (ufoObj) {
+    ufoObj.visible = ufo.scale > 0.01
+    ufoObj.position.set(ufo.pos.x, ufo.pos.y + bobU, 0)
+    ufoObj.scale.setScalar(Math.max(ufo.scale * 0.8, 0.0001))
+    ufoObj.rotation.y = elapsed * 1.4
+    if (mode === 'swapOut' && activeIndex === 1) {
+      ufoObj.rotation.z += dt * 10
+    } else {
+      ufoObj.rotation.z = Math.sin(elapsed * 2.2) * 0.12 + ufo.vel.x * 0.06
+    }
+  }
+
+  // Tractor beam: pulsing opacity, breathing width, rising abduction dots
+  const beam = beamRef.value as Mesh | undefined
+  if (beam) {
+    beam.visible = beamStrength > 0.02
+    const pulse = 1 + Math.sin(elapsed * 6) * 0.08
+    beam.scale.set(pulse, 1 + beamStrength * 0.15, pulse)
+    ;(beam.material as MeshBasicMaterial).opacity = 0.24 * beamStrength * (0.85 + 0.15 * Math.sin(elapsed * 9))
+  }
+  for (let i = 0; i < beamDotRefs.length; i++) {
+    const dot = beamDotRefs[i].value as Mesh | undefined
+    if (!dot) continue
+    const t = (elapsed * 0.5 + i / beamDotRefs.length) % 1
+    dot.visible = beamStrength > 0.05
+    dot.position.set(Math.sin(elapsed * 2.4 + i * 2.1) * 0.12 * (1 - t), -1.02 + t * 0.85, 0)
+    ;(dot.material as MeshBasicMaterial).opacity = Math.sin(t * Math.PI) * beamStrength * 0.9
+  }
+
+  // ---------------- Trail (follows the star of the moment) ----------------
+  const followed = mode === 'fight' ? rocket : active
   trailAccumulator += dt
   if (trailAccumulator > 0.06) {
     trailAccumulator = 0
     const o = trailWrite * 3
-    trailPositions[o] = pos.x
-    trailPositions[o + 1] = pos.y + bob
+    trailPositions[o] = followed.pos.x
+    trailPositions[o + 1] = followed.pos.y + bobR
     trailPositions[o + 2] = -0.2
     trailWrite = (trailWrite + 1) % TRAIL_LENGTH
     ;(trailGeometry.getAttribute('position') as BufferAttribute).needsUpdate = true
@@ -149,13 +370,13 @@ onBeforeRender(({ delta, elapsed }) => {
 
 onMounted(() => {
   updateExtents()
-  // Seed the trail at the start position so no dots sit at the origin.
   for (let i = 0; i < TRAIL_LENGTH; i++) {
-    trailPositions[i * 3] = pos.x
-    trailPositions[i * 3 + 1] = pos.y
+    trailPositions[i * 3] = bodies[0].pos.x
+    trailPositions[i * 3 + 1] = bodies[0].pos.y
     trailPositions[i * 3 + 2] = -0.2
   }
-  pickTarget()
+  pickTarget(bodies[0], false)
+  pickTarget(bodies[1], false)
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('resize', updateExtents, { passive: true })
 })
@@ -174,7 +395,7 @@ onBeforeUnmount(() => {
   <TresAmbientLight :intensity="0.7" />
   <TresDirectionalLight :position="[4, 6, 8]" :intensity="1.6" />
 
-  <!-- 🚀 Rocket: body + nose + engine glow + 3 fins -->
+  <!-- 🚀 Rocket: hull + nose + fins + layered animated exhaust flame -->
   <TresGroup ref="rocketRef">
     <TresMesh>
       <TresCylinderGeometry :args="[0.16, 0.2, 0.62, 12]" />
@@ -188,10 +409,32 @@ onBeforeUnmount(() => {
       <TresCylinderGeometry :args="[0.11, 0.15, 0.12, 12]" />
       <TresMeshStandardMaterial color="#4B5563" :roughness="0.5" :metalness="0.8" />
     </TresMesh>
-    <TresMesh :position="[0, -0.42, 0]">
-      <TresSphereGeometry :args="[0.1, 10, 10]" />
-      <TresMeshBasicMaterial color="#FDBA74" :transparent="true" :opacity="0.9" />
+
+    <!-- Exhaust flame: outer orange sheath + inner white-hot core, both
+         flickering in scale/opacity every frame (cone apex points down) -->
+    <TresMesh ref="flameOuterRef" :position="[0, -0.62, 0]" :rotation="[Math.PI, 0, 0]">
+      <TresConeGeometry :args="[0.13, 0.55, 12, 1, true]" />
+      <TresMeshBasicMaterial
+        color="#FB923C"
+        :transparent="true"
+        :opacity="0.7"
+        :depth-write="false"
+        :blending="2"
+        :side="2"
+      />
     </TresMesh>
+    <TresMesh ref="flameInnerRef" :position="[0, -0.55, 0]" :rotation="[Math.PI, 0, 0]">
+      <TresConeGeometry :args="[0.07, 0.38, 10, 1, true]" />
+      <TresMeshBasicMaterial
+        color="#FEF3C7"
+        :transparent="true"
+        :opacity="0.85"
+        :depth-write="false"
+        :blending="2"
+        :side="2"
+      />
+    </TresMesh>
+
     <TresMesh
       v-for="fin in 3"
       :key="`fin-${fin}`"
@@ -203,7 +446,7 @@ onBeforeUnmount(() => {
     </TresMesh>
   </TresGroup>
 
-  <!-- 🛸 UFO: saucer + glass dome + belt lights -->
+  <!-- 🛸 UFO: saucer + dome + belt lights + animated abduction ray -->
   <TresGroup ref="ufoRef">
     <TresMesh :scale="[1, 0.32, 1]">
       <TresSphereGeometry :args="[0.42, 20, 12]" />
@@ -221,19 +464,30 @@ onBeforeUnmount(() => {
       <TresSphereGeometry :args="[0.045, 8, 8]" />
       <TresMeshBasicMaterial :color="ballLight % 2 === 0 ? '#F472B6' : '#FDE68A'" />
     </TresMesh>
+
+    <!-- Abduction ray: open cyan cone flaring downward + rising capture dots -->
+    <TresMesh ref="beamRef" :position="[0, -0.62, 0]">
+      <TresCylinderGeometry :args="[0.09, 0.42, 0.95, 16, 1, true]" />
+      <TresMeshBasicMaterial
+        color="#22D3EE"
+        :transparent="true"
+        :opacity="0"
+        :depth-write="false"
+        :blending="2"
+        :side="2"
+      />
+    </TresMesh>
+    <TresMesh v-for="(_dot, di) in beamDotRefs" :key="`beam-dot-${di}`" :ref="el => (beamDotRefs[di].value = el)">
+      <TresSphereGeometry :args="[0.045, 8, 8]" />
+      <TresMeshBasicMaterial color="#A5F3FC" :transparent="true" :opacity="0" :depth-write="false" :blending="2" />
+    </TresMesh>
   </TresGroup>
 
-  <!-- 🪐 Mini ringed planet -->
-  <TresGroup ref="planetRef">
-    <TresMesh>
-      <TresSphereGeometry :args="[0.32, 20, 20]" />
-      <TresMeshStandardMaterial color="#FBBF24" :emissive="'#B45309'" :emissive-intensity="0.15" :roughness="0.6" :metalness="0.2" :flat-shading="true" />
-    </TresMesh>
-    <TresMesh :rotation="[Math.PI / 2.4, 0, 0]">
-      <TresRingGeometry :args="[0.44, 0.62, 32]" />
-      <TresMeshBasicMaterial color="#F9A8D4" :transparent="true" :opacity="0.6" :side="2" :depth-write="false" />
-    </TresMesh>
-  </TresGroup>
+  <!-- Laser bolts (pooled, visible only during fights) -->
+  <TresMesh v-for="(_bolt, bi) in boltRefs" :key="`bolt-${bi}`" :ref="el => (boltRefs[bi].value = el)" :visible="false">
+    <TresSphereGeometry :args="[0.06, 8, 8]" />
+    <TresMeshBasicMaterial color="#F472B6" :transparent="true" :opacity="0.95" :depth-write="false" :blending="2" />
+  </TresMesh>
 
   <!-- Glowing trail (single Points draw call) -->
   <primitive :object="trailPoints" />
