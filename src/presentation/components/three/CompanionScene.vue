@@ -112,6 +112,38 @@ const onScroll = () => {
   boost = 1
 }
 
+// --- Pointer/touch awareness: the companion is shy up close and curious
+// from afar. Cursor proximity makes it dodge away with a nervous wiggle;
+// a click/tap far from it makes it fly over to investigate. ---
+const cursor = { x: 0, y: 0, active: false }
+let dodge = 0
+
+const cursorToWorld = (clientX: number, clientY: number) => {
+  cursor.x = ((clientX / window.innerWidth) * 2 - 1) * extents.x
+  cursor.y = -((clientY / window.innerHeight) * 2 - 1) * extents.y
+  cursor.active = true
+}
+
+const onPointerMove = (e: PointerEvent) => {
+  cursorToWorld(e.clientX, e.clientY)
+}
+
+const onPointerDown = (e: PointerEvent) => {
+  cursorToWorld(e.clientX, e.clientY)
+  if (mode !== 'cruise' && mode !== 'swapIn') return
+  const b = bodies[activeIndex]
+  const d = Math.hypot(b.pos.x - cursor.x, b.pos.y - cursor.y)
+  if (d > 2.2) {
+    // Curious: fly over to where the visitor pointed
+    b.target.x = cursor.x
+    b.target.y = cursor.y
+  } else {
+    // Startled: afterburner kick + wiggle
+    boost = 1
+    dodge = 1
+  }
+}
+
 const easeOutBack = (t: number) => {
   const c1 = 1.70158
   const c3 = c1 + 1
@@ -205,8 +237,13 @@ onBeforeRender(({ delta, elapsed }) => {
     }
   } else {
     // ---------------- Fight choreography ----------------
-    rocket.scale += (1 - rocket.scale) * (1 - Math.exp(-dt * 6))
-    ufo.scale += (1 - ufo.scale) * (1 - Math.exp(-dt * 6))
+    // Scales only restore during the active phases — the resolve phase owns
+    // the loser's scale (restoring it there previously fought the warp-out
+    // shrink to a standstill and locked the whole state machine).
+    if (modeTime < FIGHT_END) {
+      rocket.scale += (1 - rocket.scale) * (1 - Math.exp(-dt * 6))
+      ufo.scale += (1 - ufo.scale) * (1 - Math.exp(-dt * 6))
+    }
 
     if (modeTime < FIGHT_CHASE_END) {
       // Chase: UFO flees between quick waypoints, rocket pursues it and fires.
@@ -248,20 +285,38 @@ onBeforeRender(({ delta, elapsed }) => {
       steer(rocket, dt, 3.2)
       steer(ufo, dt, 1.6)
     } else {
-      // Resolve: winner keeps flying, loser warps out via swapOut easing.
+      // Resolve: winner keeps cruising immediately, loser warps out.
       activeIndex = fightWinner
-      bodies[1 - fightWinner].scale = Math.max(
-        0,
-        bodies[1 - fightWinner].scale - dt / SWAP_OUT_S
-      )
-      if (bodies[1 - fightWinner].scale <= 0) {
+      const winnerBody = bodies[fightWinner]
+      const wDist = steer(winnerBody, dt, SPEEDS[fightWinner])
+      if (wDist < 0.8) pickTarget(winnerBody, false)
+      const loser = bodies[1 - fightWinner]
+      loser.scale = Math.max(0, loser.scale - dt / SWAP_OUT_S)
+      if (loser.scale <= 0 || modeTime > FIGHT_END + 3) {
+        // (time guard = belt-and-braces so a fight can never lock up again)
+        loser.scale = 0
         mode = 'cruise'
         modeTime = 0
         legs = 0
-        pickTarget(bodies[fightWinner], false)
+        pickTarget(winnerBody, false)
       }
     }
   }
+
+  // ---------------- Cursor evasion (cruise only — fights own the stage) ----
+  if (cursor.active && (mode === 'cruise' || mode === 'swapIn')) {
+    const b = bodies[activeIndex]
+    const ex = b.pos.x - cursor.x
+    const ey = b.pos.y - cursor.y
+    const ed = Math.hypot(ex, ey)
+    if (ed < 1.7 && ed > 0.0001) {
+      const push = (1.7 - ed) * 6 * dt
+      b.vel.x += (ex / ed) * push
+      b.vel.y += (ey / ed) * push
+      dodge = Math.min(1, dodge + dt * 5)
+    }
+  }
+  dodge *= Math.exp(-dt * 2)
 
   // ---------------- Bolt simulation ----------------
   for (let i = 0; i < bolts.length; i++) {
@@ -295,10 +350,15 @@ onBeforeRender(({ delta, elapsed }) => {
     rocketObj.visible = rocket.scale > 0.01
     rocketObj.position.set(rocket.pos.x, rocket.pos.y + bobR, 0)
     let s = rocket.scale * (0.75 + boost * 0.15)
-    if (mode === 'swapOut' && activeIndex === 0) {
+    const rocketSpinningOut =
+      (mode === 'swapOut' && activeIndex === 0) ||
+      (mode === 'fight' && modeTime >= FIGHT_END && fightWinner !== 0)
+    if (rocketSpinningOut) {
       rocketObj.rotation.z += dt * 14 // exit pirouette
     } else {
       rocketObj.rotation.z = Math.atan2(rocket.vel.y, rocket.vel.x) - Math.PI / 2
+      // Nervous wiggle when the cursor spooks it
+      rocketObj.rotation.z += dodge * Math.sin(elapsed * 22) * 0.28
     }
     if (inBeamPhase) {
       // Caught in the beam: shake + point down helplessly
@@ -311,7 +371,8 @@ onBeforeRender(({ delta, elapsed }) => {
 
   // Flame: layered cones flicker fast; longer under boost or while fighting
   const flick = 0.5 + 0.35 * Math.sin(elapsed * 34) + 0.15 * Math.sin(elapsed * 61 + 2)
-  const flameLen = 0.85 + flick * 0.5 + boost * 0.9 + (mode === 'fight' ? 0.45 : 0)
+  const flameLen =
+    0.85 + flick * 0.5 + boost * 0.9 + dodge * 0.5 + (mode === 'fight' ? 0.45 : 0)
   const outer = flameOuterRef.value as Mesh | undefined
   if (outer) {
     outer.scale.set(0.9 + flick * 0.25, flameLen, 0.9 + flick * 0.25)
@@ -329,10 +390,14 @@ onBeforeRender(({ delta, elapsed }) => {
     ufoObj.position.set(ufo.pos.x, ufo.pos.y + bobU, 0)
     ufoObj.scale.setScalar(Math.max(ufo.scale * 0.8, 0.0001))
     ufoObj.rotation.y = elapsed * 1.4
-    if (mode === 'swapOut' && activeIndex === 1) {
+    const ufoSpinningOut =
+      (mode === 'swapOut' && activeIndex === 1) ||
+      (mode === 'fight' && modeTime >= FIGHT_END && fightWinner !== 1)
+    if (ufoSpinningOut) {
       ufoObj.rotation.z += dt * 10
     } else {
-      ufoObj.rotation.z = Math.sin(elapsed * 2.2) * 0.12 + ufo.vel.x * 0.06
+      ufoObj.rotation.z =
+        Math.sin(elapsed * 2.2) * 0.12 + ufo.vel.x * 0.06 + dodge * Math.sin(elapsed * 18) * 0.2
     }
   }
 
@@ -379,11 +444,15 @@ onMounted(() => {
   pickTarget(bodies[1], false)
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('resize', updateExtents, { passive: true })
+  window.addEventListener('pointermove', onPointerMove, { passive: true })
+  window.addEventListener('pointerdown', onPointerDown, { passive: true })
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
   window.removeEventListener('resize', updateExtents)
+  window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('pointerdown', onPointerDown)
   trailGeometry.dispose()
   trailMaterial.dispose()
 })
