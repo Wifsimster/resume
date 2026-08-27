@@ -16,6 +16,28 @@ services:
       - traefik.http.routers.resume.tls.certresolver=letsencrypt
       - traefik.http.services.resume.loadbalancer.server.port=80
 
+  # Chat backend of the conversational resume (/?ui=alpha). Without any
+  # provider variable set the frontend silently falls back to scripted mode.
+  chat:
+    image: wifsimster/resume-chat:latest
+    container_name: resume-chat
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      # Option 1 — Google AI Studio (free tier): https://aistudio.google.com/apikey
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      # Option 2 — any OpenAI-compatible endpoint (Ollama local, LM Studio,
+      # HuggingFace router, OpenRouter…): takes precedence when set
+      - CHAT_API_BASE_URL=${CHAT_API_BASE_URL:-}
+      - CHAT_API_KEY=${CHAT_API_KEY:-}
+      - CHAT_MODEL=${CHAT_MODEL:-}
+    networks:
+      - lan
+
 networks:
   lan:
     external: true

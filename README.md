@@ -15,6 +15,7 @@ An interactive, infinite-scroll resume website featuring three WebGL 3D scenes (
 ## ✨ Features
 
 - **WebGL 3D Scenes** - Solar system hero, space companion cruising across sections, and a maker desk with a full server rack — all lazy-loaded
+- **Conversational AI Resume** - `/?ui=alpha` chats about the resume through a real LLM (Gemini free tier or any OpenAI-compatible endpoint), with a scripted fallback when no provider is configured
 - **Gaming-Inspired UI** - XP progress bar, 30 unlockable achievements, easter eggs
 - **Bilingual** - French and English with automatic browser detection
 - **Responsive** - Works on desktop and mobile devices
@@ -95,6 +96,26 @@ docker run -p 80:80 wifsimster/resume
 ### Deploy with Traefik
 
 The container is ready to be deployed behind Traefik reverse proxy with health check enabled.
+
+### Chat backend (conversational resume)
+
+`/?ui=alpha` turns into a real AI chat when the `chat` service (see `compose.yml`) has an LLM provider configured. The server is built on the [Vercel AI SDK](https://ai-sdk.dev/), keeps the credentials server-side, streams over SSE through nginx (`/api/`), and rate-limits requests (8/min per IP, 400/day) to protect free quotas. Without any provider the frontend silently falls back to its scripted engine — the site never breaks.
+
+Pick ONE provider via environment variables (a `.env` next to `compose.yml` works):
+
+```bash
+# Option 1 — Google AI Studio free tier (https://aistudio.google.com/apikey)
+GEMINI_API_KEY=your-key
+GEMINI_MODEL=gemini-2.5-flash        # optional, this is the default
+
+# Option 2 — any OpenAI-compatible endpoint (takes precedence when set):
+# Ollama on the homelab, LM Studio, HuggingFace router, OpenRouter…
+CHAT_API_BASE_URL=http://ollama:11434/v1
+CHAT_MODEL=llama3.2
+CHAT_API_KEY=                        # if the endpoint needs one
+```
+
+Local development: `npm run build:server && GEMINI_API_KEY=... npm run chat` in one terminal, `npm run dev` in another — Vite proxies `/api` to the chat server. The chat image is built from the same Dockerfile: `npm run docker:build:chat`.
 
 ## 🔄 CI/CD
 
