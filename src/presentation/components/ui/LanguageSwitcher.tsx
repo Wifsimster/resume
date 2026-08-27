@@ -15,6 +15,7 @@ export default function LanguageSwitcher() {
 
   return (
     <button
+      data-component="language-switcher"
       className="relative flex items-center justify-between w-[70px] h-8 p-0.5 bg-[var(--color-surface-overlay)] backdrop-blur-md border border-white/10 rounded-2xl cursor-pointer transition-all duration-200 hover:border-white/20 sm:w-16 sm:h-9"
       onClick={switchLanguage}
       aria-label={isFrench ? 'Switch to English' : 'Passer en français'}
