@@ -1,14 +1,11 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { templateCompilerOptions } from '@tresjs/core'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
   plugins: [
-    vue({
-      ...templateCompilerOptions
-    }),
+    react(),
     tailwindcss()
   ],
   resolve: {
@@ -24,15 +21,17 @@ export default defineConfig({
     target: 'es2022',
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vue-vendor': ['vue', 'vue-router', 'vue-i18n'],
-          'three-vendor': ['three', '@tresjs/core', '@tresjs/cientos']
+        // Rolldown (Vite 8) only accepts the function form
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (/[\\/](three|@react-three)[\\/]/.test(id)) return 'three-vendor'
+            return 'react-vendor'
+          }
         }
       }
     }
   },
   optimizeDeps: {
-    include: ['three', '@tresjs/core', '@tresjs/cientos']
+    include: ['three', '@react-three/fiber', '@react-three/drei']
   }
 })
-

@@ -370,7 +370,6 @@ export default {
     title: 'Compétences',
     subtitle: 'Ce que j\'utilise au quotidien',
     hardskills: 'Hard Skills',
-    ia: 'IA',
     maker: 'Maker',
     soft: 'Soft Skills'
   },
@@ -436,7 +435,7 @@ export default {
     github: {
       title: 'Projets Open Source',
       tech: 'GitHub',
-      desc: 'Résumé de mes {count} repositories GitHub : librairies, outils, projets personnels et contributions open source'
+      desc: 'Résumé de mes {{count}} repositories GitHub : librairies, outils, projets personnels et contributions open source'
     }
   },
   books: {
@@ -457,7 +456,7 @@ export default {
     madeWith: 'Fait avec',
     and: 'et',
     passion: 'passion',
-    builtWith: 'Construit avec Vue.js, Three.js & TailwindCSS',
+    builtWith: 'Construit avec React, Three.js & TailwindCSS',
     copyright: '© 2025 Damien Battistella. Tous droits réservés.'
   }
 }

@@ -24,7 +24,7 @@ export interface Experience {
 export interface Skill {
   id: string
   name: string
-  category: 'hardskills' | 'ia' | 'maker' | 'soft'
+  category: 'hardskills' | 'maker' | 'soft'
   icon?: string
   logo?: string
   url?: string

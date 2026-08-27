@@ -4,11 +4,11 @@
 
 An interactive, infinite-scroll resume website featuring 9 unique WebGL 3D scenes, gaming-inspired UI elements, and bilingual support (FR/EN).
 
-![Vue](https://img.shields.io/badge/Vue-3.5-42b883?logo=vue.js)
+![React](https://img.shields.io/badge/React-19-61dafb?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript)
 ![Three.js](https://img.shields.io/badge/Three.js-r182-black?logo=three.js)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-06b6d4?logo=tailwindcss)
-![Vite](https://img.shields.io/badge/Vite-7-646cff?logo=vite)
+![Vite](https://img.shields.io/badge/Vite-8-646cff?logo=vite)
 ![Docker](https://img.shields.io/docker/v/wifsimster/resume?label=Docker%20Hub&logo=docker)
 ![GitHub Actions](https://img.shields.io/github/actions/workflow/status/Wifsimster/resume/release.yml?label=CI&logo=github)
 
@@ -25,12 +25,13 @@ An interactive, infinite-scroll resume website featuring 9 unique WebGL 3D scene
 
 | Technology | Version | Description |
 |------------|---------|-------------|
-| **Vue 3** | 3.5 | Progressive JavaScript framework |
-| **Vite** | 7 | Next generation frontend tooling |
+| **React** | 19 | UI library |
+| **Vite** | 8 | Next generation frontend tooling |
 | **TailwindCSS** | 4 | Utility-first CSS framework |
-| **TresJS** | 5.2 | Vue + Three.js integration |
+| **React Three Fiber** | 9 | React + Three.js integration |
 | **Three.js** | r182 | WebGL 3D library |
-| **Vue I18n** | 11.2 | Internationalization |
+| **i18next** | 26 | Internationalization (react-i18next) |
+| **zustand** | 5 | State management |
 | **TypeScript** | 5.9 | Type safety |
 
 ## 🚀 Getting Started
@@ -202,8 +203,9 @@ Quality detection considers:
 
 ```
 src/
-├── application/        # Composables, i18n config
-│   ├── composables/    # Vue composables
+├── application/        # Hooks, stores, i18n config
+│   ├── hooks/          # React hooks
+│   ├── stores/         # zustand stores (quality, achievements)
 │   │   ├── useAchievements.ts      # Achievement system
 │   │   ├── useAnimationController.ts  # Animation controller with mobile optimizations
 │   │   ├── useEasterEggs.ts        # Easter eggs (Konami code, etc.)
@@ -224,8 +226,8 @@ src/
 │   │   └── ui/         # UI components (achievements, language switcher, etc.)
 │   ├── styles/         # Global CSS styles with mobile optimizations
 │   └── views/          # Page views
-├── App.vue             # Root component
-└── main.ts             # Application entry point
+├── App.tsx             # Root component
+└── main.tsx            # Application entry point
 ```
 
 ## 🔧 Configuration

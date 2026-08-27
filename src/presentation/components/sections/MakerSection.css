@@ -1,0 +1,6 @@
+/* R3F sets touch-action: none inline on its canvas (as TresJS did); pan-y
+   keeps taps for the rack raycast while letting vertical scroll gestures pass
+   through. */
+.maker-section .section-canvas canvas {
+  touch-action: pan-y !important;
+}
