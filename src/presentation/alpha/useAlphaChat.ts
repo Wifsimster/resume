@@ -63,6 +63,10 @@ export function useAlphaChat(lang: 'fr' | 'en') {
   langRef.current = lang
   const messagesRef = useRef<ChatMessage[]>([])
   useEffect(() => { messagesRef.current = messages }, [messages])
+  // Stable id for the whole visit — groups the turns in the server logs
+  const conversationIdRef = useRef<string>(
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `conv-${Math.random().toString(36).slice(2, 12)}`
+  )
 
   const patchLast = useCallback((patch: (parts: MessagePart[]) => MessagePart[]) => {
     setMessages(prev => {
@@ -200,7 +204,7 @@ export function useAlphaChat(lang: 'fr' | 'en') {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ messages: history, lang: langRef.current })
+        body: JSON.stringify({ messages: history, lang: langRef.current, conversationId: conversationIdRef.current })
       })
       if (!res.ok || !res.body) throw new Error(`chat ${res.status}`)
 
