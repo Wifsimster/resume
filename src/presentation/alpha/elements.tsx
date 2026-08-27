@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
+import { Markdown } from './markdown'
 
 // AI-chat UI primitives for the alpha resume, modelled on Vercel AI Elements'
 // component vocabulary (Conversation, Message, Response, Reasoning, Tool,
@@ -47,7 +48,7 @@ export function Message({ from, children }: { from: 'user' | 'assistant', childr
   if (from === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-2xl rounded-br-md bg-[var(--color-accent-primary)]/20 border border-[var(--color-accent-primary)]/30 px-4 py-2.5 text-sm text-[var(--color-paper-cream)]">
+        <div className="max-w-[85%] rounded-xl rounded-br-sm bg-[var(--alpha-surface)] border border-[var(--alpha-border)] px-4 py-2.5 text-sm text-[var(--alpha-text)]">
           {children}
         </div>
       </div>
@@ -55,7 +56,7 @@ export function Message({ from, children }: { from: 'user' | 'assistant', childr
   }
   return (
     <div className="flex gap-3">
-      <div className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-accent-primary)] to-[var(--palette-cyan-400)] flex items-center justify-center text-base shadow-[0_0_12px_rgba(124,58,237,0.4)]" aria-hidden="true">
+      <div className="shrink-0 w-8 h-8 rounded-lg border border-[var(--alpha-border)] bg-[var(--alpha-surface)] flex items-center justify-center text-sm" aria-hidden="true">
         🚀
       </div>
       <div className="flex-1 min-w-0 flex flex-col gap-3 pt-1">
@@ -69,9 +70,8 @@ export function Message({ from, children }: { from: 'user' | 'assistant', childr
 
 export function Response({ children, streaming }: { children: string, streaming?: boolean }) {
   return (
-    <div className="text-sm leading-relaxed text-white/85 whitespace-pre-wrap">
-      {children}
-      {streaming && <span className="alpha-cursor" aria-hidden="true" />}
+    <div className="text-sm leading-relaxed text-[var(--alpha-body)]">
+      <Markdown text={children} cursor={streaming ? <span className="alpha-cursor" aria-hidden="true" /> : null} />
     </div>
   )
 }
@@ -84,9 +84,9 @@ export function Reasoning({ children, streaming, label }: { children: string, st
   const open = manuallyOpen ?? Boolean(streaming)
 
   return (
-    <div className="border border-white/10 rounded-lg bg-black/20 overflow-hidden">
+    <div className="border border-[var(--alpha-border)] rounded-lg bg-white/[0.02] overflow-hidden">
       <button
-        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-white/50 hover:text-white/75 transition-colors cursor-pointer"
+        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[var(--alpha-subtle)] hover:text-[var(--alpha-muted)] transition-colors cursor-pointer"
         onClick={() => setManuallyOpen(!open)}
       >
         <span className={streaming ? 'animate-pulse' : ''} aria-hidden="true">✦</span>
@@ -94,7 +94,7 @@ export function Reasoning({ children, streaming, label }: { children: string, st
         <span className="ml-auto transition-transform" style={{ transform: open ? 'rotate(180deg)' : 'none' }} aria-hidden="true">▾</span>
       </button>
       {open && (
-        <div className="px-3 pb-2.5 text-xs leading-relaxed text-white/45 italic whitespace-pre-wrap">
+        <div className="px-3 pb-2.5 text-xs leading-relaxed text-[var(--alpha-subtle)] italic whitespace-pre-wrap">
           {children}
           {streaming && <span className="alpha-cursor" aria-hidden="true" />}
         </div>
@@ -113,17 +113,17 @@ export interface ToolCall {
 
 export function Tool({ call, resultLabel }: { call: ToolCall, resultLabel: string }) {
   return (
-    <div className="flex items-center gap-2.5 px-3 py-2 border border-[var(--color-terminal-green)]/25 rounded-lg bg-[var(--color-terminal-green)]/5 text-xs font-(--font-code)">
+    <div className="flex items-center gap-2.5 px-3 py-2 border border-[var(--alpha-border)] rounded-lg bg-[var(--alpha-surface)] text-xs font-(--font-code)">
       {call.status === 'running' ? (
-        <span className="alpha-spinner shrink-0" aria-hidden="true" />
+        <span className="alpha-spinner shrink-0 text-[var(--alpha-accent)]" aria-hidden="true" />
       ) : (
-        <span className="text-[var(--color-terminal-green)]" aria-hidden="true">✓</span>
+        <span className="text-[var(--alpha-ok)]" aria-hidden="true">✓</span>
       )}
-      <span className="text-[var(--color-terminal-green)]/90 truncate">
-        {call.name}<span className="text-white/40">({call.args})</span>
+      <span className="text-[var(--alpha-muted)] truncate">
+        {call.name}<span className="text-[var(--alpha-subtle)]/70">({call.args})</span>
       </span>
       {call.status === 'done' && (
-        <span className="ml-auto text-white/35 shrink-0">{resultLabel}</span>
+        <span className="ml-auto text-[var(--alpha-subtle)] shrink-0">{resultLabel}</span>
       )}
     </div>
   )
@@ -140,7 +140,7 @@ export function Suggestions({ items, onPick, disabled }: { items: string[], onPi
           key={item}
           disabled={disabled}
           onClick={() => onPick(item)}
-          className="px-3.5 py-1.5 text-xs rounded-full border border-white/15 bg-white/5 text-white/75 hover:border-[var(--color-accent-primary)]/60 hover:text-white hover:bg-[var(--color-accent-primary)]/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default"
+          className="px-3.5 py-1.5 text-xs rounded-full border border-[var(--alpha-border)] bg-transparent text-[var(--alpha-muted)] hover:bg-white/5 hover:text-[var(--alpha-text)] hover:border-white/20 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default"
         >
           {item}
         </button>
@@ -175,13 +175,13 @@ export function PromptInput({ onSubmit, placeholder, busy }: { onSubmit: (text: 
         }}
         placeholder={placeholder}
         rows={1}
-        className="w-full resize-none rounded-2xl border border-white/15 bg-[#101018]/90 backdrop-blur px-4 py-3 pr-14 text-sm text-[var(--color-paper-cream)] placeholder-white/30 outline-none focus:border-[var(--color-accent-primary)]/60 transition-colors"
+        className="w-full resize-none rounded-xl border border-[var(--alpha-border)] bg-[var(--alpha-surface)] px-4 py-3 pr-14 text-sm text-[var(--alpha-text)] placeholder-[var(--alpha-subtle)] outline-none focus:ring-2 focus:ring-[var(--alpha-ring)] focus:border-transparent transition-shadow"
       />
       <button
         type="submit"
         disabled={!text.trim() || busy}
         aria-label="Send"
-        className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl bg-[var(--color-accent-primary)] text-white flex items-center justify-center transition-opacity disabled:opacity-30 cursor-pointer disabled:cursor-default hover:opacity-90"
+        className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-[var(--alpha-text)] text-[#09090b] flex items-center justify-center transition-opacity disabled:opacity-30 cursor-pointer disabled:cursor-default hover:opacity-85"
       >
         {busy ? <span className="alpha-spinner" aria-hidden="true" /> : '↑'}
       </button>

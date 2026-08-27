@@ -140,11 +140,20 @@ type ChatEvent =
 function createDirectiveParser(emit: (event: ChatEvent) => void) {
   let head = ''
   let resolved = false
+  // Tolerant: models drift on the exact format ("[skills]", "[card: skills]",
+  // mixed case…), so accept any bracketed variant — but only swallow the line
+  // when the word is a known card kind (or "none"), never arbitrary text.
+  const parseDirective = (line: string): string | null => {
+    const match = /^\[\s*(?:card\s*:\s*)?([a-z]+)\s*\]$/i.exec(line.trim())
+    if (!match) return null
+    const kind = match[1].toLowerCase()
+    return isCardKind(kind) || kind === 'none' ? kind : null
+  }
   const resolveHead = (first: string, rest: string | null) => {
     resolved = true
-    const match = /^\[card:([a-z]+)\]$/.exec(first.trim())
-    if (match) {
-      if (isCardKind(match[1])) emit({ type: 'card-intent', kind: match[1] })
+    const kind = parseDirective(first)
+    if (kind !== null) {
+      if (isCardKind(kind)) emit({ type: 'card-intent', kind })
       const text = rest?.replace(/^\s+/, '') ?? ''
       if (text) emit({ type: 'text', delta: text })
     } else {
