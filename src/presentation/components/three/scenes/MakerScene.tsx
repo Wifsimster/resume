@@ -18,6 +18,8 @@ import KeyboardComponent from './maker/KeyboardComponent'
 import MouseComponent from './maker/MouseComponent'
 import ServerRackComponent from './maker/ServerRackComponent'
 import DustParticlesComponent, { type DustParticle, type DustParticlesHandle } from './maker/DustParticlesComponent'
+import DeskPropsComponent from './maker/DeskPropsComponent'
+import { createContactShadowTexture, createFloorTexture, createWallGradientTexture } from '../utils/proceduralTextures'
 
 // Context exposed to the parent component (RackLegend) — the Vue version used
 // defineExpose({ camera, renderer })
@@ -69,6 +71,17 @@ export default function MakerScene({ quality, cameraMode, projects, techStack, t
       set({ frameloop: 'never' })
     }
   }, [animationController.isVisible, animationController.isPaused, set])
+
+  // Environment textures — generated once, disposed on unmount
+  const contactShadowTexture = useMemo(() => createContactShadowTexture(), [])
+  const wallTexture = useMemo(() => createWallGradientTexture(), [])
+  const floorTexture = useMemo(() => createFloorTexture(), [])
+  useEffect(() => () => {
+    contactShadowTexture.dispose()
+    wallTexture.dispose()
+    floorTexture.dispose()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const sceneRef = useRef<Group>(null)
   const serverUnitMeshes = useRef<Map<string, Object3D>>(new Map()).current
@@ -210,27 +223,48 @@ export default function MakerScene({ quality, cameraMode, projects, techStack, t
       <PerspectiveCamera makeDefault ref={cameraRef}
         position={[cameraPosition.x, cameraPosition.y, cameraPosition.z]} />
 
-      {/* Desk Lighting */}
-      {cameraMode === 'desk' && <ambientLight intensity={3.0} />}
-      {cameraMode === 'desk' && <directionalLight position={[2, 10, 5]} intensity={6} color="#FFFFFF" />}
-      {cameraMode === 'desk' && <pointLight position={[-2, 4, 4]} intensity={12} color="#FFFFFF" />}
-      {cameraMode === 'desk' && renderSettings.lightCount >= 3 && <pointLight position={[-2, 2.5, 0]} intensity={8} color={makerColors.screenGlow} />}
-      {cameraMode === 'desk' && renderSettings.lightCount >= 4 && <pointLight position={[0, 3, 2]} intensity={5} color={makerColors.wifi} />}
-      {cameraMode === 'desk' && renderSettings.lightCount >= 5 && <pointLight position={[-3, 1, 3]} intensity={4} color="#FFFFFF" />}
+      {/* Three-light rig replacing the old 7-light white blast: a hemisphere
+          gives the cheap sky/floor bounce gradient, one warm key directional
+          shapes the forms, and distance-limited accent points add colour.
+          Fewer active lights = fewer per-fragment light evaluations, and the
+          restored contrast lets materials actually read as wood and metal. */}
+      <hemisphereLight args={['#8A9BC0', '#3A2818']} intensity={2.8} />
 
-      {/* Rack Lighting (centered on rack at x=1.372) - boosted for dark metal materials */}
-      {cameraMode === 'rack' && <ambientLight intensity={5.0} />}
-      {cameraMode === 'rack' && <directionalLight position={[1.372, 8, 6]} intensity={10} color="#FFFFFF" />}
-      {/* Strong frontal key light */}
-      {cameraMode === 'rack' && <pointLight position={[1.372, 1, 3.5]} intensity={20} color="#FFFFFF" />}
-      {/* Overhead light */}
-      {cameraMode === 'rack' && <pointLight position={[1.372, 4, 1]} intensity={15} color="#FFFFFF" />}
-      {/* Blue accent from behind */}
-      {cameraMode === 'rack' && renderSettings.lightCount >= 3 && <pointLight position={[1.372, 1.5, -1]} intensity={12} color={makerColors.serverBlue} />}
-      {/* Right side fill */}
-      {cameraMode === 'rack' && renderSettings.lightCount >= 4 && <pointLight position={[3, 0.5, 2]} intensity={8} color="#FFFFFF" />}
-      {/* Left side fill */}
-      {cameraMode === 'rack' && renderSettings.lightCount >= 5 && <pointLight position={[-0.3, 0.5, 2]} intensity={8} color="#FFFFFF" />}
+      {/* Desk Lighting */}
+      {cameraMode === 'desk' && (
+        <>
+          <directionalLight position={[2.5, 8, 5]} intensity={4.5} color="#FFF2DE" />
+          {/* Soft frontal fill keeping the desk readable */}
+          <pointLight position={[-2, 2.5, 3.5]} intensity={8} color="#FFFFFF" distance={7} decay={2} />
+          {/* Monitor glow washing the desk in front of the screen */}
+          {renderSettings.lightCount >= 3 && (
+            <pointLight position={[-2, 1.3, 1.2]} intensity={5} color={makerColors.screenGlow} distance={4.5} decay={2} />
+          )}
+          {/* Warm desk-lamp accent from the right */}
+          {renderSettings.lightCount >= 4 && (
+            <pointLight position={[0.6, 1.6, 1.4]} intensity={6} color="#FFB870" distance={5} decay={2} />
+          )}
+        </>
+      )}
+
+      {/* Rack Lighting (centered on rack at x=1.372) */}
+      {cameraMode === 'rack' && (
+        <>
+          {/* Dark-metal faces need a broad base level on top of the hemisphere */}
+          <ambientLight intensity={1.8} />
+          <directionalLight position={[2.5, 8, 6]} intensity={4} color="#FFF2DE" />
+          {/* Frontal key so the dark metal faces stay readable */}
+          <pointLight position={[1.372, 1.2, 3]} intensity={26} color="#FFFFFF" distance={8} decay={2} />
+          {/* Blue server-room accent from behind */}
+          {renderSettings.lightCount >= 3 && (
+            <pointLight position={[1.372, 1.5, -1]} intensity={10} color={makerColors.serverBlue} distance={5} decay={2} />
+          )}
+          {/* Warm floor bounce grounding the cabinet */}
+          {renderSettings.lightCount >= 4 && (
+            <pointLight position={[1.372, -1.2, 1.8]} intensity={7} color="#FFB870" distance={5} decay={2} />
+          )}
+        </>
+      )}
 
       <group ref={sceneRef}>
         {/* Desk Animation */}
@@ -240,6 +274,7 @@ export default function MakerScene({ quality, cameraMode, projects, techStack, t
             <MonitorComponent screenTexture={screenTexture} colors={makerColors} />
             <KeyboardComponent colors={makerColors} />
             <MouseComponent />
+            {quality !== 'minimal' && <DeskPropsComponent />}
           </group>
         )}
 
@@ -257,17 +292,47 @@ export default function MakerScene({ quality, cameraMode, projects, techStack, t
             dustParticles={dustParticles} getDustPos={getDustPos} />
         )}
 
-        <mesh position={[1, 2, -2.5]}>
-          <planeGeometry args={[16, 7]} />
-          <meshBasicMaterial color="#0A0A0A" />
+        {/* Back wall: vertical gradient with a soft light pool at desk height
+            instead of the old flat black void — reads as a room, not space */}
+        <mesh position={[1, 1.7, -2.5]}>
+          <planeGeometry args={[26, 9]} />
+          <meshBasicMaterial map={wallTexture} />
         </mesh>
       </group>
 
-      {/* Floor */}
+      {/* Floor: pre-painted pool-of-light texture on an unlit material — the
+          look of the rig's light pooling on the floor at zero shading cost */}
       <mesh position={[0, -1.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[20, 16]} />
-        <meshBasicMaterial color="#080808" />
+        <meshBasicMaterial map={floorTexture} />
       </mesh>
+
+      {/* Fake ambient-occlusion contact shadows: one radial-gradient quad per
+          grounded object — the depth cue of shadow maps at ~zero GPU cost */}
+      {cameraMode === 'desk' && (
+        <>
+          {/* Under the desk */}
+          <mesh position={[-2, -1.79, 0.5]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[6.4, 3.4]} />
+            <meshBasicMaterial map={contactShadowTexture} transparent depthWrite={false} />
+          </mesh>
+          {/* On the desktop, under monitor foot and keyboard */}
+          <mesh position={[-2, 0.032, 0.22]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[1.4, 0.9]} />
+            <meshBasicMaterial map={contactShadowTexture} transparent depthWrite={false} opacity={0.7} />
+          </mesh>
+          <mesh position={[-2, 0.032, 0.82]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[1.5, 0.7]} />
+            <meshBasicMaterial map={contactShadowTexture} transparent depthWrite={false} opacity={0.55} />
+          </mesh>
+        </>
+      )}
+      {cameraMode === 'rack' && (
+        <mesh position={[1.372, -1.79, 0.2]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[3.6, 2.6]} />
+          <meshBasicMaterial map={contactShadowTexture} transparent depthWrite={false} />
+        </mesh>
+      )}
     </>
   )
 }

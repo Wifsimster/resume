@@ -362,3 +362,102 @@ export function createRingTexture(color: string, seed = 5): CanvasTexture {
   ctx.globalAlpha = 1
   return toTexture(canvas)
 }
+
+/**
+ * Desk wood: warm base with seeded plank grain — long horizontal streaks in
+ * darker and lighter shades plus a few knots. 512×256, repeats horizontally.
+ */
+export function createWoodTexture(base = '#8B5A3C', seed = 23): CanvasTexture {
+  const rand = mulberry32(seed)
+  const { canvas, ctx } = makeCanvas(512, 256)
+
+  ctx.fillStyle = base
+  ctx.fillRect(0, 0, 512, 256)
+
+  // Grain streaks: translucent horizontal strokes of varying darkness
+  for (let i = 0; i < 90; i++) {
+    const y = rand() * 256
+    const len = 60 + rand() * 300
+    const x = rand() * 512 - 50
+    const dark = rand() > 0.5
+    ctx.strokeStyle = dark ? 'rgba(40, 20, 8, 0.16)' : 'rgba(255, 220, 180, 0.08)'
+    ctx.lineWidth = 1 + rand() * 2.5
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    // Slight vertical wobble so the grain doesn't read as ruled lines
+    ctx.bezierCurveTo(x + len / 3, y + (rand() - 0.5) * 6, x + (2 * len) / 3, y + (rand() - 0.5) * 6, x + len, y + (rand() - 0.5) * 4)
+    ctx.stroke()
+  }
+
+  // A few knots
+  for (let i = 0; i < 4; i++) {
+    const x = rand() * 512
+    const y = rand() * 256
+    const r = 4 + rand() * 7
+    ctx.strokeStyle = 'rgba(40, 20, 8, 0.25)'
+    ctx.lineWidth = 1.5
+    for (let ring = 1; ring <= 3; ring++) {
+      ctx.beginPath()
+      ctx.ellipse(x, y, r * ring * 0.5, r * ring * 0.32, 0, 0, Math.PI * 2)
+      ctx.stroke()
+    }
+  }
+
+  return toTexture(canvas, true)
+}
+
+/**
+ * Contact-shadow blob: radial black→transparent gradient. Laid flat under
+ * objects it fakes ambient occlusion for the cost of one transparent quad —
+ * no shadow maps involved.
+ */
+export function createContactShadowTexture(): CanvasTexture {
+  const { canvas, ctx } = makeCanvas(256, 256)
+  const g = ctx.createRadialGradient(128, 128, 8, 128, 128, 128)
+  g.addColorStop(0, 'rgba(0, 0, 0, 0.55)')
+  g.addColorStop(0.55, 'rgba(0, 0, 0, 0.28)')
+  g.addColorStop(1, 'rgba(0, 0, 0, 0)')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, 256, 256)
+  return toTexture(canvas)
+}
+
+/**
+ * Back-wall gradient: deep blue-grey glow pooling at desk height fading to
+ * black — replaces the flat #0A0A0A void so the scene reads as a room.
+ */
+export function createWallGradientTexture(): CanvasTexture {
+  const { canvas, ctx } = makeCanvas(256, 256)
+  const g = ctx.createLinearGradient(0, 0, 0, 256)
+  g.addColorStop(0, '#05060A')
+  g.addColorStop(0.55, '#0C1018')
+  g.addColorStop(0.8, '#131A26')
+  g.addColorStop(1, '#0A0D14')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, 256, 256)
+  // Soft horizontal pool of light behind the desk area
+  const glow = ctx.createRadialGradient(128, 205, 10, 128, 205, 150)
+  glow.addColorStop(0, 'rgba(70, 110, 160, 0.16)')
+  glow.addColorStop(1, 'rgba(70, 110, 160, 0)')
+  ctx.fillStyle = glow
+  ctx.fillRect(0, 0, 256, 256)
+  return toTexture(canvas)
+}
+
+/**
+ * Floor pool-of-light: dark base with a soft radial glow where the rig's
+ * lights would pool. Painted once so the floor can stay on an unlit basic
+ * material — the look of a lit floor without per-fragment light cost.
+ */
+export function createFloorTexture(): CanvasTexture {
+  const { canvas, ctx } = makeCanvas(512, 512)
+  ctx.fillStyle = '#08090C'
+  ctx.fillRect(0, 0, 512, 512)
+  const g = ctx.createRadialGradient(256, 236, 20, 256, 236, 260)
+  g.addColorStop(0, 'rgba(64, 78, 104, 0.5)')
+  g.addColorStop(0.5, 'rgba(38, 44, 60, 0.25)')
+  g.addColorStop(1, 'rgba(0, 0, 0, 0)')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, 512, 512)
+  return toTexture(canvas)
+}
