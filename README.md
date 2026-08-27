@@ -15,7 +15,7 @@ An interactive, infinite-scroll resume website featuring three WebGL 3D scenes (
 ## ✨ Features
 
 - **WebGL 3D Scenes** - Solar system hero, space companion cruising across sections, and a maker desk with a full server rack — all lazy-loaded
-- **Conversational AI Resume** - `/?ui=alpha` chats about the resume through a real LLM (Gemini free tier or any OpenAI-compatible endpoint), with a scripted fallback when no provider is configured
+- **Conversational AI Resume (default)** - the site opens on an AI chat about the resume, backed by a real LLM (Gemini free tier or any OpenAI-compatible endpoint) with a scripted fallback; the classic immersive 3D version lives at `/?ui=classic`
 - **Gaming-Inspired UI** - XP progress bar, 30 unlockable achievements, easter eggs
 - **Bilingual** - French and English with automatic browser detection
 - **Responsive** - Works on desktop and mobile devices
@@ -99,7 +99,7 @@ The container is ready to be deployed behind Traefik reverse proxy with health c
 
 ### Chat backend (conversational resume)
 
-`/?ui=alpha` turns into a real AI chat when the `chat` service (see `compose.yml`) has an LLM provider configured. The server is built on the [Vercel AI SDK](https://ai-sdk.dev/), keeps the credentials server-side, streams over SSE through nginx (`/api/`), and rate-limits requests (8/min per IP, 400/day) to protect free quotas. Without any provider the frontend silently falls back to its scripted engine — the site never breaks.
+The default conversational resume becomes a real AI chat when the `chat` service (see `compose.yml`) has an LLM provider configured. The server is built on the [Vercel AI SDK](https://ai-sdk.dev/), keeps the credentials server-side, streams over SSE through nginx (`/api/`), and rate-limits requests (8/min per IP, 400/day) to protect free quotas. Without any provider the frontend silently falls back to its scripted engine — the site never breaks.
 
 Pick ONE provider via environment variables (a `.env` next to `compose.yml` works):
 

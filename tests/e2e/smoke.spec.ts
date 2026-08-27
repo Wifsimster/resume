@@ -11,7 +11,7 @@ const collectPageErrors = (page: Page): string[] => {
 
 test('renders all sections without runtime errors', async ({ page }) => {
   const errors = collectPageErrors(page)
-  await page.goto('/')
+  await page.goto('/?ui=classic')
 
   for (const section of SECTIONS) {
     await expect(page.locator(`[data-section="${section}"]`)).toBeAttached()
@@ -28,7 +28,7 @@ test('renders all sections without runtime errors', async ({ page }) => {
 })
 
 test('language switcher toggles between French and English', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/?ui=classic')
   const aboutTitle = page.locator('[data-section="about"] h2')
   const before = await aboutTitle.textContent()
 
@@ -42,7 +42,7 @@ test('language switcher toggles between French and English', async ({ page }) =>
 
 test('maker section switches to rack mode and shows the legend', async ({ page }) => {
   const errors = collectPageErrors(page)
-  await page.goto('/')
+  await page.goto('/?ui=classic')
   await page.locator('[data-section="maker"]').scrollIntoViewIfNeeded()
 
   // Wait for the lazily loaded maker canvas, then toggle the camera mode
@@ -57,7 +57,7 @@ test('maker section switches to rack mode and shows the legend', async ({ page }
 })
 
 test('projects section lists the open-source projects', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/?ui=classic')
   await page.locator('[data-section="projects"]').scrollIntoViewIfNeeded()
 
   const cards = page.locator('[data-section="projects"] a')

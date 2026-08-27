@@ -68,13 +68,23 @@ test('live mode streams the answer from the chat API when a provider is up', asy
   expect(errors).toEqual([])
 })
 
-test('classic site links to the alpha and the alpha links back', async ({ page }) => {
+test('the chat is the default and links to the classic 3D version and back', async ({ page }) => {
+  // Default experience: the conversational resume
   await page.goto('/')
-  const alphaPill = page.locator('a[href="?ui=alpha"]')
-  await expect(alphaPill).toBeVisible()
-  await alphaPill.click()
   await expect(page.locator('.alpha-app')).toBeVisible({ timeout: 15_000 })
 
+  // The header link opens the classic 3D site
   await page.locator('header button').first().click()
   await expect(page.locator('[data-section="hero"]')).toBeAttached({ timeout: 15_000 })
+
+  // The classic site links back to the chat
+  const chatPill = page.locator('a[href="/"]')
+  await expect(chatPill).toBeVisible()
+  await chatPill.click()
+  await expect(page.locator('.alpha-app')).toBeVisible({ timeout: 15_000 })
+})
+
+test('legacy section links still open the classic 3D site', async ({ page }) => {
+  await page.goto('/#maker')
+  await expect(page.locator('[data-section="maker"]')).toBeAttached({ timeout: 15_000 })
 })

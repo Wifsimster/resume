@@ -230,11 +230,11 @@ export default function App() {
       {/* Fixed UI Elements */}
       <header className="fixed top-4 right-4 z-100 flex gap-3 items-center sm:top-2 sm:right-2 sm:gap-2">
         <a
-          href="?ui=alpha"
+          href="/"
           className="flex items-center gap-1.5 py-1.5 px-3 bg-[#1E1E1E]/80 backdrop-blur-md border border-[var(--color-accent-primary)]/40 rounded-lg no-underline text-xs font-(--font-code) text-[var(--color-paper-cream)] transition-all duration-150 hover:border-[var(--color-accent-primary)] hover:shadow-[0_0_15px_rgba(124,58,237,0.35)]"
-          title="Conversational resume (alpha)"
+          title="Conversational AI resume"
         >
-          <span aria-hidden="true">✨</span> Alpha
+          <span aria-hidden="true">💬</span> Chat IA
         </a>
         <AchievementsIndicator />
         <LanguageSwitcher />

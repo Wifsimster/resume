@@ -6,16 +6,16 @@ import { useAlphaChat } from './useAlphaChat'
 import './alpha.css'
 
 // The conversational resume: an AI chat interface (design language modelled
-// on shadcn/ui + Vercel AI Elements, dark zinc theme). Reached via /?ui=alpha
-// — the classic 3D site stays the default experience. Live LLM answers when
-// the chat backend has a provider, scripted engine otherwise.
+// on shadcn/ui + Vercel AI Elements, dark zinc theme). This is the official
+// default experience — the classic 3D site lives at ?ui=classic. Live LLM
+// answers when the chat backend has a provider, scripted engine otherwise.
 
 const copy = {
   fr: {
     title: 'CV conversationnel',
     subtitle: 'scripté, sans LLM',
     subtitleLive: 'IA en direct',
-    back: '← Version classique',
+    back: '← Version 3D',
     placeholder: 'Posez une question sur Damien…',
     thought: 'Raisonnement',
     thinking: 'Réflexion…',
@@ -25,7 +25,7 @@ const copy = {
     title: 'Conversational resume',
     subtitle: 'scripted, no LLM',
     subtitleLive: 'live AI',
-    back: '← Classic version',
+    back: '← 3D version',
     placeholder: 'Ask something about Damien…',
     thought: 'Reasoning',
     thinking: 'Thinking…',
@@ -41,7 +41,7 @@ export default function AlphaApp() {
   const { messages, status, suggestions, send, live } = useAlphaChat(lang)
 
   const backToClassic = () => {
-    window.location.href = window.location.pathname
+    window.location.href = `${window.location.pathname}?ui=classic`
   }
 
   const handlePick = (suggestion: string) => {
