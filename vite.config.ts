@@ -1,14 +1,11 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { templateCompilerOptions } from '@tresjs/core'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
   plugins: [
-    vue({
-      ...templateCompilerOptions
-    }),
+    react(),
     tailwindcss()
   ],
   resolve: {
@@ -25,14 +22,13 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'vue-vendor': ['vue', 'vue-router', 'vue-i18n'],
-          'three-vendor': ['three', '@tresjs/core', '@tresjs/cientos']
+          'react-vendor': ['react', 'react-dom', 'react-router', 'react-i18next', 'i18next', 'zustand'],
+          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei']
         }
       }
     }
   },
   optimizeDeps: {
-    include: ['three', '@tresjs/core', '@tresjs/cientos']
+    include: ['three', '@react-three/fiber', '@react-three/drei']
   }
 })
-
