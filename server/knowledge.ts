@@ -14,7 +14,7 @@ export const EXTRA_FACTS: string[] = [
   'Consultant chez ARCA Computing (2015-2016, région bordelaise) avec trois missions : backend Java de Fairitycs, une solution à base de beacons (ARCA) ; full stack sur une application web de transport collaboratif (4SH France) ; développement frontend de composants JS/CSS compatibles avec le logiciel Uniface chez Agfa HealthCare (nov. 2015 - sept. 2016) — sa première expérience dans la santé, avant de rejoindre Dedalus en septembre 2016.',
 
   // Rôle actuel élargi
-  'Depuis janvier 2026, nommé AI Champion officiel du groupe Dedalus : il représente et pilote l\'adoption de l\'IA à l\'échelle du groupe, en parallèle de son rôle de Technical Lead Manager.',
+  'Depuis janvier 2026, AI Champion chez Dedalus, en parallèle de son rôle de Technical Lead Manager : il participe au programme AI Champion du groupe et propose des solutions au niveau groupe pour faire avancer les méthodologies IA, afin de conserver et d\'augmenter la vélocité des équipes. Il ne pilote pas les initiatives IA du groupe — formule à éviter.',
 
   // Activité indépendante (en parallèle du CDI Dedalus)
   'En CDI chez Dedalus, et depuis 2026 également fondateur de BATTISTELLA (https://pro.battistella.ovh/), micro-entreprise indépendante : un studio solo qui conçoit, héberge (en France, auto-hébergé) et exploite ses propres applications SaaS — The Box, Toko, WaWPTN, Tribu, Copro-Pilot (gratuit, freemium ou abonnement de 3,99 € à 149 €/mois selon le produit). Pas de prestations sur mesure : il se concentre exclusivement sur ses propres produits.',
