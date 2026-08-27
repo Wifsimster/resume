@@ -10,54 +10,119 @@ import { Markdown } from './markdown'
 
 /* ========================= Conversation ========================= */
 
-export function Conversation({ children }: { children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const stickToBottomRef = useRef(true)
+// Message scroller behaviours modelled on shadcn/ui's Message Scroller:
+// - a new turn (user message) anchors near the top of the viewport, keeping a
+//   peek of the previous content; the streamed answer grows below it and the
+//   reader is never moved against their intent
+// - while at the live edge the view follows the stream; scrolling away
+//   (wheel, touch, keys, scrollbar) releases it
+// - a floating button re-engages following when content waits below
 
-  // Stick to bottom while the visitor hasn't scrolled up
+const LIVE_EDGE_PX = 48
+const ANCHOR_PEEK_PX = 64
+
+export function Conversation({ children, busy }: { children: ReactNode, busy?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const stickRef = useRef(true)
+  const userRowCountRef = useRef(0)
+  const [showJump, setShowJump] = useState(false)
+
+  const atLiveEdge = (el: HTMLDivElement) => el.scrollHeight - el.scrollTop - el.clientHeight < LIVE_EDGE_PX
+
   const handleScroll = () => {
     const el = ref.current
     if (!el) return
-    stickToBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+    stickRef.current = atLiveEdge(el)
+    setShowJump(!stickRef.current)
+  }
+
+  const releaseFollow = () => {
+    stickRef.current = false
+  }
+
+  const smooth = (): ScrollBehavior =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+
+  const jumpToLiveEdge = () => {
+    const el = ref.current
+    if (!el) return
+    el.scrollTo({ top: el.scrollHeight, behavior: smooth() })
+    stickRef.current = true
+    setShowJump(false)
   }
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
     const observer = new MutationObserver(() => {
-      if (stickToBottomRef.current) {
+      const userRows = el.querySelectorAll<HTMLElement>('[data-role="user"]')
+      if (userRows.length > userRowCountRef.current) {
+        // New turn: anchor it near the top with a peek of the previous item
+        userRowCountRef.current = userRows.length
+        const row = userRows[userRows.length - 1]
+        const top = row.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop
+        el.scrollTo({ top: Math.max(0, top - ANCHOR_PEEK_PX), behavior: smooth() })
+        stickRef.current = false
+      } else if (stickRef.current) {
         el.scrollTop = el.scrollHeight
       }
+      setShowJump(!atLiveEdge(el))
     })
     observer.observe(el, { childList: true, subtree: true, characterData: true })
     return () => observer.disconnect()
   }, [])
 
   return (
-    <div ref={ref} onScroll={handleScroll} className="flex-1 overflow-y-auto overscroll-contain">
-      <div className="mx-auto w-full max-w-3xl px-4 py-6 flex flex-col gap-6">
-        {children}
+    <div className="relative flex-1 min-h-0">
+      <div
+        ref={ref}
+        onScroll={handleScroll}
+        onWheel={(e) => { if (e.deltaY < 0) releaseFollow() }}
+        onTouchMove={releaseFollow}
+        onKeyDown={(e) => { if (['ArrowUp', 'PageUp', 'Home'].includes(e.key)) releaseFollow() }}
+        role="region"
+        aria-label="Messages"
+        tabIndex={0}
+        className="h-full overflow-y-auto overscroll-contain outline-none"
+      >
+        <div role="log" aria-relevant="additions" aria-busy={busy || undefined} className="mx-auto w-full max-w-3xl px-4 py-6 flex flex-col gap-6">
+          {children}
+        </div>
       </div>
+      <button
+        onClick={jumpToLiveEdge}
+        tabIndex={showJump ? 0 : -1}
+        aria-hidden={!showJump}
+        data-active={showJump}
+        aria-label="Scroll to latest messages"
+        className={`absolute left-1/2 -translate-x-1/2 bottom-4 w-8 h-8 rounded-full border border-[var(--alpha-border)] bg-[var(--alpha-surface)] text-[var(--alpha-muted)] shadow-lg shadow-black/30 flex items-center justify-center text-sm transition-all cursor-pointer hover:text-[var(--alpha-text)] hover:border-white/20 ${showJump ? 'opacity-100' : 'opacity-0 pointer-events-none translate-y-1'}`}
+      >
+        ↓
+      </button>
     </div>
   )
 }
 
 /* ========================= Message ========================= */
 
+// Bubble variants modelled on shadcn/ui's Bubble: the user gets a tinted
+// end-aligned bubble (max 80% width), the assistant is the ghost variant —
+// full-width unframed content next to its avatar.
+
 export function Message({ from, children }: { from: 'user' | 'assistant', children: ReactNode }) {
   if (from === 'user') {
     return (
-      <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-xl rounded-br-sm bg-[var(--alpha-surface)] border border-[var(--alpha-border)] px-4 py-2.5 text-sm text-[var(--alpha-text)]">
+      <div className="flex justify-end" data-role="user">
+        <div className="max-w-[80%] rounded-xl rounded-br-sm bg-[var(--alpha-accent)]/10 border border-[var(--alpha-accent)]/20 px-4 py-2.5 text-sm text-[var(--alpha-text)]">
           {children}
         </div>
       </div>
     )
   }
   return (
-    <div className="flex gap-3">
-      <div className="shrink-0 w-8 h-8 rounded-lg border border-[var(--alpha-border)] bg-[var(--alpha-surface)] flex items-center justify-center text-sm" aria-hidden="true">
-        🚀
+    <div className="flex gap-3" data-role="assistant">
+      <div className="shrink-0 w-8 h-8 rounded-lg border border-[var(--alpha-border)] bg-[var(--alpha-surface)] flex items-center justify-center text-[10px] font-semibold tracking-wide text-[var(--alpha-muted)]" aria-hidden="true">
+        DB
       </div>
       <div className="flex-1 min-w-0 flex flex-col gap-3 pt-1">
         {children}
