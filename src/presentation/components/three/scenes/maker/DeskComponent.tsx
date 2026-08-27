@@ -1,4 +1,6 @@
+import { useEffect, useMemo } from 'react'
 import type { makerColors } from '@domain/data/makerRack'
+import { createWoodTexture } from '../../utils/proceduralTextures'
 
 interface Props {
   colors: typeof makerColors
@@ -7,12 +9,17 @@ interface Props {
 const padPositions = [[-0.15, -0.7285, -0.45], [0.15, -0.7285, -0.45], [-0.15, -0.7285, 0.45], [0.15, -0.7285, 0.45]] as const
 
 export default function DeskComponent({ colors }: Props) {
+  // Procedural plank grain so the desktop reads as wood instead of a flat
+  // brown slab — generated once, disposed on unmount
+  const woodTexture = useMemo(() => createWoodTexture(colors.wood), [colors.wood])
+  useEffect(() => () => woodTexture.dispose(), [woodTexture])
+
   return (
     <group position={[-2, 0, 0.5]}>
       {/* Desktop surface */}
       <mesh position={[0, 0, 0]}>
         <boxGeometry args={[4.494, 0.056, 1.798]} />
-        <meshStandardMaterial color={colors.wood} roughness={0.75} metalness={0.05} />
+        <meshStandardMaterial map={woodTexture} roughness={0.75} metalness={0.05} />
       </mesh>
 
       {/* Left foot with vertical column */}

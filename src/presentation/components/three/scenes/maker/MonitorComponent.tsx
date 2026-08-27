@@ -24,6 +24,13 @@ export default function MonitorComponent({ screenTexture, colors }: Props) {
         <meshBasicMaterial key={screenTexture ? 'tex' : 'none'} map={screenTexture} toneMapped={false} color={screenTexture ? '#FFFFFF' : '#0D1117'} />
       </mesh>
 
+      {/* Bias-light halo behind the panel: an oversized emissive quad that
+          fakes the LED strip glow bouncing off the wall */}
+      <mesh position={[0, 0, -0.083]} rotation={[0, Math.PI, 0]}>
+        <planeGeometry args={[1.95, 1.25]} />
+        <meshBasicMaterial color="#1E3A50" transparent opacity={0.55} depthWrite={false} />
+      </mesh>
+
       {/* Bottom bezel accent strip */}
       <mesh position={[0, -0.46, 0.08]}>
         <boxGeometry args={[1.59, 0.024, 0.02]} />
