@@ -13,9 +13,6 @@ import './alpha.css'
 const copy = {
   fr: {
     title: 'CV conversationnel',
-    subtitle: 'scripté, sans LLM',
-    subtitleLive: 'IA en direct',
-    back: '← Version 3D',
     placeholder: 'Posez une question sur Damien…',
     thought: 'Raisonnement',
     thinking: 'Réflexion…',
@@ -23,9 +20,6 @@ const copy = {
   },
   en: {
     title: 'Conversational resume',
-    subtitle: 'scripted, no LLM',
-    subtitleLive: 'live AI',
-    back: '← 3D version',
     placeholder: 'Ask something about Damien…',
     thought: 'Reasoning',
     thinking: 'Thinking…',
@@ -38,7 +32,7 @@ export default function AlphaApp() {
   const lang: 'fr' | 'en' = i18n.language === 'en' ? 'en' : 'fr'
   const text = copy[lang]
 
-  const { messages, status, suggestions, send, live } = useAlphaChat(lang)
+  const { messages, status, suggestions, send } = useAlphaChat(lang)
 
   const backToClassic = () => {
     window.location.href = `${window.location.pathname}?ui=classic`
@@ -56,26 +50,8 @@ export default function AlphaApp() {
   return (
     <div className="alpha-app fixed inset-0 flex flex-col bg-[var(--alpha-bg)]">
       {/* Header */}
-      <header className="shrink-0 flex items-center gap-3 px-4 py-3 border-b border-[var(--alpha-border)] bg-[var(--alpha-bg)]/95 backdrop-blur">
-        <button
-          onClick={backToClassic}
-          className="text-[13px] text-[var(--alpha-muted)] hover:text-[var(--alpha-text)] transition-colors cursor-pointer"
-        >
-          {text.back}
-        </button>
-        <div className="mx-auto flex items-center gap-2.5">
-          <span className="text-sm font-medium tracking-tight text-[var(--alpha-text)]">{text.title}</span>
-          {live ? (
-            <span className="flex items-center gap-1.5 rounded-full border border-[var(--alpha-border)] bg-white/[0.03] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--alpha-ok)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--alpha-ok)]" aria-hidden="true" />
-              {text.subtitleLive}
-            </span>
-          ) : (
-            <span className="rounded-full border border-[var(--alpha-border)] bg-white/[0.03] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--alpha-subtle)]">
-              {text.subtitle}
-            </span>
-          )}
-        </div>
+      <header className="shrink-0 flex items-center justify-between gap-3 px-4 py-3 border-b border-[var(--alpha-border)] bg-[var(--alpha-bg)]/95 backdrop-blur">
+        <span className="text-sm font-medium tracking-tight text-[var(--alpha-text)]">{text.title}</span>
         <LanguageSwitcher />
       </header>
 

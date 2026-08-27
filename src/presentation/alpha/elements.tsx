@@ -242,7 +242,13 @@ export function PromptInput({ onSubmit, placeholder, busy }: { onSubmit: (text: 
   }
 
   return (
-    <form onSubmit={submit} className="relative">
+    // shadcn InputGroup: the frame carries the border/ring, the textarea is
+    // borderless and the button is a flex sibling — it can never overflow the
+    // field, whatever the device font scale
+    <form
+      onSubmit={submit}
+      className="flex items-center gap-2 rounded-xl border border-[var(--alpha-border)] bg-[var(--alpha-surface)] p-1.5 pl-4 focus-within:border-[var(--alpha-accent)]/50 focus-within:ring-[3px] focus-within:ring-[var(--alpha-accent)]/20 transition-[box-shadow,border-color]"
+    >
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -254,13 +260,13 @@ export function PromptInput({ onSubmit, placeholder, busy }: { onSubmit: (text: 
         }}
         placeholder={placeholder}
         rows={1}
-        className="w-full resize-none rounded-xl border border-[var(--alpha-border)] bg-[var(--alpha-surface)] px-4 py-3 pr-14 text-sm text-[var(--alpha-text)] placeholder-[var(--alpha-subtle)] outline-none focus:border-[var(--alpha-accent)]/50 focus:ring-[3px] focus:ring-[var(--alpha-accent)]/20 transition-[box-shadow,border-color]"
+        className="flex-1 min-w-0 resize-none bg-transparent py-2 text-sm text-[var(--alpha-text)] placeholder-[var(--alpha-subtle)] outline-none"
       />
       <button
         type="submit"
         disabled={!text.trim() || busy}
         aria-label="Send"
-        className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer bg-[var(--alpha-text)] text-[#09090b] hover:bg-white/85 disabled:bg-white/10 disabled:text-[var(--alpha-subtle)] disabled:cursor-default"
+        className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer bg-[var(--alpha-text)] text-[#09090b] hover:bg-white/85 disabled:bg-white/10 disabled:text-[var(--alpha-subtle)] disabled:cursor-default"
       >
         {busy ? (
           <span className="alpha-spinner" aria-hidden="true" />
