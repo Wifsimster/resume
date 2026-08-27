@@ -28,5 +28,6 @@ export const EXTRA_FACTS: string[] = [
   'Plus de 500 relations sur LinkedIn.',
 
   // Vie personnelle (le site mentionne déjà famille, rénovation et domotique)
-  'Marié et père de deux enfants.'
+  'Marié et père de deux enfants.',
+  'Sport : vélo de route — c\'est d\'ailleurs pour ça qu\'il a créé elan, son tracker vélo/renforcement musculaire open source.'
 ]
