@@ -12,6 +12,7 @@ import { answerFor, matchIntent, WELCOME } from './answers'
 //    message and as an automatic fallback whenever the API is absent or fails.
 
 export type MessagePart =
+  | { type: 'status', stage: 'thinking' }
   | { type: 'reasoning', text: string, streaming: boolean }
   | { type: 'tool', name: string, args: string, status: 'running' | 'done' }
   | { type: 'text', text: string, streaming: boolean }
@@ -148,7 +149,8 @@ export function useAlphaChat(lang: 'fr' | 'en') {
   const playLive = useCallback(async (history: { role: 'user' | 'assistant', text: string }[], userText: string) => {
     setStatus('streaming')
     setSuggestions([])
-    setMessages(prev => [...prev, { id: nextId(), role: 'assistant', parts: [] }])
+    // Open the turn with a "Thinking…" marker until the first token arrives
+    setMessages(prev => [...prev, { id: nextId(), role: 'assistant', parts: [{ type: 'status', stage: 'thinking' }] }])
 
     let gotText = false
     let text = ''
@@ -172,7 +174,7 @@ export function useAlphaChat(lang: 'fr' | 'en') {
       if (event.type === 'card-intent' && isCardKind(event.kind)) {
         cardKind = event.kind
         const kind = event.kind
-        patchLast(parts => [...parts, {
+        patchLast(parts => [...parts.filter(p => p.type !== 'status'), {
           type: 'tool',
           name: TOOL_NAMES[kind],
           args: `{ lang: "${langRef.current}" }`,
@@ -182,7 +184,7 @@ export function useAlphaChat(lang: 'fr' | 'en') {
         if (!gotText) {
           gotText = true
           patchLast(parts => [
-            ...parts.map(p => (p.type === 'tool' ? { ...p, status: 'done' as const } : p)),
+            ...parts.filter(p => p.type !== 'status').map(p => (p.type === 'tool' ? { ...p, status: 'done' as const } : p)),
             { type: 'text', text: '', streaming: true }
           ])
         }

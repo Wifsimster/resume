@@ -13,6 +13,31 @@
   --alpha-accent: #8b5cf6;        /* violet-500 */
   --alpha-ring: rgba(139, 92, 246, 0.45);
   --alpha-ok: #34d399;            /* emerald-400 */
+
+  /* shadcn Typeset — chat preset: everything below derives from these three */
+  --typeset-size: 15px;
+  --typeset-leading: 1.6;
+  --typeset-flow: 1em;
+}
+
+/* Prose: message text driven by the typeset variables */
+.alpha-prose {
+  font-size: var(--typeset-size);
+  line-height: var(--typeset-leading);
+}
+
+.alpha-prose .alpha-md {
+  display: flex;
+  flex-direction: column;
+  gap: var(--typeset-flow);
+}
+
+.alpha-prose ul,
+.alpha-prose ol {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--typeset-flow) * 0.35);
+  padding-left: 1.35em;
 }
 
 .alpha-cursor {
@@ -46,6 +71,20 @@
   to { transform: rotate(360deg); }
 }
 
+/* Shimmer text for status markers (shadcn Marker + shimmer utility) */
+.alpha-shimmer {
+  background: linear-gradient(90deg, var(--alpha-subtle) 0%, var(--alpha-text) 50%, var(--alpha-subtle) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: alpha-shimmer 1.6s linear infinite;
+}
+
+@keyframes alpha-shimmer {
+  to { background-position: -200% 0; }
+}
+
 .alpha-card-in {
   animation: alpha-card-enter 0.35s ease both;
 }
@@ -58,4 +97,5 @@
 @media (prefers-reduced-motion: reduce) {
   .alpha-card-in { animation: none; }
   .alpha-cursor { animation: none; }
+  .alpha-shimmer { animation: none; color: var(--alpha-subtle); background: none; }
 }

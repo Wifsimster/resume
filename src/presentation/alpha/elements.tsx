@@ -131,11 +131,25 @@ export function Message({ from, children }: { from: 'user' | 'assistant', childr
   )
 }
 
+/* ========================= Marker ========================= */
+
+// Inline conversation indicator (shadcn Marker): status lines like
+// "Thinking…" while waiting for the first streamed token.
+
+export function Marker({ children }: { children: ReactNode }) {
+  return (
+    <div role="status" className="flex items-center gap-2 text-xs text-[var(--alpha-subtle)]">
+      <span aria-hidden="true">✦</span>
+      <span className="alpha-shimmer">{children}</span>
+    </div>
+  )
+}
+
 /* ========================= Response (streaming text) ========================= */
 
 export function Response({ children, streaming }: { children: string, streaming?: boolean }) {
   return (
-    <div className="text-sm leading-relaxed text-[var(--alpha-body)]">
+    <div className="alpha-prose text-[var(--alpha-body)]">
       <Markdown text={children} cursor={streaming ? <span className="alpha-cursor" aria-hidden="true" /> : null} />
     </div>
   )

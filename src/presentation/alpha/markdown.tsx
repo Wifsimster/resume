@@ -75,7 +75,7 @@ export function Markdown({ text, cursor }: { text: string, cursor?: ReactNode })
   const blocks = toBlocks(text)
   if (blocks.length === 0) return <>{cursor}</>
   return (
-    <div className="flex flex-col gap-2">
+    <div className="alpha-md">
       {blocks.map((block, blockIndex) => {
         const isLast = blockIndex === blocks.length - 1
         if (block.type === 'p') {
@@ -97,7 +97,7 @@ export function Markdown({ text, cursor }: { text: string, cursor?: ReactNode })
         }
         const List = block.type === 'ul' ? 'ul' : 'ol'
         return (
-          <List key={blockIndex} className={`${block.type === 'ul' ? 'list-disc' : 'list-decimal'} pl-5 flex flex-col gap-1`}>
+          <List key={blockIndex} className={block.type === 'ul' ? 'list-disc' : 'list-decimal'}>
             {block.lines.map((line, lineIndex) => (
               <li key={lineIndex}>
                 {renderInline(line, `${blockIndex}-${lineIndex}`)}
