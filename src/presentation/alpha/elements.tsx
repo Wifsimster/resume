@@ -260,9 +260,16 @@ export function PromptInput({ onSubmit, placeholder, busy }: { onSubmit: (text: 
         type="submit"
         disabled={!text.trim() || busy}
         aria-label="Send"
-        className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-[var(--alpha-text)] text-[#09090b] flex items-center justify-center transition-opacity disabled:opacity-30 cursor-pointer disabled:cursor-default hover:opacity-85"
+        className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer bg-[var(--alpha-text)] text-[#09090b] hover:bg-white/85 disabled:bg-white/10 disabled:text-[var(--alpha-subtle)] disabled:cursor-default"
       >
-        {busy ? <span className="alpha-spinner" aria-hidden="true" /> : '↑'}
+        {busy ? (
+          <span className="alpha-spinner" aria-hidden="true" />
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 19V5" />
+            <path d="m5 12 7-7 7 7" />
+          </svg>
+        )}
       </button>
     </form>
   )
