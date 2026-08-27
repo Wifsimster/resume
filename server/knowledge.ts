@@ -16,6 +16,9 @@ export const EXTRA_FACTS: string[] = [
   // Rôle actuel élargi
   'Depuis janvier 2026, nommé AI Champion officiel du groupe Dedalus : il représente et pilote l\'adoption de l\'IA à l\'échelle du groupe, en parallèle de son rôle de Technical Lead Manager.',
 
+  // Langues
+  'Langues : français (natif) ; parle et comprend l\'anglais.',
+
   // Localisation & réseau
   'Basé à Artigues-près-Bordeaux (région bordelaise) ; travaille en mode hybride chez Dedalus.',
   'Très favorable au télétravail, qu\'il préfère : il le pratique 3 jours par semaine chez Dedalus depuis plusieurs années.',
