@@ -312,6 +312,43 @@ async function handleChat(req: IncomingMessage, res: ServerResponse) {
   res.end()
 }
 
+// Thumbs up/down from the interface — appended to the conversation logs
+async function handleFeedback(req: IncomingMessage, res: ServerResponse) {
+  if (!allowRequest(clientIp(req))) {
+    sendJson(res, 429, { error: 'rate-limited' })
+    return
+  }
+  let raw: string
+  try {
+    raw = await readBody(req)
+  } catch {
+    sendJson(res, 413, { error: 'body-too-large' })
+    return
+  }
+  let data: unknown
+  try {
+    data = JSON.parse(raw)
+  } catch {
+    sendJson(res, 400, { error: 'invalid-request' })
+    return
+  }
+  const { conversationId, rating, text } = (data ?? {}) as { conversationId?: unknown, rating?: unknown, text?: unknown }
+  if (rating !== 'up' && rating !== 'down') {
+    sendJson(res, 400, { error: 'invalid-request' })
+    return
+  }
+  logTurn({
+    ts: new Date().toISOString(),
+    conversation: typeof conversationId === 'string' && /^[a-zA-Z0-9-]{8,64}$/.test(conversationId) ? conversationId : 'unknown',
+    ip: clientIp(req),
+    ua: typeof req.headers['user-agent'] === 'string' ? req.headers['user-agent'].slice(0, 300) : '',
+    role: 'feedback',
+    rating,
+    text: typeof text === 'string' ? text.slice(0, 600) : ''
+  })
+  res.writeHead(204).end()
+}
+
 // Protected log reader: GET /api/chat/logs?date=YYYY-MM-DD&limit=200
 // Auth: Authorization: Bearer <CHAT_ADMIN_TOKEN> or ?token=<CHAT_ADMIN_TOKEN>
 async function handleLogs(req: IncomingMessage, res: ServerResponse) {
@@ -351,6 +388,10 @@ const server = createServer((req, res) => {
   }
   if (req.method === 'POST' && path === '/api/chat') {
     void handleChat(req, res)
+    return
+  }
+  if (req.method === 'POST' && path === '/api/chat/feedback') {
+    void handleFeedback(req, res)
     return
   }
   if (req.method === 'GET' && path === '/api/chat/logs') {
