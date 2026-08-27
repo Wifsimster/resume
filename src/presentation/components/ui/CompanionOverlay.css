@@ -1,0 +1,16 @@
+/* CRITICAL: R3F writes inline `touch-action: none` on the canvas it creates
+   (and its event system re-enables pointer interaction on it). Inline styles
+   beat the wrapper's pointer-events-none, which made this full-screen overlay
+   swallow every tap and block touch scrolling on mobile. !important rules beat
+   inline styles. R3F renders the <canvas> inside a wrapper div, so target both
+   with descendant selectors. */
+.companion-overlay canvas {
+  pointer-events: none !important;
+  touch-action: auto !important;
+}
+
+/* The R3F wrapper div sits between the overlay root and the canvas; make sure
+   it never intercepts input either. */
+.companion-overlay div {
+  pointer-events: none !important;
+}
