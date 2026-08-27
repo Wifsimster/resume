@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Outlet, useLocation } from 'react-router'
+import HomeView from '@presentation/views/HomeView'
 import LanguageSwitcher from '@presentation/components/ui/LanguageSwitcher'
 import AchievementToast from '@presentation/components/ui/AchievementToast'
 import AchievementsIndicator from '@presentation/components/ui/AchievementsIndicator'
@@ -25,8 +25,6 @@ export default function App() {
   // FPS display ref
   const fpsDisplayRef = useRef<FPSDisplayHandle>(null)
 
-  const location = useLocation()
-
   // Watch for FPS enable/disable
   useEffect(() => {
     if (!fpsDisplayRef.current) return
@@ -37,15 +35,20 @@ export default function App() {
     }
   }, [fpsEnabled])
 
-  // Hash navigation: scroll to the section targeted by #hash (vue-router
-  // scrollBehavior equivalent)
+  // Hash navigation: scroll to the section targeted by #hash — on load and on
+  // every hash change. The site has a single page, so no router is involved.
   useEffect(() => {
-    if (!location.hash) return
-    const hash = location.hash
-    const element = document.querySelector(hash)
-      ?? document.querySelector(`[data-section="${hash.slice(1)}"]`)
-    element?.scrollIntoView({ behavior: 'smooth' })
-  }, [location.hash])
+    const scrollToHash = () => {
+      const hash = window.location.hash
+      if (!hash) return
+      const element = document.querySelector(hash)
+        ?? document.querySelector(`[data-section="${hash.slice(1)}"]`)
+      element?.scrollIntoView({ behavior: 'smooth' })
+    }
+    scrollToHash()
+    window.addEventListener('hashchange', scrollToHash)
+    return () => window.removeEventListener('hashchange', scrollToHash)
+  }, [])
 
   useEffect(() => {
     const { unlock, isUnlocked } = useAchievementsStore.getState()
@@ -233,7 +236,7 @@ export default function App() {
       <TableOfContents />
 
       {/* Main Content */}
-      <Outlet />
+      <HomeView />
 
       {/* Three.js space companion cruising across every section */}
       <CompanionOverlay />

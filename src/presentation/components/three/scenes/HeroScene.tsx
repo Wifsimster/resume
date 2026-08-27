@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
-import { PerspectiveCamera } from '@react-three/drei'
+import SceneCamera from '../SceneCamera'
 import { DoubleSide, type CanvasTexture, type Group, type Mesh, type Points } from 'three'
 import type { QualityLevel } from '@application/hooks/useQuality'
 import { useSceneAnimation } from '@application/hooks/useSceneAnimation'
@@ -243,7 +243,7 @@ export default function HeroScene({ quality }: Props) {
   return (
     <>
       {/* fov 45 = TresJS default perspective camera fov, kept explicit here */}
-      <PerspectiveCamera makeDefault position={[0, 4.2, 9.8]} fov={45} onUpdate={(c) => c.lookAt(0, 0, 0)} />
+      <SceneCamera position={[0, 4.2, 9.8]} fov={45} lookAt={[0, 0, 0]} />
 
       {/* The sun is the light source: warm point light at the center. */}
       <ambientLight intensity={0.25} />
