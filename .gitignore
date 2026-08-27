@@ -46,3 +46,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+
+# Playwright
+test-results/
+playwright-report/

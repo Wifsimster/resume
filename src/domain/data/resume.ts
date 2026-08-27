@@ -1,4 +1,8 @@
 import type { ResumeData } from '../types/resume'
+import githubStats from './githubStats.json'
+
+// Live GitHub numbers — refresh with `npm run refresh:stats`
+const projectStars: Record<string, number> = githubStats.stars
 
 export const resumeData: ResumeData = {
   name: 'Damien Battistella',
@@ -155,6 +159,7 @@ export const resumeData: ResumeData = {
     // Latest active open-source projects — github.com/Wifsimster, summer 2026
     {
       id: 'ondes',
+      stars: projectStars.ondes,
       name: 'ondes',
       tech: 'Kotlin · Android',
       url: 'https://github.com/Wifsimster/ondes',
@@ -163,6 +168,7 @@ export const resumeData: ResumeData = {
     },
     {
       id: 'elan',
+      stars: projectStars.elan,
       name: 'elan',
       tech: 'TypeScript',
       url: 'https://github.com/Wifsimster/elan',
@@ -171,6 +177,7 @@ export const resumeData: ResumeData = {
     },
     {
       id: 'plexcord',
+      stars: projectStars.plexcord,
       name: 'PlexCord',
       tech: 'Go',
       url: 'https://github.com/Wifsimster/PlexCord',
@@ -179,6 +186,7 @@ export const resumeData: ResumeData = {
     },
     {
       id: 'thebox',
+      stars: projectStars.thebox,
       name: 'the-box',
       tech: 'TypeScript',
       url: 'https://github.com/Wifsimster/the-box',
@@ -187,6 +195,7 @@ export const resumeData: ResumeData = {
     },
     {
       id: 'solopilot',
+      stars: projectStars.solopilot,
       name: 'solopilot',
       tech: 'TypeScript · Claude',
       url: 'https://github.com/Wifsimster/solopilot',
@@ -195,6 +204,7 @@ export const resumeData: ResumeData = {
     },
     {
       id: 'toko',
+      stars: projectStars.toko,
       name: 'toko',
       tech: 'TypeScript',
       url: 'https://github.com/Wifsimster/toko',
@@ -302,7 +312,7 @@ export const resumeData: ResumeData = {
   github: {
     username: 'Wifsimster',
     url: 'https://github.com/Wifsimster',
-    totalRepos: 87
+    totalRepos: githubStats.totalRepos
   },
 
   statistics: {

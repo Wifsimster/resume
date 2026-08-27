@@ -52,7 +52,7 @@ export default function AboutSection() {
                       className="reveal bg-[#0A0A0A]/60 backdrop-blur-md border border-purple-500/15 rounded-lg flex items-start gap-3 py-3 px-4 transition-[background-color,border-color] duration-150 hover:bg-[#0A0A0A]/80 hover:border-purple-500/30"
                       style={{ '--reveal-i': Math.min(sIndex, 4) } as CSSProperties}
                     >
-                      <span className="text-2xl shrink-0 mt-0.5">{strength.icon}</span>
+                      <span className="text-2xl shrink-0 mt-0.5" aria-hidden="true">{strength.icon}</span>
                       <div className="flex-1">
                         <div className="text-sm font-medium text-white/90 mb-1">{t(`about.strengths.${strength.id}.title`)}</div>
                         <p className="text-sm leading-relaxed text-white/70 m-0">{t(`about.strengths.${strength.id}.description`)}</p>

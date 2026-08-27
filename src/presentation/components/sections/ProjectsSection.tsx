@@ -43,7 +43,7 @@ export default function ProjectsSection() {
               >
                 {/* Header: Icon + Name */}
                 <div className="flex items-center gap-2">
-                  <span className="text-base shrink-0">{project.icon}</span>
+                  <span className="text-base shrink-0" aria-hidden="true">{project.icon}</span>
                   <span className="font-(--font-code) text-sm text-[var(--color-paper-cream)] flex-1">{project.name}</span>
                   {project.stars && <span className="text-xs text-[var(--color-growth-yellow)] shrink-0">⭐ {project.stars}</span>}
                 </div>
@@ -67,7 +67,7 @@ export default function ProjectsSection() {
             >
               {/* Header: Icon + Title */}
               <div className="flex items-center gap-2">
-                <span className="text-base shrink-0">🐙</span>
+                <span className="text-base shrink-0" aria-hidden="true">🐙</span>
                 <span className="font-(--font-code) text-sm text-[var(--color-paper-cream)] flex-1">{t('projects.github.title')}</span>
               </div>
 

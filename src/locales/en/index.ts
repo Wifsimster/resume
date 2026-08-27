@@ -408,7 +408,8 @@ export default {
         description: 'Power distribution unit with individual switches'
       },
       gamingComputer: {
-        name: 'Ordinateur de bureau',
+        name: 'Desktop Computer',
+        legend: '32 GB RAM, i7 3.4 GHz, RTX 4070 Ti SUPER, 1 TB NVMe',
         description: 'High-performance gaming workstation with GPU'
       },
       pdu: {
@@ -417,10 +418,11 @@ export default {
       },
       nas: {
         name: 'Compute + NAS',
+        legend: 'Proxmox with Unraid and Docker',
         description: 'Proxmox with Unraid and Docker services'
       },
       ups: {
-        name: 'Onduleur',
+        name: 'UPS',
         description: 'Uninterruptible power supply for protection against power outages'
       }
     }

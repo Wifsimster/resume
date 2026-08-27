@@ -1,5 +1,4 @@
-import { Canvas } from '@react-three/fiber'
-import CompanionScene from '@presentation/components/three/CompanionScene'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import './CompanionOverlay.css'
 
 // Fixed, fully transparent Three.js overlay hosting the space companion.
@@ -7,23 +6,29 @@ import './CompanionOverlay.css'
 // the OS-level reduced-motion setting was silently hiding it on desktops.
 // Interaction safety is handled in CSS (CompanionOverlay.css).
 
+// Code-split AND idle-deferred: the companion is decoration, so its canvas
+// only mounts once the browser has a quiet moment after startup.
+const CompanionCanvas = lazy(() => import('@presentation/components/three/CompanionCanvas'))
+
 export default function CompanionOverlay() {
-  // On coarse-pointer (touch) devices the overlay renders at DPR 1 without
-  // MSAA: a full-screen GL layer at retina DPR is a battery cost phones don't
-  // need for a 44px companion.
-  const isCoarse = window.matchMedia('(pointer: coarse)').matches
-  const dpr: [number, number] = isCoarse ? [1, 1] : [1, 1.5]
-  const antialias = !isCoarse
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(() => setReady(true), { timeout: 2000 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const id = window.setTimeout(() => setReady(true), 800)
+    return () => window.clearTimeout(id)
+  }, [])
 
   return (
     <div className="companion-overlay fixed inset-0 z-40 pointer-events-none" aria-hidden="true">
-      <Canvas
-        dpr={dpr}
-        gl={{ alpha: true, antialias, powerPreference: 'low-power' }}
-        onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
-      >
-        <CompanionScene />
-      </Canvas>
+      {ready && (
+        <Suspense fallback={null}>
+          <CompanionCanvas />
+        </Suspense>
+      )}
     </div>
   )
 }

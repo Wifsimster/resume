@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Canvas } from '@react-three/fiber'
-import MakerScene, { type MakerSceneHandle } from '@presentation/components/three/scenes/MakerScene'
-import { useQuality } from '@application/hooks/useQuality'
+import type { MakerSceneHandle } from '@presentation/components/three/scenes/MakerScene'
 import { useAchievements } from '@application/hooks/useAchievements'
 import type { CameraMode } from '@application/hooks/useMakerCamera'
 import RackLegend from '@presentation/components/ui/RackLegend'
 import { rackUnits } from '@domain/data/makerRack'
 import './MakerSection.css'
+
+// Code-split + visibility-gated: the heaviest scene of the site only loads
+// once the visitor scrolls within reach of the maker section.
+const MakerCanvas = lazy(() => import('@presentation/components/three/MakerCanvas'))
 
 // Real DIY projects from brag documents
 const projects = [
@@ -41,8 +43,10 @@ const getTranslationKey = (unitId: string | null): string | null => {
 
 export default function MakerSection() {
   const { t } = useTranslation()
-  const { quality, renderSettings } = useQuality()
   const { unlock } = useAchievements()
+
+  // One-way latch: flips true when the section gets close to the viewport
+  const [canvasWanted, setCanvasWanted] = useState(false)
 
   // Tooltip state
   const [hoveredUnitId, setHoveredUnitId] = useState<string | null>(null)
@@ -71,6 +75,23 @@ export default function MakerSection() {
   // Touch devices get a fixed bottom-sheet tooltip instead of cursor-anchored
   // (there is no persistent cursor to anchor to).
   const [isCoarsePointer] = useState(() => window.matchMedia('(pointer: coarse)').matches)
+
+  // Load the 3D canvas as soon as the section approaches the viewport
+  useEffect(() => {
+    const section = document.querySelector('[data-section="maker"]')
+    if (!section) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some(e => e.isIntersecting)) {
+          setCanvasWanted(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '600px' }
+    )
+    observer.observe(section)
+    return () => observer.disconnect()
+  }, [])
 
   // Unlock maker fan achievement when section becomes visible
   useEffect(() => {
@@ -130,26 +151,19 @@ export default function MakerSection() {
 
       {/* 3D Canvas - Full background */}
       <div className="section-canvas">
-        <Canvas
-          dpr={renderSettings.dpr}
-          gl={{
-            alpha: true,
-            antialias: renderSettings.antialias,
-            powerPreference: renderSettings.powerPreference
-          }}
-          onCreated={({ gl }) => gl.setClearColor('#0A0A0A', 1)}
-        >
-          <MakerScene
-            ref={setMakerSceneHandle}
-            quality={quality}
-            cameraMode={cameraMode}
-            projects={projects}
-            techStack={techStack}
-            title={t('maker.title')}
-            subtitle={t('maker.subtitle')}
-            onHoverUnit={handleHoverUnit}
-          />
-        </Canvas>
+        {canvasWanted && (
+          <Suspense fallback={null}>
+            <MakerCanvas
+              cameraMode={cameraMode}
+              projects={projects}
+              techStack={techStack}
+              title={t('maker.title')}
+              subtitle={t('maker.subtitle')}
+              onHoverUnit={handleHoverUnit}
+              onHandle={setMakerSceneHandle}
+            />
+          </Suspense>
+        )}
       </div>
 
       {/* Tooltip for server rack units */}

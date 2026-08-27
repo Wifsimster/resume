@@ -104,7 +104,7 @@ export default function ContactSection() {
                 {lockedAchievementsPreview.map(achievement => (
                   <div key={achievement.id}
                     className="flex flex-col items-center gap-2 p-2 sm:p-3 rounded-lg bg-black/20 border border-purple-400/20 hover:border-purple-400/40 transition-[border-color] duration-150">
-                    <div className="text-2xl sm:text-3xl opacity-70">{achievement.icon}</div>
+                    <div className="text-2xl sm:text-3xl opacity-70" aria-hidden="true">{achievement.icon}</div>
                     <span className="font-(--font-display) text-xs text-purple-400/70 text-center leading-tight">
                       {t(`achievements.${achievement.id}.name`)}
                     </span>

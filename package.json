@@ -17,7 +17,9 @@
     "docker:build": "docker build --build-arg VERSION=$(node -p \"require('./package.json').version\") --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ) --build-arg VCS_REF=$(git rev-parse --short HEAD) -t wifsimster/resume:latest -t wifsimster/resume:$(node -p \"require('./package.json').version\") .",
     "docker:tag": "docker tag wifsimster/resume:latest wifsimster/resume:$(node -p \"require('./package.json').version.split('.').slice(0,2).join('.')\") && docker tag wifsimster/resume:latest wifsimster/resume:$(node -p \"require('./package.json').version.split('.')[0]\")",
     "docker:push": "docker push --all-tags wifsimster/resume",
-    "release": "npm run build && npm run docker:build && npm run docker:tag && npm run docker:push"
+    "release": "npm run build && npm run docker:build && npm run docker:tag && npm run docker:push",
+    "test:e2e": "playwright test",
+    "refresh:stats": "node scripts/refresh-github-stats.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
@@ -31,14 +33,19 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^25.9.5",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "@types/three": "^0.182.0",
     "@vitejs/plugin-react": "^6.1.0",
+    "eslint": "^10.9.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
+    "typescript-eslint": "^8.68.0",
     "vite": "^8.2.2"
   },
   "engines": {
