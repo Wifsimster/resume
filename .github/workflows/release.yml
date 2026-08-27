@@ -70,6 +70,11 @@ jobs:
       - name: Bump version
         id: version
         run: |
+          # Two merges in quick succession: this run's checkout can predate the
+          # previous run's version-bump push, recomputing the same version and
+          # dying on "tag already exists" (run #49). The concurrency group
+          # serializes runs, so rebasing here picks up the previous bump first.
+          git pull --rebase origin main
           npm version ${{ steps.version_type.outputs.type }} --no-git-tag-version
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
