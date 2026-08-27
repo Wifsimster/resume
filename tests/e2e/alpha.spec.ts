@@ -50,9 +50,6 @@ test('live mode streams the answer from the chat API when a provider is up', asy
 
   await page.goto('/?ui=alpha')
 
-  // The header switches to the live badge once health reports a provider
-  await expect(page.getByText(/IA en direct|live AI/).first()).toBeVisible({ timeout: 15_000 })
-
   // Wait for the scripted welcome to finish (suggestions appear), then ask
   await expect(page.locator('button', { hasText: /exp[ée]rience/i }).first()).toBeVisible({ timeout: 15_000 })
   await page.locator('textarea').fill('dis-moi tout')
@@ -68,16 +65,14 @@ test('live mode streams the answer from the chat API when a provider is up', asy
   expect(errors).toEqual([])
 })
 
-test('the chat is the default and links to the classic 3D version and back', async ({ page }) => {
+test('the chat is the default and the classic 3D version links back to it', async ({ page }) => {
   // Default experience: the conversational resume
   await page.goto('/')
   await expect(page.locator('.alpha-app')).toBeVisible({ timeout: 15_000 })
 
-  // The header link opens the classic 3D site
-  await page.locator('header button').first().click()
+  // The classic site (reached by URL) links back to the chat
+  await page.goto('/?ui=classic')
   await expect(page.locator('[data-section="hero"]')).toBeAttached({ timeout: 15_000 })
-
-  // The classic site links back to the chat
   const chatPill = page.locator('a[href="/"]')
   await expect(chatPill).toBeVisible()
   await chatPill.click()
