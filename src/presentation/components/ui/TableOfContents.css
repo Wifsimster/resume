@@ -1,0 +1,38 @@
+/* Layout styles kept in CSS for complex positioning and responsive display */
+
+.table-of-contents .toc-link {
+  /* Padding, font-size, and colors handled by Tailwind utilities */
+}
+
+.table-of-contents .toc-dot {
+  /* Width, height, border-radius, background, transition, flex-shrink, opacity handled by Tailwind utilities */
+}
+
+.table-of-contents .toc-label {
+  /* Opacity, transition, white-space, font-weight handled by Tailwind utilities */
+}
+
+/* Connector line between items (desktop rail only) */
+@media (max-width: 1023px) {
+  .table-of-contents .toc-item:not(:last-child)::after {
+    display: none;
+  }
+}
+
+.table-of-contents .toc-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 0.4375rem;
+  top: 1.5rem;
+  width: 1px;
+  height: 0.375rem;
+  background: var(--color-border);
+  opacity: 0.2;
+  transition: all var(--transition-fast);
+}
+
+.table-of-contents .toc-item-active:not(:last-child)::after {
+  background: var(--color-accent-primary);
+  opacity: 0.4;
+  box-shadow: 0 0 4px rgba(124, 58, 237, 0.3);
+}
