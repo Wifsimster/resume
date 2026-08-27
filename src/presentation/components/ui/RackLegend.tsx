@@ -138,14 +138,9 @@ export default function RackLegend({ visible, rackUnits, camera }: Props) {
           <div className="label-hand text-white text-[10px] sm:text-xs whitespace-nowrap">
             {t(`maker.rackUnits.${getTranslationKey(unit.id)}.name`)}
           </div>
-          {unit.id === 'nas' && (
+          {(unit.id === 'nas' || unit.id === 'gaming-computer') && (
             <div className="label-hand text-white/50 text-[8px] sm:text-[10px] whitespace-nowrap">
-              Proxmox avec Unraid et Docker
-            </div>
-          )}
-          {unit.id === 'gaming-computer' && (
-            <div className="label-hand text-white/50 text-[8px] sm:text-[10px] whitespace-nowrap">
-              32 Go RAM, i7 3.4 GHz, RTX 4070 Ti SUPER, 1 To NVMe
+              {t(`maker.rackUnits.${getTranslationKey(unit.id)}.legend`)}
             </div>
           )}
         </div>

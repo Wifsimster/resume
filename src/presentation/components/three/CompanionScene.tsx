@@ -352,7 +352,7 @@ export default function CompanionScene() {
       if (rocketObj) {
         rocketObj.visible = rocket.scale > 0.01
         rocketObj.position.set(rocket.pos.x, rocket.pos.y + bobR, 0)
-        let s = rocket.scale * (0.75 + boost * 0.15)
+        const s = rocket.scale * (0.75 + boost * 0.15)
         const rocketSpinningOut =
           (mode === 'swapOut' && activeIndex === 0) ||
           (mode === 'fight' && modeTime >= FIGHT_END && fightWinner !== 0)
@@ -450,7 +450,7 @@ export default function CompanionScene() {
       startFight,
       frame
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [])
 
   useFrame((state, delta) => {

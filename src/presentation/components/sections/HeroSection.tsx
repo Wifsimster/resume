@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Canvas } from '@react-three/fiber'
-import HeroScene from '@presentation/components/three/scenes/HeroScene'
 import { useScrollSection } from '@application/hooks/useScrollSection'
-import { useQuality } from '@application/hooks/useQuality'
 import './HeroSection.css'
+
+// Code-split: HeroCanvas pulls in the whole three.js vendor chunk, so it
+// loads async and never blocks the first paint of the hero text.
+const HeroCanvas = lazy(() => import('@presentation/components/three/HeroCanvas'))
 
 export default function HeroSection() {
   const { t } = useTranslation()
   const { scrollToNext } = useScrollSection()
-  const { quality, renderSettings } = useQuality()
 
   const [, setIsLoaded] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
@@ -37,20 +37,9 @@ export default function HeroSection() {
         {/* Transparent clear: the solar system floats on the shared aurora
              backdrop instead of its own opaque black plate. */}
         {isMounted && (
-          <Canvas
-            dpr={renderSettings.dpr}
-            gl={{
-              alpha: true,
-              antialias: renderSettings.antialias,
-              powerPreference: renderSettings.powerPreference
-            }}
-            onCreated={({ gl }) => {
-              gl.setClearColor(0x000000, 0)
-              handleCanvasReady()
-            }}
-          >
-            <HeroScene quality={quality} />
-          </Canvas>
+          <Suspense fallback={null}>
+            <HeroCanvas onReady={handleCanvasReady} />
+          </Suspense>
         )}
       </div>
 

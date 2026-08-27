@@ -54,7 +54,7 @@ export default function BooksSection() {
                       className="flex gap-3 p-2.5 min-h-11 bg-black/15 rounded-lg cursor-pointer no-underline transition-[background-color,transform] duration-150 hover:bg-black/25 hover:translate-x-1 active:scale-[0.99]"
                       onClick={() => trackBook(book.status)}
                     >
-                      <div className="text-2xl w-[40px] h-[48px] flex items-center justify-center bg-white/3 rounded">{shelf.emoji}</div>
+                      <div className="text-2xl w-[40px] h-[48px] flex items-center justify-center bg-white/3 rounded" aria-hidden="true">{shelf.emoji}</div>
                       <div className="flex flex-col justify-center gap-0.5">
                         <span className="text-xs text-[var(--color-paper-cream)] leading-tight">{book.title}</span>
                         <span className="text-xs text-[var(--color-text-faint)]">{book.author}</span>

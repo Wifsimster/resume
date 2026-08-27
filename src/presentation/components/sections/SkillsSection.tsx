@@ -42,7 +42,7 @@ export default function SkillsSection() {
                       {skill.logo ? (
                         <img src={skill.logo} alt={skill.name} className="w-5 h-5 rounded-sm" />
                       ) : skill.icon ? (
-                        <span className="text-lg">{skill.icon}</span>
+                        <span className="text-lg" aria-hidden="true">{skill.icon}</span>
                       ) : null}
                       <span className="text-sm text-[var(--color-paper-cream)]">{skill.name}</span>
                       {skill.url && <span className="ml-auto text-[var(--color-text-faint)] text-xs transition-[transform,color] duration-150 group-hover:text-white/80 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">↗</span>}

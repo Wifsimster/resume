@@ -409,6 +409,7 @@ export default {
       },
       gamingComputer: {
         name: 'Ordinateur de bureau',
+        legend: '32 Go RAM, i7 3.4 GHz, RTX 4070 Ti SUPER, 1 To NVMe',
         description: 'Station de travail gaming avec GPU haute performance'
       },
       pdu: {
@@ -417,6 +418,7 @@ export default {
       },
       nas: {
         name: 'Calcul + NAS',
+        legend: 'Proxmox avec Unraid et Docker',
         description: 'Proxmox avec Unraid et services Docker'
       },
       ups: {

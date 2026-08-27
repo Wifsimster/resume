@@ -17,7 +17,7 @@ export default function MotivationSection() {
           {/* Ideal Environment */}
           <div className="space-y-3 reveal">
             <div className="bg-[#0A0A0A]/60 backdrop-blur-md border border-purple-500/15 rounded-lg flex items-start gap-3 py-4 px-5 transition-[background-color,border-color,box-shadow] duration-150 hover:bg-[#0A0A0A]/80 hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10">
-              <span className="text-2xl shrink-0 mt-0.5">🌱</span>
+              <span className="text-2xl shrink-0 mt-0.5" aria-hidden="true">🌱</span>
               <p className="text-sm leading-relaxed text-white/70 m-0 flex-1">{t('motivation.culture.idealEnvironment.description')}</p>
             </div>
           </div>
@@ -28,7 +28,7 @@ export default function MotivationSection() {
             <div className="space-y-3 reveal" style={{ '--reveal-i': 1 } as CSSProperties}>
               <h3 className="text-lg font-semibold text-white/90 text-center mb-1">{t('motivation.managementStyle.adopts.title')}</h3>
               <div className="bg-[#0A0A0A]/60 backdrop-blur-md border border-purple-500/15 rounded-lg flex items-start gap-3 py-4 px-5 transition-all duration-150 hover:bg-[#0A0A0A]/80 hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10">
-                <span className="text-2xl shrink-0 mt-0.5">👁️</span>
+                <span className="text-2xl shrink-0 mt-0.5" aria-hidden="true">👁️</span>
                 <div className="flex-1">
                   <div className="text-sm font-medium text-white/90 mb-2">{t('motivation.managementStyle.adopts.implication.title')}</div>
                   <p className="text-sm leading-relaxed text-white/70 m-0">{t('motivation.managementStyle.adopts.implication.description')}</p>
@@ -40,7 +40,7 @@ export default function MotivationSection() {
             <div className="space-y-3 reveal" style={{ '--reveal-i': 2 } as CSSProperties}>
               <h3 className="text-lg font-semibold text-white/90 text-center mb-1">{t('motivation.managementStyle.seeks.title')}</h3>
               <div className="bg-[#0A0A0A]/60 backdrop-blur-md border border-[color-mix(in_srgb,var(--color-accent-cool)_18%,transparent)] rounded-lg flex items-start gap-3 py-4 px-5 transition-[background-color,border-color,box-shadow] duration-150 hover:bg-[#0A0A0A]/80 hover:border-[color-mix(in_srgb,var(--color-accent-cool)_35%,transparent)] hover:shadow-lg hover:shadow-cyan-500/10">
-                <span className="text-2xl shrink-0 mt-0.5">🎯</span>
+                <span className="text-2xl shrink-0 mt-0.5" aria-hidden="true">🎯</span>
                 <p className="text-sm leading-relaxed text-white/70 m-0 flex-1">{t('motivation.managementStyle.seeks.description')}</p>
               </div>
             </div>

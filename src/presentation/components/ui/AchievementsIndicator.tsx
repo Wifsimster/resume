@@ -113,8 +113,9 @@ export default function AchievementsIndicator() {
         className="flex items-center gap-1.5 py-1.5 px-3 bg-[#1E1E1E]/80 backdrop-blur-md border border-[var(--color-border)] rounded-lg cursor-pointer transition-all duration-150 hover:border-[var(--color-achievement-gold)] hover:shadow-[0_0_15px_rgba(251,191,36,0.3)]"
         onClick={togglePanel}
         title={t('achievements.viewAll')}
+        aria-label={t('achievements.viewAll')}
       >
-        <span className="text-base animate-trophy-shine">🏆</span>
+        <span className="text-base animate-trophy-shine" aria-hidden="true">🏆</span>
         <span className="font-(--font-code) text-xs text-[var(--color-text-secondary)]">{unlockedCount}/{totalCount}</span>
       </button>
 

@@ -179,7 +179,7 @@ export function useAnimationController(elementRef?: RefObject<HTMLElement | null
 
     observer.observe(el)
     return () => observer.disconnect()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [elementRef, restartIfIdle, stop])
 
   // Stop the loop on unmount
