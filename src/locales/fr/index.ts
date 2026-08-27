@@ -432,6 +432,24 @@ export default {
     blog: {
       desc: 'Découvrez mes projets DIY : bureau sur mesure, rénovation maison, projets électroniques ESP8266, systèmes ambilight et bien plus encore'
     },
+    ondes: {
+      desc: 'Lecteur de podcasts Android privé et open source : téléchargements hors ligne, Android Auto'
+    },
+    elan: {
+      desc: 'Suivi vélo et renforcement musculaire hors ligne, avec GPS et capteurs Bluetooth'
+    },
+    plexcord: {
+      desc: 'Pont Node.js/Go synchronisant la lecture Plexamp avec la Rich Presence Discord'
+    },
+    thebox: {
+      desc: 'Jeu quotidien : devinez le jeu vidéo à partir d\'une capture d\'écran, avec classements'
+    },
+    solopilot: {
+      desc: 'Bot hebdomadaire d\'actualités IA : scrape la timeline X et résume avec Claude'
+    },
+    toko: {
+      desc: 'Application aidant les parents à accompagner les enfants avec TDAH'
+    },
     github: {
       title: 'Projets Open Source',
       tech: 'GitHub',

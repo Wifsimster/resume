@@ -432,6 +432,24 @@ export default {
     blog: {
       desc: 'Discover my DIY projects: custom desk, home renovation, ESP8266 electronics projects, ambilight systems and much more'
     },
+    ondes: {
+      desc: 'Private, open-source Android podcast player with offline downloads and Android Auto'
+    },
+    elan: {
+      desc: 'Offline cycling and strength-training tracker with GPS and Bluetooth sensors'
+    },
+    plexcord: {
+      desc: 'Bridge synchronizing Plexamp playback to Discord Rich Presence'
+    },
+    thebox: {
+      desc: 'Daily video-game screenshot guessing game with leaderboards'
+    },
+    solopilot: {
+      desc: 'Weekly AI news bot scraping the X timeline and summarizing with Claude'
+    },
+    toko: {
+      desc: 'Application helping parents guide children with ADHD'
+    },
     github: {
       title: 'Open Source Projects',
       tech: 'GitHub',
