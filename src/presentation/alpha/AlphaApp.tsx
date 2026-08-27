@@ -5,9 +5,10 @@ import { Card } from './cards'
 import { useAlphaChat } from './useAlphaChat'
 import './alpha.css'
 
-// The conversational alpha of the resume: a scripted, fully client-side AI
-// chat interface (design system modelled on Vercel AI Elements). Reached via
-// /?ui=alpha — the classic 3D site stays the default experience.
+// The conversational resume: an AI chat interface (design language modelled
+// on shadcn/ui + Vercel AI Elements, dark zinc theme). Reached via /?ui=alpha
+// — the classic 3D site stays the default experience. Live LLM answers when
+// the chat backend has a provider, scripted engine otherwise.
 
 const copy = {
   fr: {
@@ -51,22 +52,27 @@ export default function AlphaApp() {
   }
 
   return (
-    <div className="alpha-app fixed inset-0 flex flex-col bg-[var(--color-bg-primary)]">
+    <div className="alpha-app fixed inset-0 flex flex-col bg-[var(--alpha-bg)]">
       {/* Header */}
-      <header className="shrink-0 flex items-center gap-3 px-4 py-2.5 border-b border-white/10 bg-black/40 backdrop-blur">
+      <header className="shrink-0 flex items-center gap-3 px-4 py-3 border-b border-[var(--alpha-border)] bg-[var(--alpha-bg)]/95 backdrop-blur">
         <button
           onClick={backToClassic}
-          className="text-xs text-white/60 hover:text-white transition-colors cursor-pointer font-(--font-code)"
+          className="text-[13px] text-[var(--alpha-muted)] hover:text-[var(--alpha-text)] transition-colors cursor-pointer"
         >
           {text.back}
         </button>
-        <div className="mx-auto text-center">
-          <div className="text-sm font-(--font-display) text-[var(--color-paper-cream)]">
-            🚀 {text.title}
-          </div>
-          <div className="text-[10px] font-(--font-code) text-[var(--color-accent-primary)] uppercase tracking-widest">
-            {live ? <span className="text-[var(--color-terminal-green)]">● {text.subtitleLive}</span> : text.subtitle}
-          </div>
+        <div className="mx-auto flex items-center gap-2.5">
+          <span className="text-sm font-medium tracking-tight text-[var(--alpha-text)]">{text.title}</span>
+          {live ? (
+            <span className="flex items-center gap-1.5 rounded-full border border-[var(--alpha-border)] bg-white/[0.03] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--alpha-ok)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--alpha-ok)]" aria-hidden="true" />
+              {text.subtitleLive}
+            </span>
+          ) : (
+            <span className="rounded-full border border-[var(--alpha-border)] bg-white/[0.03] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--alpha-subtle)]">
+              {text.subtitle}
+            </span>
+          )}
         </div>
         <LanguageSwitcher />
       </header>
@@ -92,7 +98,7 @@ export default function AlphaApp() {
       </Conversation>
 
       {/* Composer */}
-      <div className="shrink-0 border-t border-white/10 bg-black/40 backdrop-blur px-4 pt-3 pb-[max(env(safe-area-inset-bottom),12px)]">
+      <div className="shrink-0 border-t border-[var(--alpha-border)] bg-[var(--alpha-bg)]/95 backdrop-blur px-4 pt-3 pb-[max(env(safe-area-inset-bottom),12px)]">
         <div className="mx-auto w-full max-w-3xl flex flex-col gap-3">
           <Suggestions items={suggestions} onPick={handlePick} disabled={status === 'streaming'} />
           <PromptInput onSubmit={send} placeholder={text.placeholder} busy={status === 'streaming'} />

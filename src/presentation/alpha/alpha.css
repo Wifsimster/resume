@@ -1,4 +1,19 @@
-/* Conversational alpha — streaming cursor, tool spinner, card entrance */
+/* Conversational resume — shadcn/ui-inspired dark theme (zinc scale, single
+   violet accent), streaming cursor, tool spinner, card entrance */
+
+.alpha-app {
+  --alpha-bg: #09090b;            /* zinc-950 */
+  --alpha-surface: #111113;       /* raised surface */
+  --alpha-card: #131316;          /* generative cards */
+  --alpha-border: rgba(255, 255, 255, 0.08);
+  --alpha-text: #fafafa;          /* zinc-50 */
+  --alpha-body: #d4d4d8;          /* zinc-300 */
+  --alpha-muted: #a1a1aa;         /* zinc-400 */
+  --alpha-subtle: #71717a;        /* zinc-500 */
+  --alpha-accent: #8b5cf6;        /* violet-500 */
+  --alpha-ring: rgba(139, 92, 246, 0.45);
+  --alpha-ok: #34d399;            /* emerald-400 */
+}
 
 .alpha-cursor {
   display: inline-block;
@@ -6,7 +21,7 @@
   height: 14px;
   margin-left: 2px;
   vertical-align: text-bottom;
-  background: var(--color-accent-primary);
+  background: var(--alpha-accent, var(--color-accent-primary));
   border-radius: 1px;
   animation: alpha-blink 0.9s steps(2) infinite;
 }
@@ -16,12 +31,13 @@
   100% { opacity: 0; }
 }
 
+/* Spinner inherits currentColor so it works on dark rows and light buttons */
 .alpha-spinner {
   display: inline-block;
   width: 12px;
   height: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-top-color: var(--color-terminal-green);
+  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
   border-radius: 50%;
   animation: alpha-spin 0.7s linear infinite;
 }

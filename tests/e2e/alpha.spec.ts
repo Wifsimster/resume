@@ -43,7 +43,7 @@ test('live mode streams the answer from the chat API when a provider is up', asy
       headers: { 'content-type': 'text/event-stream' },
       body: [
         'data: {"type":"card-intent","kind":"skills"}',
-        'data: {"type":"text","delta":"Réponse générée par le modèle de test."}',
+        'data: {"type":"text","delta":"Réponse **générée** par le modèle de test."}',
         'data: {"type":"done"}'
       ].join('\n\n') + '\n\n'
     }))
@@ -61,6 +61,8 @@ test('live mode streams the answer from the chat API when a provider is up', asy
   // The mocked SSE stream drives the UI: tool call, streamed text, card
   await expect(page.getByText('resume.getSkills', { exact: false })).toBeVisible({ timeout: 15_000 })
   await expect(page.getByText('Réponse générée par le modèle de test.')).toBeVisible({ timeout: 15_000 })
+  // Markdown is rendered, not shown raw: **générée** becomes a <strong>
+  await expect(page.locator('.alpha-app strong', { hasText: 'générée' })).toBeVisible()
   await expect(page.getByText('System Design').first()).toBeVisible({ timeout: 15_000 })
 
   expect(errors).toEqual([])
