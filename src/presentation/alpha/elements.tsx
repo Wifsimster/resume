@@ -121,8 +121,8 @@ export function Message({ from, children }: { from: 'user' | 'assistant', childr
   }
   return (
     <div className="flex gap-3" data-role="assistant">
-      <div className="shrink-0 w-8 h-8 rounded-lg border border-[var(--alpha-border)] bg-[var(--alpha-surface)] flex items-center justify-center text-sm" aria-hidden="true">
-        🚀
+      <div className="shrink-0 w-8 h-8 rounded-lg border border-[var(--alpha-border)] bg-[var(--alpha-surface)] flex items-center justify-center text-[10px] font-semibold tracking-wide text-[var(--alpha-muted)]" aria-hidden="true">
+        DB
       </div>
       <div className="flex-1 min-w-0 flex flex-col gap-3 pt-1">
         {children}

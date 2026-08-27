@@ -12,7 +12,7 @@ export function ProfileCard() {
   const { t } = useTranslation()
   return (
     <div className={`${cardShell} flex items-center gap-4`}>
-      <div className="w-12 h-12 rounded-lg border border-[var(--alpha-border)] bg-gradient-to-br from-violet-600/25 to-cyan-500/10 flex items-center justify-center text-xl" aria-hidden="true">👨‍🚀</div>
+      <div className="w-12 h-12 rounded-lg border border-[var(--alpha-border)] bg-gradient-to-br from-violet-600/25 to-cyan-500/10 flex items-center justify-center text-sm font-semibold tracking-wide text-[var(--alpha-text)]" aria-hidden="true">DB</div>
       <div>
         <div className="text-base font-medium tracking-tight text-[var(--alpha-text)]">{resumeData.name}</div>
         <div className="text-sm text-[var(--alpha-muted)]">{t('hero.tagline')}</div>
