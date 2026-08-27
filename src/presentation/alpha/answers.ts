@@ -145,16 +145,16 @@ export const INTENTS: Record<Exclude<IntentId, 'welcome' | 'fallback'>, IntentDe
 
 export const WELCOME: Record<'fr' | 'en', Answer> = {
   fr: {
-    reasoning: 'Nouveau visiteur sur l\'alpha conversationnelle. Je me présente et je propose les sujets principaux du CV.',
+    reasoning: 'Nouveau visiteur sur le CV conversationnel. Je me présente et je propose les sujets principaux.',
     tool: { name: 'resume.load', args: '{ profile: "wifsimster" }' },
-    text: 'Bonjour ! Je suis l\'interface conversationnelle (alpha) du CV de Damien Battistella. Posez-moi une question sur son parcours, ses compétences ou ses projets — ou choisissez une suggestion ci-dessous.',
+    text: 'Bonjour ! Je suis l\'interface conversationnelle du CV de Damien Battistella. Posez-moi une question sur son parcours, ses compétences ou ses projets — ou choisissez une suggestion ci-dessous.',
     card: 'profile',
     suggestions: ['Son expérience ?', 'Quelles sont ses compétences ?', 'Ses projets open source ?', 'Parle-moi de son homelab']
   },
   en: {
-    reasoning: 'New visitor on the conversational alpha. Introducing myself and offering the resume\'s main topics.',
+    reasoning: 'New visitor on the conversational resume. Introducing myself and offering the main topics.',
     tool: { name: 'resume.load', args: '{ profile: "wifsimster" }' },
-    text: 'Hi! I\'m the conversational interface (alpha) of Damien Battistella\'s resume. Ask me anything about his career, skills or projects — or pick a suggestion below.',
+    text: 'Hi! I\'m the conversational interface of Damien Battistella\'s resume. Ask me anything about his career, skills or projects — or pick a suggestion below.',
     card: 'profile',
     suggestions: ['His experience?', 'What are his skills?', 'His open-source projects?', 'Tell me about his homelab']
   }
@@ -164,13 +164,13 @@ export const FALLBACK: Record<'fr' | 'en', Answer> = {
   fr: {
     reasoning: 'Je ne reconnais pas ce sujet dans le CV. Je le dis honnêtement et je ramène vers ce que je sais.',
     tool: { name: 'resume.search', args: '{ query: "…" }' },
-    text: 'Je suis une alpha scriptée, sans vrai LLM derrière — je ne sais répondre que sur le contenu du CV. Essayez l\'un des sujets ci-dessous !',
+    text: 'Je suis une interface scriptée, sans vrai LLM derrière — je ne sais répondre que sur le contenu du CV. Essayez l\'un des sujets ci-dessous !',
     suggestions: ['Son expérience ?', 'Ses compétences ?', 'Ses projets ?', 'Comment le contacter ?']
   },
   en: {
     reasoning: 'I don\'t recognize this topic in the resume. Saying so honestly and steering back to what I know.',
     tool: { name: 'resume.search', args: '{ query: "…" }' },
-    text: 'I\'m a scripted alpha with no real LLM behind me — I can only answer about the resume itself. Try one of the topics below!',
+    text: 'I\'m a scripted interface with no real LLM behind me — I can only answer about the resume itself. Try one of the topics below!',
     suggestions: ['His experience?', 'His skills?', 'His projects?', 'How can I contact him?']
   }
 }

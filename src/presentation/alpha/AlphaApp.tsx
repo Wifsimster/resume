@@ -12,7 +12,7 @@ import './alpha.css'
 const copy = {
   fr: {
     title: 'CV conversationnel',
-    subtitle: 'alpha · scripté, sans LLM',
+    subtitle: 'scripté, sans LLM',
     back: '← Version classique',
     placeholder: 'Posez une question sur Damien…',
     thought: 'Raisonnement',
@@ -20,7 +20,7 @@ const copy = {
   },
   en: {
     title: 'Conversational resume',
-    subtitle: 'alpha · scripted, no LLM',
+    subtitle: 'scripted, no LLM',
     back: '← Classic version',
     placeholder: 'Ask something about Damien…',
     thought: 'Reasoning',
