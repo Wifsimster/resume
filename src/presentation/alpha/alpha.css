@@ -36,6 +36,14 @@
   font-family: var(--alpha-font-mono);
 }
 
+/* The shared language switcher loses its surface background in the chat —
+   flat header, only the flags remain */
+.alpha-app [data-component='language-switcher'] {
+  background: transparent;
+  backdrop-filter: none;
+  border-color: transparent;
+}
+
 /* Prose: message text driven by the typeset variables */
 .alpha-prose {
   font-size: var(--typeset-size);
