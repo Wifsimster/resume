@@ -1,0 +1,136 @@
+/* Unified scroll minimap — coarse pointers and narrow screens (< lg). The
+   landmark dots stay faintly visible at all times (they replace the old left
+   TOC dot rail); the trail and rocket thumb only appear while scrolling. */
+
+.mobile-scroll-rail {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 24px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+  right: 5px;
+  width: 22px;
+  z-index: 90;
+  pointer-events: none;
+}
+
+.msr-track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 9px;
+  width: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.msr-trail {
+  position: absolute;
+  top: 0;
+  right: 9px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-accent-primary) 85%, transparent),
+    var(--palette-cyan-400)
+  );
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-primary) 60%, transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Landmark dots: always softly visible, tappable (generous hit area) */
+.msr-dot {
+  position: absolute;
+  right: 0;
+  transform: translateY(-50%);
+  width: 21px;
+  height: 21px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.msr-dot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.msr-dot.is-current::after {
+  background: var(--color-accent-primary);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-primary) 80%, transparent);
+  transform: translateY(-50%) scale(1.35);
+}
+
+.msr-thumb {
+  position: absolute;
+  right: 3px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-direction: row-reverse;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.mobile-scroll-rail.is-active .msr-trail,
+.mobile-scroll-rail.is-active .msr-thumb {
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+/* The 🚀 glyph points up-right (45°): +135° aims it down the rail while
+   scrolling down, -45° flips it upward when the visitor scrolls back up */
+.msr-rocket {
+  font-size: 15px;
+  line-height: 1;
+  transform: rotate(135deg);
+  transition: transform 0.25s ease;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--palette-cyan-400) 70%, transparent));
+}
+
+.msr-rocket.is-up {
+  transform: rotate(-45deg);
+}
+
+.msr-counter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-code);
+  font-size: 10px;
+  color: var(--color-paper-cream);
+  background: rgba(10, 10, 15, 0.85);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
+  border-radius: 8px;
+  padding: 2px 7px;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+}
+
+.msr-counter-index {
+  color: color-mix(in srgb, var(--color-paper-cream) 55%, transparent);
+}
+
+/* Hide the native overlay scrollbar on touch devices — the rail replaces it */
+@media (pointer: coarse) {
+  html {
+    scrollbar-width: none;
+  }
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}

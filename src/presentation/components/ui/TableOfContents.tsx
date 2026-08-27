@@ -161,11 +161,12 @@ export default function TableOfContents() {
   }, [])
 
   return (
-    /* Desktop: full labelled rail. Below lg: compact dot rail (labels hidden,
-       hit areas enlarged) so phones/tablets keep jump-to-section navigation. */
+    /* Desktop (≥ lg) only: full labelled rail. Below lg the right-hand scroll
+       minimap (MobileScrollRail) carries the section dots instead — the two
+       rails are merged there, AI-chat outline style. */
     <nav
       ref={navRef}
-      className="table-of-contents fixed left-1 lg:left-6 top-1/2 z-50 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+      className="table-of-contents hidden lg:block fixed left-1 lg:left-6 top-1/2 z-50 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
       style={{ transform: sidebarTransform }}
     >
       <ul ref={tocListRef} className="toc-list list-none m-0 p-0 flex flex-col gap-0.5 lg:gap-1.5">

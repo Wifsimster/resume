@@ -8,6 +8,7 @@ import type { FPSDisplayHandle } from '@presentation/components/ui/FPSDisplay'
 import TableOfContents from '@presentation/components/ui/TableOfContents'
 import CompanionOverlay from '@presentation/components/ui/CompanionOverlay'
 import AppBackground from '@presentation/components/ui/AppBackground'
+import MobileScrollRail from '@presentation/components/ui/MobileScrollRail'
 import { useAchievements } from '@application/hooks/useAchievements'
 import { useEasterEggs } from '@application/hooks/useEasterEggs'
 import { startFPSMonitoring } from '@application/hooks/useQuality'
@@ -234,6 +235,9 @@ export default function App() {
 
       {/* Table of Contents (Desktop only) */}
       <TableOfContents />
+
+      {/* Custom scroll rail (touch devices only) */}
+      <MobileScrollRail />
 
       {/* Main Content */}
       <HomeView />
