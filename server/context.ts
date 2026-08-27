@@ -136,7 +136,7 @@ Lectures
 - Wishlist : ${books('toBuy')}
 
 Chiffres clés
-- ${stats?.yearsOfExperience ?? 9}+ années d'expérience (depuis 2016)
+- ${stats?.yearsOfExperience ?? 9}+ années d'expérience chez Dedalus (depuis 2016 — le chiffre affiché sur le site)
 - ${resumeData.github.totalRepos} dépôts GitHub publics
 - ${stats?.developersRecruited ?? 6} développeurs recrutés ; équipe de 6 développeurs managée actuellement
 - ${stats?.totalProjects ?? 11} projets GitLab professionnels
