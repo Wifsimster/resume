@@ -1,4 +1,50 @@
+import { useEffect, useMemo } from 'react'
+import { BoxGeometry, Color, InstancedMesh, Matrix4, MeshStandardMaterial, Quaternion, Vector3 } from 'three'
 import type { makerColors } from '@domain/data/makerRack'
+
+// Keycap palette
+const LIGHT = '#F5F5F0'
+const GRAY = '#B8C5D0'
+const NAVY = '#2C3E50'
+
+// [x, z, width, height, depth, colour] — y is always 0.055
+type KeyDef = [number, number, number, number, number, string]
+
+const buildKeyDefs = (): KeyDef[] => {
+  const keys: KeyDef[] = []
+  // Escape
+  keys.push([-0.562, -0.15, 0.06, 0.035, 0.049, NAVY])
+  // Function row: F1-F4 light, F5-F8 gray-blue, F9-F12 light
+  for (let k = 1; k <= 4; k++) keys.push([-0.435 + k * 0.071, -0.15, 0.053, 0.03, 0.041, LIGHT])
+  for (let k = 1; k <= 4; k++) keys.push([-0.15 + k * 0.071, -0.15, 0.053, 0.03, 0.041, GRAY])
+  for (let k = 1; k <= 4; k++) keys.push([0.135 + k * 0.071, -0.15, 0.053, 0.03, 0.041, LIGHT])
+  // Number row + Backspace + Delete
+  for (let k = 1; k <= 13; k++) keys.push([-0.54 + k * 0.071, -0.075, 0.056, 0.035, 0.053, LIGHT])
+  keys.push([0.435, -0.075, 0.09, 0.035, 0.053, GRAY])
+  keys.push([0.54, -0.075, 0.053, 0.035, 0.053, GRAY])
+  // QWERTY row: Tab + letters + PgUp
+  keys.push([-0.562, 0, 0.075, 0.035, 0.053, GRAY])
+  for (let k = 1; k <= 12; k++) keys.push([-0.45 + k * 0.071, 0, 0.056, 0.035, 0.053, LIGHT])
+  keys.push([0.54, 0, 0.053, 0.035, 0.053, GRAY])
+  // Home row: Caps + letters + Enter + PgDn
+  keys.push([-0.548, 0.068, 0.09, 0.035, 0.053, GRAY])
+  for (let k = 1; k <= 10; k++) keys.push([-0.412 + k * 0.071, 0.068, 0.056, 0.035, 0.053, LIGHT])
+  keys.push([0.39, 0.068, 0.105, 0.035, 0.053, NAVY])
+  keys.push([0.54, 0.068, 0.053, 0.035, 0.053, GRAY])
+  // Bottom row: LShift + letters + RShift + Up arrow
+  keys.push([-0.525, 0.135, 0.112, 0.035, 0.053, GRAY])
+  for (let k = 1; k <= 9; k++) keys.push([-0.375 + k * 0.071, 0.135, 0.056, 0.035, 0.053, LIGHT])
+  keys.push([0.337, 0.135, 0.075, 0.035, 0.053, GRAY])
+  keys.push([0.435, 0.135, 0.053, 0.035, 0.053, NAVY])
+  // Space row: Ctrl/Win/Alt + Space + Fn/Ctrl + arrows
+  for (let i = 0; i < 3; i++) keys.push([-0.525 + i * 0.075, 0.203, 0.06, 0.035, 0.053, GRAY])
+  keys.push([-0.075, 0.203, 0.337, 0.035, 0.053, NAVY])
+  for (let i = 0; i < 2; i++) keys.push([0.165 + i * 0.075, 0.203, 0.06, 0.035, 0.053, GRAY])
+  keys.push([0.337, 0.203, 0.053, 0.035, 0.053, NAVY])
+  keys.push([0.435, 0.203, 0.053, 0.035, 0.053, NAVY])
+  keys.push([0.532, 0.203, 0.053, 0.035, 0.053, NAVY])
+  return keys
+}
 
 interface Props {
   colors: typeof makerColors
@@ -8,6 +54,32 @@ interface Props {
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i + 1)
 
 export default function KeyboardComponent(_props: Props) {
+  const keysMesh = useMemo(() => {
+    const defs = buildKeyDefs()
+    const geometry = new BoxGeometry(1, 1, 1)
+    const material = new MeshStandardMaterial({ roughness: 0.45 })
+    const mesh = new InstancedMesh(geometry, material, defs.length)
+    const matrix = new Matrix4()
+    const quat = new Quaternion()
+    const pos = new Vector3()
+    const scale = new Vector3()
+    const color = new Color()
+    defs.forEach(([x, z, w, h, d, c], i) => {
+      matrix.compose(pos.set(x, 0.055, z), quat, scale.set(w, h, d))
+      mesh.setMatrixAt(i, matrix)
+      mesh.setColorAt(i, color.set(c))
+    })
+    mesh.instanceMatrix.needsUpdate = true
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
+    return mesh
+  }, [])
+
+  useEffect(() => () => {
+    keysMesh.geometry.dispose()
+    ;(keysMesh.material as MeshStandardMaterial).dispose()
+    keysMesh.dispose()
+  }, [keysMesh])
+
   return (
     <group position={[-2, 0.08, 0.8]} scale={0.8}>
       {/* Main keyboard body - white/cream */}
@@ -44,153 +116,11 @@ export default function KeyboardComponent(_props: Props) {
         ))}
       </group>
 
-      {/* ===== ESCAPE KEY (dark navy) ===== */}
-      <mesh position={[-0.562, 0.055, -0.15]}>
-        <boxGeometry args={[0.06, 0.035, 0.049]} />
-        <meshStandardMaterial color="#2C3E50" roughness={0.5} />
-      </mesh>
+      {/* ===== KEYS =====
+           All 86 keycaps in ONE InstancedMesh (single draw call, per-instance
+           colour) instead of 86 meshes each carrying its own material. */}
+      <primitive object={keysMesh} />
 
-      {/* ===== FUNCTION ROW ===== */}
-      {/* F1-F4 (light) */}
-      {range(4).map((key) => (
-        <mesh key={`f1-4-${key}`} position={[-0.435 + key * 0.071, 0.055, -0.15]}>
-          <boxGeometry args={[0.053, 0.03, 0.041]} />
-          <meshStandardMaterial color="#F5F5F0" roughness={0.45} />
-        </mesh>
-      ))}
-      {/* F5-F8 (gray-blue) */}
-      {range(4).map((key) => (
-        <mesh key={`f5-8-${key}`} position={[-0.15 + key * 0.071, 0.055, -0.15]}>
-          <boxGeometry args={[0.053, 0.03, 0.041]} />
-          <meshStandardMaterial color="#B8C5D0" roughness={0.45} />
-        </mesh>
-      ))}
-      {/* F9-F12 (light) */}
-      {range(4).map((key) => (
-        <mesh key={`f9-12-${key}`} position={[0.135 + key * 0.071, 0.055, -0.15]}>
-          <boxGeometry args={[0.053, 0.03, 0.041]} />
-          <meshStandardMaterial color="#F5F5F0" roughness={0.45} />
-        </mesh>
-      ))}
-
-      {/* ===== NUMBER ROW (white keys) ===== */}
-      {range(13).map((key) => (
-        <mesh key={`num-${key}`} position={[-0.54 + key * 0.071, 0.055, -0.075]}>
-          <boxGeometry args={[0.056, 0.035, 0.053]} />
-          <meshStandardMaterial color="#F5F5F0" roughness={0.45} />
-        </mesh>
-      ))}
-      {/* Backspace (gray-blue) */}
-      <mesh position={[0.435, 0.055, -0.075]}>
-        <boxGeometry args={[0.09, 0.035, 0.053]} />
-        <meshStandardMaterial color="#B8C5D0" roughness={0.45} />
-      </mesh>
-      {/* Delete */}
-      <mesh position={[0.54, 0.055, -0.075]}>
-        <boxGeometry args={[0.053, 0.035, 0.053]} />
-        <meshStandardMaterial color="#B8C5D0" roughness={0.45} />
-      </mesh>
-
-      {/* ===== QWERTY ROW ===== */}
-      {/* Tab (gray-blue) */}
-      <mesh position={[-0.562, 0.055, 0]}>
-        <boxGeometry args={[0.075, 0.035, 0.053]} />
-        <meshStandardMaterial color="#B8C5D0" roughness={0.45} />
-      </mesh>
-      {/* Letter keys (white) */}
-      {range(12).map((key) => (
-        <mesh key={`qwerty-${key}`} position={[-0.45 + key * 0.071, 0.055, 0]}>
-          <boxGeometry args={[0.056, 0.035, 0.053]} />
-          <meshStandardMaterial color="#F5F5F0" roughness={0.45} />
-        </mesh>
-      ))}
-      {/* PgUp */}
-      <mesh position={[0.54, 0.055, 0]}>
-        <boxGeometry args={[0.053, 0.035, 0.053]} />
-        <meshStandardMaterial color="#B8C5D0" roughness={0.45} />
-      </mesh>
-
-      {/* ===== HOME ROW ===== */}
-      {/* Caps Lock (gray-blue) */}
-      <mesh position={[-0.548, 0.055, 0.068]}>
-        <boxGeometry args={[0.09, 0.035, 0.053]} />
-        <meshStandardMaterial color="#B8C5D0" roughness={0.45} />
-      </mesh>
-      {/* Letter keys (white) */}
-      {range(10).map((key) => (
-        <mesh key={`home-${key}`} position={[-0.412 + key * 0.071, 0.055, 0.068]}>
-          <boxGeometry args={[0.056, 0.035, 0.053]} />
-          <meshStandardMaterial color="#F5F5F0" roughness={0.45} />
-        </mesh>
-      ))}
-      {/* Enter (dark navy) */}
-      <mesh position={[0.39, 0.055, 0.068]}>
-        <boxGeometry args={[0.105, 0.035, 0.053]} />
-        <meshStandardMaterial color="#2C3E50" roughness={0.45} />
-      </mesh>
-      {/* PgDn */}
-      <mesh position={[0.54, 0.055, 0.068]}>
-        <boxGeometry args={[0.053, 0.035, 0.053]} />
-        <meshStandardMaterial color="#B8C5D0" roughness={0.45} />
-      </mesh>
-
-      {/* ===== BOTTOM ROW ===== */}
-      {/* Left Shift (gray-blue) */}
-      <mesh position={[-0.525, 0.055, 0.135]}>
-        <boxGeometry args={[0.112, 0.035, 0.053]} />
-        <meshStandardMaterial color="#B8C5D0" roughness={0.45} />
-      </mesh>
-      {/* Letter keys (white) */}
-      {range(9).map((key) => (
-        <mesh key={`shift-row-${key}`} position={[-0.375 + key * 0.071, 0.055, 0.135]}>
-          <boxGeometry args={[0.056, 0.035, 0.053]} />
-          <meshStandardMaterial color="#F5F5F0" roughness={0.45} />
-        </mesh>
-      ))}
-      {/* Right Shift */}
-      <mesh position={[0.337, 0.055, 0.135]}>
-        <boxGeometry args={[0.075, 0.035, 0.053]} />
-        <meshStandardMaterial color="#B8C5D0" roughness={0.45} />
-      </mesh>
-      {/* Up arrow (dark) */}
-      <mesh position={[0.435, 0.055, 0.135]}>
-        <boxGeometry args={[0.053, 0.035, 0.053]} />
-        <meshStandardMaterial color="#2C3E50" roughness={0.45} />
-      </mesh>
-
-      {/* ===== SPACE ROW ===== */}
-      {/* Ctrl, Win, Alt (gray-blue) */}
-      {range(3).map((_key, i) => (
-        <mesh key={`mod-left-${i}`} position={[-0.525 + i * 0.075, 0.055, 0.203]}>
-          <boxGeometry args={[0.06, 0.035, 0.053]} />
-          <meshStandardMaterial color="#B8C5D0" roughness={0.45} />
-        </mesh>
-      ))}
-      {/* Spacebar (dark navy) */}
-      <mesh position={[-0.075, 0.055, 0.203]}>
-        <boxGeometry args={[0.337, 0.035, 0.053]} />
-        <meshStandardMaterial color="#2C3E50" roughness={0.45} />
-      </mesh>
-      {/* Fn, Ctrl right (gray-blue) */}
-      {range(2).map((_key, i) => (
-        <mesh key={`mod-right-${i}`} position={[0.165 + i * 0.075, 0.055, 0.203]}>
-          <boxGeometry args={[0.06, 0.035, 0.053]} />
-          <meshStandardMaterial color="#B8C5D0" roughness={0.45} />
-        </mesh>
-      ))}
-      {/* Arrow keys (dark) */}
-      <mesh position={[0.337, 0.055, 0.203]}>
-        <boxGeometry args={[0.053, 0.035, 0.053]} />
-        <meshStandardMaterial color="#2C3E50" roughness={0.45} />
-      </mesh>
-      <mesh position={[0.435, 0.055, 0.203]}>
-        <boxGeometry args={[0.053, 0.035, 0.053]} />
-        <meshStandardMaterial color="#2C3E50" roughness={0.45} />
-      </mesh>
-      <mesh position={[0.532, 0.055, 0.203]}>
-        <boxGeometry args={[0.053, 0.035, 0.053]} />
-        <meshStandardMaterial color="#2C3E50" roughness={0.45} />
-      </mesh>
     </group>
   )
 }

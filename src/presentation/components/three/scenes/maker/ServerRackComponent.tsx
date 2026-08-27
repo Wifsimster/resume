@@ -127,6 +127,25 @@ export default function ServerRackComponent({ visibleRackUnits, hoveredUnitId, a
                 <boxGeometry args={[0.04, 3.1, 0.04]} />
             </mesh>
 
+            {/* Vertical LED strips along the front rails: emissive basic
+                material — the server-room accent light look at zero light-source
+                cost (they only appear to illuminate) */}
+            <mesh position={[-0.512, 1.65, 0.32]}>
+                <boxGeometry args={[0.012, 3.05, 0.012]} />
+                <meshBasicMaterial color="#35C4E8" />
+            </mesh>
+            <mesh position={[0.512, 1.65, 0.32]}>
+                <boxGeometry args={[0.012, 3.05, 0.012]} />
+                <meshBasicMaterial color="#35C4E8" />
+            </mesh>
+
+            {/* Faint interior glow plane in front of the back panel so the
+                cabinet cavity reads as depth, not a black hole */}
+            <mesh position={[0, 1.65, -0.6]}>
+                <planeGeometry args={[1.02, 3.2]} />
+                <meshBasicMaterial color="#0D2534" transparent opacity={0.85} />
+            </mesh>
+
             {/* Server units - Actual equipment (inside the rack) */}
             {visibleRackUnits.map((unit) => {
                 const UnitComponent = getUnitComponent(unit.type)

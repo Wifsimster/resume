@@ -152,6 +152,55 @@ export const resumeData: ResumeData = {
   ],
 
   projects: [
+    // Latest active open-source projects — github.com/Wifsimster, summer 2026
+    {
+      id: 'ondes',
+      name: 'ondes',
+      tech: 'Kotlin · Android',
+      url: 'https://github.com/Wifsimster/ondes',
+      icon: '🎙️',
+      type: 'github'
+    },
+    {
+      id: 'elan',
+      name: 'elan',
+      tech: 'TypeScript',
+      url: 'https://github.com/Wifsimster/elan',
+      icon: '🚴',
+      type: 'github'
+    },
+    {
+      id: 'plexcord',
+      name: 'PlexCord',
+      tech: 'Go',
+      url: 'https://github.com/Wifsimster/PlexCord',
+      icon: '🎵',
+      type: 'github'
+    },
+    {
+      id: 'thebox',
+      name: 'the-box',
+      tech: 'TypeScript',
+      url: 'https://github.com/Wifsimster/the-box',
+      icon: '🎮',
+      type: 'github'
+    },
+    {
+      id: 'solopilot',
+      name: 'solopilot',
+      tech: 'TypeScript · Claude',
+      url: 'https://github.com/Wifsimster/solopilot',
+      icon: '🤖',
+      type: 'github'
+    },
+    {
+      id: 'toko',
+      name: 'toko',
+      tech: 'TypeScript',
+      url: 'https://github.com/Wifsimster/toko',
+      icon: '🧸',
+      type: 'github'
+    },
     {
       id: 'blog',
       name: 'Blog personnel',
@@ -253,7 +302,7 @@ export const resumeData: ResumeData = {
   github: {
     username: 'Wifsimster',
     url: 'https://github.com/Wifsimster',
-    totalRepos: 60
+    totalRepos: 87
   },
 
   statistics: {

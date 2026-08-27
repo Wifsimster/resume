@@ -253,15 +253,17 @@ export default function MakerScene({ quality, cameraMode, projects, techStack, t
           {/* Dark-metal faces need a broad base level on top of the hemisphere */}
           <ambientLight intensity={1.8} />
           <directionalLight position={[2.5, 8, 6]} intensity={4} color="#FFF2DE" />
-          {/* Frontal key so the dark metal faces stay readable */}
-          <pointLight position={[1.372, 1.2, 3]} intensity={26} color="#FFFFFF" distance={8} decay={2} />
+          {/* Frontal key aimed at the cabinet middle so both halves read */}
+          <pointLight position={[1.372, 0.5, 3]} intensity={24} color="#FFFFFF" distance={8} decay={2} />
+          {/* Low frontal fill for the bottom units (NAS, UPS, computer) */}
+          <pointLight position={[1.372, -1.1, 2.4]} intensity={10} color="#EAF2FF" distance={6} decay={2} />
           {/* Blue server-room accent from behind */}
           {renderSettings.lightCount >= 3 && (
             <pointLight position={[1.372, 1.5, -1]} intensity={10} color={makerColors.serverBlue} distance={5} decay={2} />
           )}
           {/* Warm floor bounce grounding the cabinet */}
           {renderSettings.lightCount >= 4 && (
-            <pointLight position={[1.372, -1.2, 1.8]} intensity={7} color="#FFB870" distance={5} decay={2} />
+            <pointLight position={[1.372, -1.4, 1.8]} intensity={6} color="#FFB870" distance={4} decay={2} />
           )}
         </>
       )}
