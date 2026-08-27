@@ -33,5 +33,11 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['three', '@react-three/fiber', '@react-three/drei']
+  },
+  server: {
+    // Local dev with the chat backend: `npm run build:server && npm run chat`
+    proxy: {
+      '/api': 'http://localhost:8787'
+    }
   }
 })

@@ -13,6 +13,7 @@ const copy = {
   fr: {
     title: 'CV conversationnel',
     subtitle: 'scripté, sans LLM',
+    subtitleLive: 'IA en direct',
     back: '← Version classique',
     placeholder: 'Posez une question sur Damien…',
     thought: 'Raisonnement',
@@ -21,6 +22,7 @@ const copy = {
   en: {
     title: 'Conversational resume',
     subtitle: 'scripted, no LLM',
+    subtitleLive: 'live AI',
     back: '← Classic version',
     placeholder: 'Ask something about Damien…',
     thought: 'Reasoning',
@@ -33,7 +35,7 @@ export default function AlphaApp() {
   const lang: 'fr' | 'en' = i18n.language === 'en' ? 'en' : 'fr'
   const text = copy[lang]
 
-  const { messages, status, suggestions, send } = useAlphaChat(lang)
+  const { messages, status, suggestions, send, live } = useAlphaChat(lang)
 
   const backToClassic = () => {
     window.location.href = window.location.pathname
@@ -62,7 +64,9 @@ export default function AlphaApp() {
           <div className="text-sm font-(--font-display) text-[var(--color-paper-cream)]">
             🚀 {text.title}
           </div>
-          <div className="text-[10px] font-(--font-code) text-[var(--color-accent-primary)] uppercase tracking-widest">{text.subtitle}</div>
+          <div className="text-[10px] font-(--font-code) text-[var(--color-accent-primary)] uppercase tracking-widest">
+            {live ? <span className="text-[var(--color-terminal-green)]">● {text.subtitleLive}</span> : text.subtitle}
+          </div>
         </div>
         <LanguageSwitcher />
       </header>

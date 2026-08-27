@@ -17,10 +17,27 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build the application (static site + chat backend)
+RUN npm run build && npm run build:server
 
-# Production stage
+# Chat backend stage — self-contained bundle, no node_modules needed.
+# Build with: docker build --target chat -t wifsimster/resume-chat .
+FROM node:24-alpine AS chat
+
+ENV NODE_ENV=production
+WORKDIR /app
+
+COPY --from=build /app/dist-server ./dist-server
+
+EXPOSE 8787
+USER node
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:8787/health || exit 1
+
+CMD ["node", "dist-server/index.js"]
+
+# Production stage (default target: the nginx static site)
 FROM nginx:alpine
 
 # OCI metadata labels
