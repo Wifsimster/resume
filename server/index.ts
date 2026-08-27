@@ -1,5 +1,8 @@
 import { createServer } from 'node:http'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { appendFile, mkdir, readFile, readdir } from 'node:fs/promises'
+import { join } from 'node:path'
+import { randomUUID } from 'node:crypto'
 import { streamText } from 'ai'
 import type { LanguageModel, ModelMessage } from 'ai'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
@@ -40,6 +43,25 @@ function resolveModel(): { model: LanguageModel, label: string } | null {
 }
 
 const configured = resolveModel()
+
+// ---- Conversation logs: one JSONL file per day in CHAT_LOG_DIR -------------
+// Every visitor turn and assistant answer is appended with the conversation
+// id, ip and user-agent. Read them back through GET /api/chat/logs, guarded
+// by CHAT_ADMIN_TOKEN (endpoint answers 404 unless both env vars are set).
+const LOG_DIR = process.env.CHAT_LOG_DIR ?? ''
+const ADMIN_TOKEN = process.env.CHAT_ADMIN_TOKEN ?? ''
+if (LOG_DIR) {
+  mkdir(LOG_DIR, { recursive: true })
+    .then(() => console.log(`[chat] conversation logs → ${LOG_DIR}`))
+    .catch(err => console.error('[chat] log dir unavailable:', err instanceof Error ? err.message : err))
+}
+
+function logTurn(entry: Record<string, unknown>) {
+  if (!LOG_DIR) return
+  const day = new Date().toISOString().slice(0, 10)
+  appendFile(join(LOG_DIR, `${day}.jsonl`), `${JSON.stringify(entry)}\n`)
+    .catch(err => console.error('[chat] log write failed:', err instanceof Error ? err.message : err))
+}
 
 // ---- Abuse guards: the endpoint is public and the upstream quota is small --
 const MAX_MESSAGES = 16
@@ -105,7 +127,7 @@ function readBody(req: IncomingMessage): Promise<string> {
 
 interface ChatTurn { role: 'user' | 'assistant', text: string }
 
-function parseChatRequest(raw: string): { turns: ChatTurn[], lang: 'fr' | 'en' } | null {
+function parseChatRequest(raw: string): { turns: ChatTurn[], lang: 'fr' | 'en', conversationId?: string } | null {
   let data: unknown
   try {
     data = JSON.parse(raw)
@@ -113,7 +135,7 @@ function parseChatRequest(raw: string): { turns: ChatTurn[], lang: 'fr' | 'en' }
     return null
   }
   if (typeof data !== 'object' || data === null) return null
-  const { messages, lang } = data as { messages?: unknown, lang?: unknown }
+  const { messages, lang, conversationId } = data as { messages?: unknown, lang?: unknown, conversationId?: unknown }
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MESSAGES) return null
   const turns: ChatTurn[] = []
   for (const entry of messages) {
@@ -124,7 +146,8 @@ function parseChatRequest(raw: string): { turns: ChatTurn[], lang: 'fr' | 'en' }
     if (trimmed) turns.push({ role, text: trimmed })
   }
   if (turns.length === 0 || turns[turns.length - 1].role !== 'user') return null
-  return { turns, lang: lang === 'en' ? 'en' : 'fr' }
+  const conv = typeof conversationId === 'string' && /^[a-zA-Z0-9-]{8,64}$/.test(conversationId) ? conversationId : undefined
+  return { turns, lang: lang === 'en' ? 'en' : 'fr', conversationId: conv }
 }
 
 type ChatEvent =
@@ -207,13 +230,30 @@ async function handleChat(req: IncomingMessage, res: ServerResponse) {
     return
   }
 
+  const ip = clientIp(req)
+  const conversation = parsed.conversationId ?? randomUUID()
+  const userTurn = parsed.turns[parsed.turns.length - 1]
+  logTurn({
+    ts: new Date().toISOString(),
+    conversation,
+    ip,
+    ua: typeof req.headers['user-agent'] === 'string' ? req.headers['user-agent'].slice(0, 300) : '',
+    lang: parsed.lang,
+    role: 'user',
+    text: userTurn.text
+  })
+
   res.writeHead(200, {
     'content-type': 'text/event-stream',
     'cache-control': 'no-cache, no-transform',
     'x-accel-buffering': 'no',
     connection: 'keep-alive'
   })
+  let answerText = ''
+  let answerCard: string | null = null
   const send = (event: ChatEvent) => {
+    if (event.type === 'text') answerText += event.delta
+    else if (event.type === 'card-intent') answerCard = event.kind
     res.write(`data: ${JSON.stringify(event)}\n\n`)
   }
 
@@ -257,7 +297,50 @@ async function handleChat(req: IncomingMessage, res: ServerResponse) {
     parser.flush()
     send(failed ? { type: 'error', message: 'upstream-error' } : { type: 'done' })
   }
+  logTurn({
+    ts: new Date().toISOString(),
+    conversation,
+    ip,
+    lang: parsed.lang,
+    role: 'assistant',
+    model: configured.label,
+    text: answerText,
+    ...(answerCard ? { card: answerCard } : {}),
+    ...(failed ? { error: true } : {}),
+    ...(abort.signal.aborted ? { aborted: true } : {})
+  })
   res.end()
+}
+
+// Protected log reader: GET /api/chat/logs?date=YYYY-MM-DD&limit=200
+// Auth: Authorization: Bearer <CHAT_ADMIN_TOKEN> or ?token=<CHAT_ADMIN_TOKEN>
+async function handleLogs(req: IncomingMessage, res: ServerResponse) {
+  if (!ADMIN_TOKEN || !LOG_DIR) {
+    sendJson(res, 404, { error: 'not-found' })
+    return
+  }
+  const url = new URL(req.url ?? '/', 'http://localhost')
+  const auth = req.headers.authorization ?? ''
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : url.searchParams.get('token') ?? ''
+  if (token !== ADMIN_TOKEN) {
+    sendJson(res, 401, { error: 'unauthorized' })
+    return
+  }
+  const dateParam = url.searchParams.get('date') ?? ''
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : new Date().toISOString().slice(0, 10)
+  const limit = Math.min(1000, Math.max(1, Number(url.searchParams.get('limit')) || 200))
+  let entries: unknown[] = []
+  try {
+    const rawLog = await readFile(join(LOG_DIR, `${date}.jsonl`), 'utf8')
+    entries = rawLog.trim().split('\n').slice(-limit)
+      .map(line => { try { return JSON.parse(line) as unknown } catch { return null } })
+      .filter(Boolean)
+  } catch { /* no log file for that day */ }
+  let days: string[] = []
+  try {
+    days = (await readdir(LOG_DIR)).filter(f => f.endsWith('.jsonl')).map(f => f.replace('.jsonl', '')).sort()
+  } catch { /* dir unreadable */ }
+  sendJson(res, 200, { date, days, count: entries.length, entries })
 }
 
 const server = createServer((req, res) => {
@@ -268,6 +351,10 @@ const server = createServer((req, res) => {
   }
   if (req.method === 'POST' && path === '/api/chat') {
     void handleChat(req, res)
+    return
+  }
+  if (req.method === 'GET' && path === '/api/chat/logs') {
+    void handleLogs(req, res)
     return
   }
   sendJson(res, 404, { error: 'not-found' })

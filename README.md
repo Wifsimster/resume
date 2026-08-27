@@ -117,6 +117,19 @@ CHAT_API_KEY=                        # if the endpoint needs one
 
 Local development: `npm run build:server && GEMINI_API_KEY=... npm run chat` in one terminal, `npm run dev` in another — Vite proxies `/api` to the chat server. The chat image is built from the same Dockerfile: `npm run docker:build:chat`.
 
+#### Conversation logs
+
+Every visitor message and assistant answer is appended to a JSONL file per day (`CHAT_LOG_DIR`, defaults to `/data/logs` in the compose file, bind-mounted to `./chat-logs`). Each entry carries the conversation id, ip, user-agent, language, role and text — create the host directory with the container's uid first: `mkdir chat-logs && chown 1000:1000 chat-logs`.
+
+Read them without SSH by setting `CHAT_ADMIN_TOKEN` in the `.env`:
+
+```bash
+curl -H "Authorization: Bearer $CHAT_ADMIN_TOKEN" \
+  "https://cv.battistella.ovh/api/chat/logs?date=2026-08-27&limit=200"
+```
+
+The endpoint answers 404 unless both `CHAT_LOG_DIR` and `CHAT_ADMIN_TOKEN` are set. Visitor IPs are stored — keep the retention short if that matters to you.
+
 ## 🔄 CI/CD
 
 GitHub Actions automatically runs on every push to `main` (`.github/workflows/release.yml`):

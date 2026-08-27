@@ -35,6 +35,13 @@ services:
       - CHAT_API_BASE_URL=${CHAT_API_BASE_URL:-}
       - CHAT_API_KEY=${CHAT_API_KEY:-}
       - CHAT_MODEL=${CHAT_MODEL:-}
+      # Conversation logs: JSONL per day in ./chat-logs (create it with
+      # `mkdir chat-logs && chown 1000:1000 chat-logs` — the container runs
+      # as the node user). Set CHAT_ADMIN_TOKEN to enable GET /api/chat/logs.
+      - CHAT_LOG_DIR=${CHAT_LOG_DIR:-/data/logs}
+      - CHAT_ADMIN_TOKEN=${CHAT_ADMIN_TOKEN:-}
+    volumes:
+      - ./chat-logs:/data/logs
     networks:
       - lan
 
