@@ -125,17 +125,19 @@ export const resumeData: ResumeData = {
   ],
 
   skills: [
-    // Hard Skills — language → stack → infra → domain → methodology
-    { id: 'javascript', name: 'JavaScript', category: 'hardskills', icon: '⚡', url: 'https://developer.mozilla.org/docs/Web/JavaScript' },
-    { id: 'vue', name: 'Vue.js', category: 'hardskills', icon: '💚', url: 'https://vuejs.org/' },
-    { id: 'nodejs', name: 'Node.js', category: 'hardskills', icon: '💚', url: 'https://nodejs.org/' },
-    { id: 'relationaldb', name: 'Relational Database', category: 'hardskills', icon: '🗄️' },
-    { id: 'restapi', name: 'REST API', category: 'hardskills', icon: '🔌', url: 'https://restfulapi.net/' },
-    { id: 'docker', name: 'Docker', category: 'hardskills', icon: '🐳', url: 'https://www.docker.com/' },
-    { id: 'cicd', name: 'CI/CD', category: 'hardskills', icon: '🔄' },
-    { id: 'hl7', name: 'HL7', category: 'hardskills', icon: '🏥', url: 'https://www.hl7.org/' },
+    // Hard Skills — AI-era durable skills: design → build → quality → ops → domain
+    // Languages & frameworks are intentionally absent: AI tooling commoditized them,
+    // what remains valuable is judgment, architecture and domain expertise
     { id: 'systemdesign', name: 'System Design', category: 'hardskills', icon: '📐' },
-    { id: 'cleanarchitecture', name: 'Clean Architecture', category: 'hardskills', icon: '🏗️' },
+    { id: 'softwarearchitecture', name: 'Software Architecture', category: 'hardskills', icon: '🏗️' },
+    { id: 'apidesign', name: 'API Design', category: 'hardskills', icon: '🔌' },
+    { id: 'datamodeling', name: 'Data Modeling', category: 'hardskills', icon: '🗄️' },
+    { id: 'aiorchestration', name: 'AI Orchestration', category: 'hardskills', icon: '🤖' },
+    { id: 'codereview', name: 'Code Review & Quality', category: 'hardskills', icon: '🔍' },
+    { id: 'testingstrategy', name: 'Testing Strategy', category: 'hardskills', icon: '🧪' },
+    { id: 'devops', name: 'DevOps & CI/CD', category: 'hardskills', icon: '🔄' },
+    { id: 'legacymodernization', name: 'Legacy Modernization', category: 'hardskills', icon: '♻️' },
+    { id: 'healthcareinterop', name: 'Healthcare Interoperability', category: 'hardskills', icon: '🏥', url: 'https://www.hl7.org/' },
 
     // IA
     { id: 'copilot', name: 'GitHub Copilot', category: 'ia', logo: '/logos/copilot.svg', url: 'https://github.com/features/copilot' },
