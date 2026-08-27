@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
 import type { Ref } from 'react'
 import { useThree } from '@react-three/fiber'
-import { PerspectiveCamera } from '@react-three/drei'
+import SceneCamera from '../SceneCamera'
 import type { Camera, Group, Object3D, PerspectiveCamera as ThreePerspectiveCamera, WebGLRenderer } from 'three'
 import type { CameraMode } from '@application/hooks/useMakerCamera'
 import type { QualityLevel } from '@application/hooks/useQuality'
@@ -220,7 +220,7 @@ export default function MakerScene({ quality, cameraMode, projects, techStack, t
 
   return (
     <>
-      <PerspectiveCamera makeDefault ref={cameraRef}
+      <SceneCamera ref={cameraRef}
         position={[cameraPosition.x, cameraPosition.y, cameraPosition.z]} />
 
       {/* Three-light rig replacing the old 7-light white blast: a hemisphere

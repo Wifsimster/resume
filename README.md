@@ -2,7 +2,7 @@
 
 🎮 **Immersive WebGL Resume for Damien Battistella**
 
-An interactive, infinite-scroll resume website featuring 9 unique WebGL 3D scenes, gaming-inspired UI elements, and bilingual support (FR/EN).
+An interactive, infinite-scroll resume website featuring three WebGL 3D scenes (solar system hero, space companion, maker desk & server rack), gaming-inspired UI elements, and bilingual support (FR/EN).
 
 ![React](https://img.shields.io/badge/React-19-61dafb?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript)
@@ -14,8 +14,8 @@ An interactive, infinite-scroll resume website featuring 9 unique WebGL 3D scene
 
 ## ✨ Features
 
-- **9 WebGL 3D Sections** - Each section has a unique Three.js scene with custom animations
-- **Gaming-Inspired UI** - XP progress bar, 20 unlockable achievements, easter eggs
+- **WebGL 3D Scenes** - Solar system hero, space companion cruising across sections, and a maker desk with a full server rack — all lazy-loaded
+- **Gaming-Inspired UI** - XP progress bar, 30 unlockable achievements, easter eggs
 - **Bilingual** - French and English with automatic browser detection
 - **Responsive** - Works on desktop and mobile devices
 - **Performance Optimized** - Quality toggle, lazy loading, code splitting

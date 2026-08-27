@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { PerspectiveCamera } from '@react-three/drei'
+import SceneCamera from './SceneCamera'
 import {
   BufferAttribute,
   BufferGeometry,
@@ -486,7 +486,7 @@ export default function CompanionScene() {
 
   return (
     <>
-      <PerspectiveCamera makeDefault position={[0, 0, CAMERA_Z]} fov={45} />
+      <SceneCamera position={[0, 0, CAMERA_Z]} fov={45} />
 
       <ambientLight intensity={0.7} />
       <directionalLight position={[4, 6, 8]} intensity={1.6} />
