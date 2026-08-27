@@ -16,11 +16,17 @@ export const EXTRA_FACTS: string[] = [
   // Rôle actuel élargi
   'Depuis janvier 2026, nommé AI Champion officiel du groupe Dedalus : il représente et pilote l\'adoption de l\'IA à l\'échelle du groupe, en parallèle de son rôle de Technical Lead Manager.',
 
+  // Activité indépendante (en parallèle du CDI Dedalus)
+  'En CDI chez Dedalus, et depuis 2026 également fondateur de BATTISTELLA (https://pro.battistella.ovh/), micro-entreprise indépendante : un studio solo qui conçoit, héberge (en France, auto-hébergé) et exploite ses propres applications SaaS — The Box, Toko, WaWPTN, Tribu, Copro-Pilot (gratuit, freemium ou abonnement de 3,99 € à 149 €/mois selon le produit). Pas de prestations sur mesure : il se concentre exclusivement sur ses propres produits.',
+
   // Langues
   'Langues : français (natif) ; parle et comprend l\'anglais.',
 
   // Localisation & réseau
   'Basé à Artigues-près-Bordeaux (région bordelaise) ; travaille en mode hybride chez Dedalus.',
   'Très favorable au télétravail, qu\'il préfère : il le pratique 3 jours par semaine chez Dedalus depuis plusieurs années.',
-  'Plus de 500 relations sur LinkedIn.'
+  'Plus de 500 relations sur LinkedIn.',
+
+  // Vie personnelle (le site mentionne déjà famille, rénovation et domotique)
+  'Marié et père de deux enfants.'
 ]
