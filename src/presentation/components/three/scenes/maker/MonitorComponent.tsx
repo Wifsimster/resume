@@ -16,10 +16,12 @@ export default function MonitorComponent({ screenTexture, colors }: Props) {
       </mesh>
 
       {/* Screen with content texture. Unlit and excluded from tone mapping so
-           the display reads bright and true like a real backlit panel. */}
+           the display reads bright and true like a real backlit panel.
+           Keyed on texture presence: swapping `map` null→texture on a live
+           material doesn't recompile the shader, leaving the screen white. */}
       <mesh position={[0, 0, 0.085]}>
         <planeGeometry args={[1.55, 0.87]} />
-        <meshBasicMaterial map={screenTexture} toneMapped={false} />
+        <meshBasicMaterial key={screenTexture ? 'tex' : 'none'} map={screenTexture} toneMapped={false} color={screenTexture ? '#FFFFFF' : '#0D1117'} />
       </mesh>
 
       {/* Bottom bezel accent strip */}

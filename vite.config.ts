@@ -21,9 +21,12 @@ export default defineConfig({
     target: 'es2022',
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router', 'react-i18next', 'i18next', 'zustand'],
-          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei']
+        // Rolldown (Vite 8) only accepts the function form
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (/[\\/](three|@react-three)[\\/]/.test(id)) return 'three-vendor'
+            return 'react-vendor'
+          }
         }
       }
     }

@@ -132,20 +132,14 @@ export const resumeData: ResumeData = {
     { id: 'softwarearchitecture', name: 'Software Architecture', category: 'hardskills', icon: '🏗️' },
     { id: 'apidesign', name: 'API Design', category: 'hardskills', icon: '🔌' },
     { id: 'datamodeling', name: 'Data Modeling', category: 'hardskills', icon: '🗄️' },
-    { id: 'aiorchestration', name: 'AI Orchestration', category: 'hardskills', icon: '🤖' },
+    // Absorbs the former IA tools column (Copilot, Cursor, Claude, Gemini, MCP…):
+    // the durable skill is orchestrating them, not any single tool
+    { id: 'aiorchestration', name: 'AI Orchestration', category: 'hardskills', icon: '🤖', url: 'https://modelcontextprotocol.io/' },
     { id: 'codereview', name: 'Code Review & Quality', category: 'hardskills', icon: '🔍' },
     { id: 'testingstrategy', name: 'Testing Strategy', category: 'hardskills', icon: '🧪' },
     { id: 'devops', name: 'DevOps & CI/CD', category: 'hardskills', icon: '🔄' },
     { id: 'legacymodernization', name: 'Legacy Modernization', category: 'hardskills', icon: '♻️' },
     { id: 'healthcareinterop', name: 'Healthcare Interoperability', category: 'hardskills', icon: '🏥', url: 'https://www.hl7.org/' },
-
-    // IA
-    { id: 'copilot', name: 'GitHub Copilot', category: 'ia', logo: '/logos/copilot.svg', url: 'https://github.com/features/copilot' },
-    { id: 'cursor', name: 'Cursor', category: 'ia', logo: '/logos/cursor.svg', url: 'https://cursor.com/' },
-    { id: 'claude', name: 'Claude', category: 'ia', logo: '/logos/claude.svg', url: 'https://claude.ai/' },
-    { id: 'gemini', name: 'Gemini', category: 'ia', logo: '/logos/gemini.svg', url: 'https://gemini.google.com/' },
-    { id: 'mcp', name: 'MCP', category: 'ia', logo: '/logos/mcp.svg', url: 'https://modelcontextprotocol.io/' },
-    { id: 'skills', name: 'Skills', category: 'ia', logo: '/logos/skills.svg', url: 'https://skills.sh/' },
 
     // Soft Skills
     { id: 'leadership', name: 'Leadership', category: 'soft', icon: '👑' },

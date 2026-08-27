@@ -7,7 +7,7 @@ export default function ExperienceSection() {
 
   const getAchievements = (expId: string): string[] => {
     const achievements = t(`experience.${expId}.achievements`, { returnObjects: true })
-    return Array.isArray(achievements) ? achievements : []
+    return Array.isArray(achievements) ? (achievements as string[]) : []
   }
 
   return (

@@ -370,7 +370,6 @@ export default {
     title: 'Compétences',
     subtitle: 'Ce que j\'utilise au quotidien',
     hardskills: 'Hard Skills',
-    ia: 'IA',
     maker: 'Maker',
     soft: 'Soft Skills'
   },

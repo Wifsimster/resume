@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { CSSProperties, ElementType } from 'react'
+import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { resumeData } from '@domain/data/resume'
 
@@ -7,9 +7,8 @@ export default function SkillsSection() {
   const { t } = useTranslation()
 
   // Group skills by category, preserving the intentional order from the data file
-  // The order groups related items together (e.g., DevOps tools, then Testing, then IDE/AI tools)
   const skillsByCategory = useMemo(() => {
-    const categories = ['soft', 'ia', 'hardskills'] as const
+    const categories = ['hardskills', 'soft'] as const
     return categories.map(cat => ({
       id: cat,
       name: t(`skills.${cat}`),
@@ -26,7 +25,7 @@ export default function SkillsSection() {
           <p className="section-subtitle">{t('skills.subtitle')}</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-[800px] xl:max-w-[900px] 2xl:max-w-[1000px] mx-auto justify-items-center lg:justify-items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-[600px] xl:max-w-[680px] mx-auto justify-items-center sm:justify-items-stretch">
           {skillsByCategory.map((category, cIndex) => (
             <div
               key={category.id}
@@ -37,15 +36,9 @@ export default function SkillsSection() {
 
               <div className="flex flex-col gap-1.5 flex-1">
                 {category.skills.map(skill => {
-                  const Tag = (skill.url ? 'a' : 'div') as ElementType
-                  return (
-                    <Tag
-                      key={skill.id}
-                      href={skill.url || undefined}
-                      target={skill.url ? '_blank' : undefined}
-                      rel={skill.url ? 'noopener noreferrer' : undefined}
-                      className={`group flex items-center gap-2 py-1.5 px-2.5 bg-black/15 rounded-md transition-[background-color,transform] duration-150 hover:bg-black/25 hover:translate-x-1 ${skill.url ? 'cursor-pointer' : ''}`}
-                    >
+                  const itemClass = `group flex items-center gap-2 py-1.5 px-2.5 bg-black/15 rounded-md transition-[background-color,transform] duration-150 hover:bg-black/25 hover:translate-x-1 ${skill.url ? 'cursor-pointer' : ''}`
+                  const content = (
+                    <>
                       {skill.logo ? (
                         <img src={skill.logo} alt={skill.name} className="w-5 h-5 rounded-sm" />
                       ) : skill.icon ? (
@@ -53,7 +46,16 @@ export default function SkillsSection() {
                       ) : null}
                       <span className="text-sm text-[var(--color-paper-cream)]">{skill.name}</span>
                       {skill.url && <span className="ml-auto text-[var(--color-text-faint)] text-xs transition-[transform,color] duration-150 group-hover:text-white/80 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">↗</span>}
-                    </Tag>
+                    </>
+                  )
+                  return skill.url ? (
+                    <a key={skill.id} href={skill.url} target="_blank" rel="noopener noreferrer" className={itemClass}>
+                      {content}
+                    </a>
+                  ) : (
+                    <div key={skill.id} className={itemClass}>
+                      {content}
+                    </div>
                   )
                 })}
               </div>
