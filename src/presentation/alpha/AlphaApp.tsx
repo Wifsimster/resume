@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '@presentation/components/ui/LanguageSwitcher'
-import { Conversation, Message, PromptInput, Reasoning, Response, Suggestions, Tool } from './elements'
+import { Conversation, Marker, Message, PromptInput, Reasoning, Response, Suggestions, Tool } from './elements'
 import { Card } from './cards'
 import { useAlphaChat } from './useAlphaChat'
 import './alpha.css'
@@ -18,6 +18,7 @@ const copy = {
     back: '← Version classique',
     placeholder: 'Posez une question sur Damien…',
     thought: 'Raisonnement',
+    thinking: 'Réflexion…',
     toolDone: 'ok'
   },
   en: {
@@ -27,6 +28,7 @@ const copy = {
     back: '← Classic version',
     placeholder: 'Ask something about Damien…',
     thought: 'Reasoning',
+    thinking: 'Thinking…',
     toolDone: 'ok'
   }
 }
@@ -83,6 +85,8 @@ export default function AlphaApp() {
           <Message key={message.id} from={message.role}>
             {message.parts.map((part, i) => {
               switch (part.type) {
+                case 'status':
+                  return <Marker key={i}>{text.thinking}</Marker>
                 case 'reasoning':
                   return <Reasoning key={i} streaming={part.streaming} label={text.thought}>{part.text}</Reasoning>
                 case 'tool':
