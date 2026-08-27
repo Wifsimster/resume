@@ -18,6 +18,22 @@
   --typeset-size: 15px;
   --typeset-leading: 1.6;
   --typeset-flow: 1em;
+
+  /* shadcn font language: neutral sans + system mono — the classic site's
+     display/rounded fonts stop at this boundary */
+  --alpha-font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  --alpha-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-family: var(--alpha-font-sans);
+}
+
+.alpha-app button,
+.alpha-app input,
+.alpha-app textarea {
+  font-family: inherit;
+}
+
+.alpha-mono {
+  font-family: var(--alpha-font-mono);
 }
 
 /* Prose: message text driven by the typeset variables */

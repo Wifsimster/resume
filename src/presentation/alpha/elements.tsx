@@ -169,7 +169,7 @@ export function Reasoning({ children, streaming, label }: { children: string, st
         onClick={() => setManuallyOpen(!open)}
       >
         <span className={streaming ? 'animate-pulse' : ''} aria-hidden="true">✦</span>
-        <span className="font-(--font-code)">{label}</span>
+        <span>{label}</span>
         <span className="ml-auto transition-transform" style={{ transform: open ? 'rotate(180deg)' : 'none' }} aria-hidden="true">▾</span>
       </button>
       {open && (
@@ -192,7 +192,7 @@ export interface ToolCall {
 
 export function Tool({ call, resultLabel }: { call: ToolCall, resultLabel: string }) {
   return (
-    <div className="flex items-center gap-2.5 px-3 py-2 border border-[var(--alpha-border)] rounded-lg bg-[var(--alpha-surface)] text-xs font-(--font-code)">
+    <div className="flex items-center gap-2.5 px-3 py-2 border border-[var(--alpha-border)] rounded-lg bg-[var(--alpha-surface)] text-xs alpha-mono">
       {call.status === 'running' ? (
         <span className="alpha-spinner shrink-0 text-[var(--alpha-accent)]" aria-hidden="true" />
       ) : (
@@ -219,7 +219,7 @@ export function Suggestions({ items, onPick, disabled }: { items: string[], onPi
           key={item}
           disabled={disabled}
           onClick={() => onPick(item)}
-          className="px-3.5 py-1.5 text-xs rounded-full border border-[var(--alpha-border)] bg-transparent text-[var(--alpha-muted)] hover:bg-white/5 hover:text-[var(--alpha-text)] hover:border-white/20 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default"
+          className="px-3 py-1 text-[13px] rounded-full border border-[var(--alpha-border)] bg-transparent text-[var(--alpha-muted)] hover:bg-white/5 hover:text-[var(--alpha-text)] hover:border-white/20 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default"
         >
           {item}
         </button>
@@ -254,7 +254,7 @@ export function PromptInput({ onSubmit, placeholder, busy }: { onSubmit: (text: 
         }}
         placeholder={placeholder}
         rows={1}
-        className="w-full resize-none rounded-xl border border-[var(--alpha-border)] bg-[var(--alpha-surface)] px-4 py-3 pr-14 text-sm text-[var(--alpha-text)] placeholder-[var(--alpha-subtle)] outline-none focus:ring-2 focus:ring-[var(--alpha-ring)] focus:border-transparent transition-shadow"
+        className="w-full resize-none rounded-xl border border-[var(--alpha-border)] bg-[var(--alpha-surface)] px-4 py-3 pr-14 text-sm text-[var(--alpha-text)] placeholder-[var(--alpha-subtle)] outline-none focus:border-[var(--alpha-accent)]/50 focus:ring-[3px] focus:ring-[var(--alpha-accent)]/20 transition-[box-shadow,border-color]"
       />
       <button
         type="submit"

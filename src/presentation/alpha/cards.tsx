@@ -36,7 +36,7 @@ export function ExperienceCard() {
             <div className="text-sm font-medium text-[var(--alpha-text)]">
               {t(`experience.${exp.id}.title`)} <span className="text-[var(--alpha-subtle)] font-normal">· {exp.company}</span>
             </div>
-            <div className="text-xs font-(--font-code) text-[var(--alpha-subtle)] mb-1.5">{exp.period}</div>
+            <div className="text-xs alpha-mono text-[var(--alpha-subtle)] mb-1.5">{exp.period}</div>
             <ul className="text-xs text-[var(--alpha-muted)] leading-relaxed list-disc pl-4">
               {(t(`experience.${exp.id}.achievements`, { returnObjects: true }) as string[] ?? []).slice(0, 4).map((a, i) => (
                 <li key={i}>{a}</li>
@@ -81,10 +81,10 @@ export function ProjectsCard() {
           className="rounded-lg border border-[var(--alpha-border)] bg-white/[0.02] p-3 no-underline hover:border-white/20 hover:bg-white/[0.04] transition-colors">
           <div className="flex items-center gap-2 text-sm text-[var(--alpha-text)]">
             <span aria-hidden="true">{project.icon}</span>
-            <span className="font-(--font-code)">{project.name}</span>
+            <span className="alpha-mono">{project.name}</span>
             {project.stars ? <span className="ml-auto text-xs text-amber-400/90">⭐ {project.stars}</span> : null}
           </div>
-          <div className="text-[11px] text-[var(--alpha-subtle)] font-(--font-code) mt-0.5">{project.tech}</div>
+          <div className="text-[11px] text-[var(--alpha-subtle)] alpha-mono mt-0.5">{project.tech}</div>
           <div className="text-xs text-[var(--alpha-muted)] mt-1 leading-snug">{t(`projects.${project.id}.desc`)}</div>
         </a>
       ))}
