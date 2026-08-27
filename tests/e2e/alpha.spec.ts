@@ -19,6 +19,9 @@ test('conversational alpha streams the welcome and answers a suggestion', async 
   await expect(page.getByText('resume.getExperience', { exact: false })).toBeVisible({ timeout: 15_000 })
   await expect(page.getByText(/Tech Lead Manager/).first()).toBeVisible({ timeout: 15_000 })
 
+  // Settled answers grow their action row (copy / retry / thumbs)
+  await expect(page.getByRole('button', { name: /copier|copy/i }).first()).toBeVisible({ timeout: 20_000 })
+
   // Wait for streaming to finish (input rejects sends mid-stream): the
   // follow-up suggestions only render once the answer completes
   await expect(page.locator('button', { hasText: /skills|comp[ée]tences/i }).first()).toBeVisible({ timeout: 20_000 })
@@ -43,7 +46,7 @@ test('live mode streams the answer from the chat API when a provider is up', asy
       headers: { 'content-type': 'text/event-stream' },
       body: [
         'data: {"type":"card-intent","kind":"skills"}',
-        'data: {"type":"text","delta":"Réponse **générée** par le modèle de test."}',
+        'data: {"type":"text","delta":"Réponse **générée** par le modèle de test.\\n[suggest: Question un ? | Question deux ?]"}',
         'data: {"type":"done"}'
       ].join('\n\n') + '\n\n'
     }))
@@ -61,6 +64,10 @@ test('live mode streams the answer from the chat API when a provider is up', asy
   // Markdown is rendered, not shown raw: **générée** becomes a <strong>
   await expect(page.locator('.alpha-app strong', { hasText: 'générée' })).toBeVisible()
   await expect(page.getByText('System Design').first()).toBeVisible({ timeout: 15_000 })
+
+  // The [suggest:] directive becomes follow-up chips and never shows as text
+  await expect(page.locator('button', { hasText: 'Question un ?' })).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText('[suggest', { exact: false })).toHaveCount(0)
 
   expect(errors).toEqual([])
 })
@@ -82,4 +89,22 @@ test('the chat is the default and the classic 3D version links back to it', asyn
 test('legacy section links still open the classic 3D site', async ({ page }) => {
   await page.goto('/#maker')
   await expect(page.locator('[data-section="maker"]')).toBeAttached({ timeout: 15_000 })
+})
+
+test('the conversation survives a reload and a new conversation clears it', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('button', { hasText: /exp[ée]rience/i }).first()).toBeVisible({ timeout: 15_000 })
+  await page.locator('textarea').fill('homelab?')
+  await page.keyboard.press('Enter')
+  await expect(page.getByText('resume.getHomelab', { exact: false })).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('button', { name: /retry|r[ée]essayer/i })).toBeVisible({ timeout: 20_000 })
+
+  // Reload: the thread is restored from localStorage
+  await page.reload()
+  await expect(page.getByText('resume.getHomelab', { exact: false })).toBeVisible({ timeout: 15_000 })
+
+  // New conversation wipes it and replays the welcome
+  await page.getByRole('button', { name: /nouvelle conversation|new conversation/i }).click()
+  await expect(page.getByText('resume.getHomelab', { exact: false })).toHaveCount(0)
+  await expect(page.getByText('Damien Battistella').first()).toBeVisible({ timeout: 15_000 })
 })

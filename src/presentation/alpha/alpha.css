@@ -113,6 +113,10 @@
   animation: alpha-card-enter 0.35s ease both;
 }
 
+.alpha-msg-in {
+  animation: alpha-card-enter 0.3s ease both;
+}
+
 @keyframes alpha-card-enter {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
@@ -120,6 +124,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .alpha-card-in { animation: none; }
+  .alpha-msg-in { animation: none; }
   .alpha-cursor { animation: none; }
   .alpha-shimmer { animation: none; color: var(--alpha-subtle); background: none; }
 }
