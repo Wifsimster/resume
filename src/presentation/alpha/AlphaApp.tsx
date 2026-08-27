@@ -78,7 +78,7 @@ export default function AlphaApp() {
       </header>
 
       {/* Thread */}
-      <Conversation>
+      <Conversation busy={status === 'streaming'}>
         {messages.map(message => (
           <Message key={message.id} from={message.role}>
             {message.parts.map((part, i) => {
