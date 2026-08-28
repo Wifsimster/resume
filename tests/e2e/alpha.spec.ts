@@ -121,3 +121,62 @@ test('card items are interactive and ask about themselves', async ({ page }) => 
   await page.locator('button', { hasText: 'System Design' }).first().click()
   await expect(page.locator('[data-role="user"]', { hasText: 'System Design' })).toBeVisible({ timeout: 15_000 })
 })
+
+test('the summary drawer gives a scannable resume without chatting', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('.alpha-app')).toBeVisible({ timeout: 15_000 })
+
+  // The way out of the conversation is in the header, labelled, and needs no
+  // prompt: no message has been sent when it opens
+  await page.getByRole('button', { name: /^(CV|Resume)$/ }).click()
+  const panel = page.locator('[data-component="summary-panel"]')
+  await expect(panel).toBeVisible()
+  await expect(panel.getByRole('heading', { name: 'Damien Battistella' })).toBeVisible()
+  await expect(panel).toContainText('Tech Lead Manager')
+  await expect(panel).toContainText('System Design')
+  await expect(panel.locator('a[href*="linkedin.com"]')).toBeVisible()
+  await expect(page.locator('[data-role="user"]')).toHaveCount(0)
+
+  // Escape closes it and the thread is still there
+  await page.keyboard.press('Escape')
+  await expect(panel).toHaveCount(0)
+  await expect(page.locator('.alpha-app')).toBeVisible()
+})
+
+test('the language switch is labelled FR / EN, not flags', async ({ page }) => {
+  await page.goto('/')
+  const switcher = page.locator('[data-component="language-switcher"]')
+  await expect(switcher).toContainText('FR')
+  await expect(switcher).toContainText('EN')
+  await expect(switcher.locator('svg')).toHaveCount(0)
+
+  // It still switches the locale: the header title follows (the starting
+  // locale comes from the browser, so assert the flip rather than a language)
+  const title = page.locator('.alpha-app header span').first()
+  const before = await title.textContent()
+  await switcher.click()
+  await expect(title).not.toHaveText(before ?? '')
+  await switcher.click()
+  await expect(title).toHaveText(before ?? '')
+})
+
+test('prompt chips collapse behind a toggle on a phone once the chat starts', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+
+  // Before the first question they are the on-ramp: always visible
+  const firstChip = page.locator('.alpha-suggestions button').first()
+  await expect(firstChip).toBeVisible({ timeout: 15_000 })
+
+  await page.locator('textarea').fill('homelab?')
+  await page.keyboard.press('Enter')
+  await expect(page.getByText('resume.getHomelab', { exact: false })).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('button', { name: /retry|r[ée]essayer/i })).toBeVisible({ timeout: 20_000 })
+
+  // Afterwards they fold away and stay one tap from the composer
+  const toggle = page.getByRole('button', { name: /suggestions/i })
+  await expect(toggle).toBeVisible()
+  await expect(firstChip).toBeHidden()
+  await toggle.click()
+  await expect(page.locator('.alpha-suggestions button').first()).toBeVisible()
+})

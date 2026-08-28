@@ -16,6 +16,7 @@ An interactive, infinite-scroll resume website featuring three WebGL 3D scenes (
 
 - **WebGL 3D Scenes** - Solar system hero, space companion cruising across sections, and a maker desk with a full server rack — all lazy-loaded
 - **Conversational AI Resume (default)** - the site opens on an AI chat about the resume, backed by a real LLM (Gemini free tier or any OpenAI-compatible endpoint) with a scripted fallback; the classic immersive 3D version lives at `/?ui=classic`
+- **Resume at a glance** - a drawer in the chat header opens the whole resume as a scannable, printable summary, so a visitor in a hurry never has to prompt a bot to read the background
 - **Gaming-Inspired UI** - XP progress bar, 30 unlockable achievements, easter eggs
 - **Bilingual** - French and English with automatic browser detection
 - **Responsive** - Works on desktop and mobile devices
