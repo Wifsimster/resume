@@ -22,6 +22,12 @@ export const EXTRA_FACTS: string[] = [
   // Langues
   'Langues : français (natif) ; parle et comprend l\'anglais.',
 
+  // Conférences
+  'Conférences : il participe chaque année à BDX.io, la conférence tech bordelaise — présent ces trois dernières années, et il y sera encore en 2026.',
+
+  // Le pitch « pourquoi lui ? » (à servir quand un recruteur demande pourquoi le choisir)
+  'Si on demande « pourquoi lui ? » : un profil rare qui couvre toute la chaîne — près de 14 ans de développement dont 10 dans le logiciel de santé, manager d\'une équipe de 6 depuis 2022, AI Champion du groupe Dedalus, et il prouve tout ça en dehors des heures de bureau avec un studio SaaS solo auto-hébergé (BATTISTELLA), 87 dépôts open source et un homelab complet. Il ne se contente pas de parler de tech : il conçoit, il livre et il exploite.',
+
   // Localisation & réseau
   'Basé à Artigues-près-Bordeaux (région bordelaise) ; travaille en mode hybride chez Dedalus.',
   'Très favorable au télétravail, qu\'il préfère : il le pratique 3 jours par semaine chez Dedalus depuis plusieurs années.',
