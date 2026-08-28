@@ -114,7 +114,7 @@ export default function AlphaApp() {
                 case 'text':
                   return <Response key={i} streaming={part.streaming}>{part.text}</Response>
                 case 'card':
-                  return <div key={i} className="alpha-card-in"><Card kind={part.kind} /></div>
+                  return <div key={i} className="alpha-card-in"><Card kind={part.kind} onAsk={handlePick} /></div>
               }
             })}
             {isSettled(message) && (

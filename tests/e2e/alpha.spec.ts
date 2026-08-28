@@ -108,3 +108,16 @@ test('the conversation survives a reload and a new conversation clears it', asyn
   await expect(page.getByText('resume.getHomelab', { exact: false })).toHaveCount(0)
   await expect(page.getByText('Damien Battistella').first()).toBeVisible({ timeout: 15_000 })
 })
+
+test('card items are interactive and ask about themselves', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('button', { hasText: /exp[ée]rience/i }).first()).toBeVisible({ timeout: 15_000 })
+  await page.locator('textarea').fill('skills ?')
+  await page.keyboard.press('Enter')
+  await expect(page.getByText('resume.getSkills', { exact: false })).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('button', { name: /retry|r[ée]essayer/i })).toBeVisible({ timeout: 20_000 })
+
+  // Clicking a skill chip in the card sends the matching question
+  await page.locator('button', { hasText: 'System Design' }).first().click()
+  await expect(page.locator('[data-role="user"]', { hasText: 'System Design' })).toBeVisible({ timeout: 15_000 })
+})
