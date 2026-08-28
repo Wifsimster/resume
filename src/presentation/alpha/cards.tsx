@@ -42,16 +42,41 @@ const EXTERNAL_ICON = (
   </svg>
 )
 
-export function ProfileCard() {
-  const { t } = useLang()
+// The identity block that opens the thread. It is a message in the stream —
+// never a floating overlay — so it has a single, unambiguous focal point and
+// scrolls away with the rest of the conversation once the visitor engages.
+export function ProfileCard({ onOpenSummary }: { onOpenSummary?: () => void }) {
+  const { t, fr } = useLang()
+  const stats = resumeData.statistics
+  const facts = [
+    `${stats?.yearsOfExperience ?? 9}+ ${fr ? 'ans d\u2019expérience' : 'years of experience'}`,
+    `${stats?.developersRecruited ?? 6} ${fr ? 'développeurs encadrés' : 'developers mentored'}`,
+    `${resumeData.github.totalRepos} ${fr ? 'dépôts publics' : 'public repos'}`
+  ]
   return (
-    <div className={`${cardShell} flex items-center gap-4`}>
-      <div className="w-12 h-12 rounded-lg border border-[var(--alpha-border)] bg-gradient-to-br from-violet-600/25 to-cyan-500/10 flex items-center justify-center text-sm font-semibold tracking-wide text-[var(--alpha-text)]" aria-hidden="true">DB</div>
-      <div>
-        <div className="text-base font-medium tracking-tight text-[var(--alpha-text)]">{resumeData.name}</div>
-        <div className="text-sm text-[var(--alpha-muted)]">{t('hero.tagline')}</div>
-        <div className="text-xs text-[var(--alpha-subtle)] mt-0.5">{resumeData.title} · {resumeData.company} · {resumeData.location}</div>
+    <div className={`${cardShell} flex flex-col gap-3.5`} data-card="profile">
+      <div className="flex items-center gap-4">
+        <div className="shrink-0 w-12 h-12 rounded-lg border border-[var(--alpha-border)] bg-gradient-to-br from-violet-600/25 to-cyan-500/10 flex items-center justify-center text-sm font-semibold tracking-wide text-[var(--alpha-text)]" aria-hidden="true">DB</div>
+        <div className="min-w-0">
+          <div className="text-base font-medium tracking-tight text-[var(--alpha-text)]">{resumeData.name}</div>
+          <div className="text-sm text-[var(--alpha-muted)]">{resumeData.title} · {resumeData.company}</div>
+          <div className="text-xs text-[var(--alpha-subtle)] mt-0.5">{resumeData.location} · {t('hero.tagline')}</div>
+        </div>
       </div>
+      <div className="flex flex-wrap gap-1.5">
+        {facts.map(fact => (
+          <span key={fact} className="px-2 py-0.5 text-[11px] rounded-full border border-[var(--alpha-border)] bg-white/[0.03] text-[var(--alpha-muted)]">{fact}</span>
+        ))}
+      </div>
+      {onOpenSummary && (
+        <button
+          type="button"
+          onClick={onOpenSummary}
+          className="self-start text-xs text-[var(--alpha-accent)] hover:underline cursor-pointer bg-transparent"
+        >
+          {fr ? 'Voir le CV complet, sans discuter' : 'Read the full resume, no chat needed'} →
+        </button>
+      )}
     </div>
   )
 }
@@ -245,9 +270,9 @@ export function BooksCard({ onAsk }: { onAsk: Ask }) {
   )
 }
 
-export function Card({ kind, onAsk }: { kind: CardKind, onAsk: Ask }) {
+export function Card({ kind, onAsk, onOpenSummary }: { kind: CardKind, onAsk: Ask, onOpenSummary?: () => void }) {
   switch (kind) {
-    case 'profile': return <ProfileCard />
+    case 'profile': return <ProfileCard onOpenSummary={onOpenSummary} />
     case 'experience': return <ExperienceCard onAsk={onAsk} />
     case 'skills': return <SkillsCard onAsk={onAsk} />
     case 'projects': return <ProjectsCard onAsk={onAsk} />

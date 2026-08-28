@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import { useEffect, useImperativeHandle, useRef, useState } from 'react'
+import type { FormEvent, ReactNode, Ref } from 'react'
 import { Markdown } from './markdown'
 
 // AI-chat UI primitives for the alpha resume, modelled on Vercel AI Elements'
@@ -272,27 +272,67 @@ export function Tool({ call, resultLabel }: { call: ToolCall, resultLabel: strin
 
 /* ========================= Suggestions ========================= */
 
-export function Suggestions({ items, onPick, disabled }: { items: string[], onPick: (s: string) => void, disabled?: boolean }) {
+// Prompt chips. On a narrow viewport they are the first thing to give up
+// vertical space: a single slim row that scrolls sideways instead of wrapping
+// into three stacked lines, and — once the visitor has asked something and no
+// longer needs the on-ramp — a quick-access toggle that keeps them one tap
+// away without standing between the thread and the composer. From `sm` up
+// there is room to spare, so they wrap and stay open as before.
+
+export function Suggestions({ items, onPick, disabled, collapsible, label }: {
+  items: string[]
+  onPick: (s: string) => void
+  disabled?: boolean
+  collapsible?: boolean
+  label: string
+}) {
+  const [open, setOpen] = useState(false)
+
+  // A fresh set of suggestions collapses again: the row never re-appears
+  // uninvited over the composer
+  useEffect(() => { setOpen(false) }, [items])
+
   if (items.length === 0) return null
+  const hiddenOnMobile = Boolean(collapsible) && !open
+
   return (
-    <div className="flex flex-wrap gap-2 justify-center">
-      {items.map(item => (
+    <div className="flex flex-col gap-2">
+      {collapsible && (
         <button
-          key={item}
-          disabled={disabled}
-          onClick={() => onPick(item)}
-          className="px-3 py-1 text-[13px] rounded-full border border-[var(--alpha-border)] bg-transparent text-[var(--alpha-muted)] hover:bg-white/5 hover:text-[var(--alpha-text)] hover:border-white/20 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default"
+          type="button"
+          onClick={() => setOpen(value => !value)}
+          aria-expanded={open}
+          className="sm:hidden self-center flex items-center gap-1.5 px-3 py-1 text-xs rounded-full border border-[var(--alpha-border)] text-[var(--alpha-subtle)] hover:text-[var(--alpha-text)] hover:border-white/20 transition-colors cursor-pointer"
         >
-          {item}
+          <span aria-hidden="true">✦</span>
+          {label}
+          <span aria-hidden="true" className="transition-transform" style={{ transform: open ? 'rotate(180deg)' : 'none' }}>▾</span>
         </button>
-      ))}
+      )}
+      <div className={`alpha-suggestions ${hiddenOnMobile ? 'hidden sm:flex' : 'flex'}`}>
+        {items.map(item => (
+          <button
+            key={item}
+            disabled={disabled}
+            onClick={() => onPick(item)}
+            className="shrink-0 whitespace-nowrap snap-start px-3 py-1 text-[13px] rounded-full border border-[var(--alpha-border)] bg-transparent text-[var(--alpha-muted)] hover:bg-white/5 hover:text-[var(--alpha-text)] hover:border-white/20 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default"
+          >
+            {item}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
 
 /* ========================= PromptInput ========================= */
 
-export function PromptInput({ onSubmit, onStop, placeholder, busy, stopLabel }: {
+export interface PromptInputHandle {
+  focus: () => void
+}
+
+export function PromptInput({ ref, onSubmit, onStop, placeholder, busy, stopLabel }: {
+  ref?: Ref<PromptInputHandle>
   onSubmit: (text: string) => void
   onStop: () => void
   placeholder: string
@@ -301,6 +341,8 @@ export function PromptInput({ onSubmit, onStop, placeholder, busy, stopLabel }: 
 }) {
   const [text, setText] = useState('')
   const areaRef = useRef<HTMLTextAreaElement>(null)
+
+  useImperativeHandle(ref, () => ({ focus: () => areaRef.current?.focus() }), [])
 
   // Auto-grow up to ~5 lines, then scroll inside the field
   useEffect(() => {
@@ -344,6 +386,7 @@ export function PromptInput({ onSubmit, onStop, placeholder, busy, stopLabel }: 
         }}
         placeholder={placeholder}
         rows={1}
+        enterKeyHint="send"
         className="flex-1 min-w-0 resize-none bg-transparent py-2 max-h-[140px] overflow-y-auto text-sm text-[var(--alpha-text)] placeholder-[var(--alpha-subtle)] outline-none"
       />
       {busy ? (
