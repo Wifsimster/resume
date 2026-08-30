@@ -57,6 +57,12 @@
     <!-- Umami — mesure d'audience auto-hébergée, sans cookie. Les paramètres d'URL sont conservés : ils portent l'attribution UTM des campagnes. -->
     <script defer src="https://umami.battistella.ovh/stats.js"
       data-website-id="1ec9c865-7bb1-4396-95d5-a6529edd44fb"></script>
+
+    <!-- Heatmaps. Script distinct du tracker : `stats.js` ne l'embarque pas.
+         `replayEnabled` est OFF côté serveur, donc la charge utile ne contient
+         que des coordonnées de clic et de scroll — aucun DOM, aucun texte. -->
+    <script defer src="https://umami.battistella.ovh/recorder.js"
+      data-website-id="1ec9c865-7bb1-4396-95d5-a6529edd44fb"></script>
   </head>
   <body>
     <div id="app"></div>
