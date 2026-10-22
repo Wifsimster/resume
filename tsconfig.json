@@ -20,22 +20,21 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*"
+        "./src/*"
       ],
       "@domain/*": [
-        "src/domain/*"
+        "./src/domain/*"
       ],
       "@application/*": [
-        "src/application/*"
+        "./src/application/*"
       ],
       "@infrastructure/*": [
-        "src/infrastructure/*"
+        "./src/infrastructure/*"
       ],
       "@presentation/*": [
-        "src/presentation/*"
+        "./src/presentation/*"
       ]
     },
     "types": [

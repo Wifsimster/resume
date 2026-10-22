@@ -7,12 +7,12 @@
   "author": "Damien Battistella <wifsimster@github.com>",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsrs --noEmit && vite build",
     "build:server": "vite build --config vite.server.config.ts",
     "chat": "node dist-server/index.js",
     "preview": "vite preview",
     "lint": "eslint .",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsrs --noEmit",
     "version:patch": "npm version patch --no-git-tag-version",
     "version:minor": "npm version minor --no-git-tag-version",
     "version:major": "npm version major --no-git-tag-version",
@@ -50,6 +50,7 @@
     "eslint": "^10.9.1",
     "eslint-plugin-react-hooks": "^7.1.1",
     "tailwindcss": "^4.1.18",
+    "tsrs": "0.18.0-ts7.1.0-dev.20260929",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.68.0",
     "vite": "^8.2.2"
