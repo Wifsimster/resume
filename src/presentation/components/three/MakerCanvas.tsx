@@ -13,9 +13,6 @@ interface Props {
   onHandle: (handle: MakerSceneHandle | null) => void
 }
 
-// Lazily imported by MakerSection once the section approaches the viewport —
-// the heaviest scene of the site never loads for visitors who don't scroll
-// down to it.
 export default function MakerCanvas({ cameraMode, projects, techStack, title, subtitle, onHoverUnit, onHandle }: Props) {
   const { quality, renderSettings } = useQuality()
 

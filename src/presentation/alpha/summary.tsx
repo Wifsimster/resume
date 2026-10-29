@@ -3,16 +3,6 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { resumeData } from '@domain/data/resume'
 
-// The scannable escape hatch from the conversation.
-//
-// A recruiter who wants a 3-second read of the background should never have
-// to prompt a chatbot for it. This drawer puts the whole resume — identity,
-// numbers, experience, skills, projects, contact — on one scrollable surface
-// they can skim or print, while the chat keeps its thread underneath.
-//
-// Content comes from resumeData + the locale files: no copy is duplicated
-// here, so the two views can never drift apart.
-
 const copy = {
   fr: {
     title: 'CV en un coup d\'œil',
@@ -60,7 +50,6 @@ const CLOSE_ICON = (
 function Section({ title, children }: { title: string, children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      {/* Size and weight come from alpha.css — see the heading note there */}
       <h3 className="uppercase tracking-[0.14em] text-[var(--alpha-subtle)]">{title}</h3>
       {children}
     </section>
@@ -78,8 +67,6 @@ export function SummaryPanel({ open, onClose, onAsk, lang }: {
   const panelRef = useRef<HTMLDivElement>(null)
   const restoreFocusRef = useRef<HTMLElement | null>(null)
 
-  // Escape closes; focus moves into the drawer on open and back to whatever
-  // opened it on close
   useEffect(() => {
     if (!open) return
     restoreFocusRef.current = document.activeElement as HTMLElement | null
@@ -128,7 +115,6 @@ export function SummaryPanel({ open, onClose, onAsk, lang }: {
         data-component="summary-panel"
         className="alpha-summary-panel relative ml-auto flex h-full w-full max-w-full sm:max-w-xl flex-col bg-[var(--alpha-bg)] border-l border-[var(--alpha-border)] shadow-2xl shadow-black/50 outline-none"
       >
-        {/* Sticky title bar so the close action never scrolls away */}
         <div className="shrink-0 flex items-center justify-between gap-3 px-5 py-3 border-b border-[var(--alpha-border)]">
           <span className="text-sm font-medium tracking-tight text-[var(--alpha-text)]">{text.title}</span>
           <div className="flex items-center gap-1.5">
@@ -150,7 +136,6 @@ export function SummaryPanel({ open, onClose, onAsk, lang }: {
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-5 pb-[max(env(safe-area-inset-bottom),20px)] flex flex-col gap-7">
-          {/* Identity */}
           <header className="flex items-start gap-4">
             <div className="shrink-0 w-14 h-14 rounded-xl border border-[var(--alpha-border)] bg-gradient-to-br from-violet-600/30 to-cyan-500/10 flex items-center justify-center text-base font-semibold tracking-wide text-[var(--alpha-text)]" aria-hidden="true">DB</div>
             <div className="min-w-0">

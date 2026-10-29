@@ -11,14 +11,11 @@ interface Props {
     colors: typeof makerColors
 }
 
-// Equivalent of Vue's `v-for="x in n"`: [1..n]
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i + 1)
 
 export default function ElectricSwitchesUnit({ unit, isHovered, colors }: Props) {
-    // Direct Three.js refs for LED animation
     const ledRefs = useRef<any[]>([])
 
-    // Switch indicator blink — mutates materials directly on the render loop
     useFrame(({ clock }) => {
         const elapsed = clock.elapsedTime
         for (let i = 0; i < ledRefs.current.length; i++) {
@@ -32,7 +29,6 @@ export default function ElectricSwitchesUnit({ unit, isHovered, colors }: Props)
 
     return (
         <BaseServerUnit unit={unit} isHovered={isHovered} colors={colors}>
-            {/* Electric switches (8 toggle switches) */}
             {range(8).map((switchNum) => (
                 <mesh key={`switch-${switchNum}`}
                     position={[-0.362 + (switchNum - 1) * 0.103, 0, 0.37]}>
@@ -40,7 +36,6 @@ export default function ElectricSwitchesUnit({ unit, isHovered, colors }: Props)
                     <meshStandardMaterial color="#1A1A1A" />
                 </mesh>
             ))}
-            {/* Switch indicators - animated via useFrame */}
             {range(8).map((led) => (
                 <mesh key={`switch-led-${led}`}
                     position={[-0.362 + (led - 1) * 0.103, 0.03, 0.38]}

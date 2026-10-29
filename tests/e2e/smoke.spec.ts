@@ -17,8 +17,6 @@ test('renders all sections without runtime errors', async ({ page }) => {
     await expect(page.locator(`[data-section="${section}"]`)).toBeAttached()
   }
 
-  // Hero + companion canvases are live at the top; the maker canvas is
-  // lazy and only appears once its section approaches the viewport
   await expect.poll(async () => page.locator('canvas').count()).toBeGreaterThanOrEqual(2)
 
   await page.locator('[data-section="maker"]').scrollIntoViewIfNeeded()
@@ -35,7 +33,6 @@ test('language switcher toggles between French and English', async ({ page }) =>
   await page.locator('header button').last().click()
   await expect(aboutTitle).not.toHaveText(before ?? '')
 
-  // Toggle back
   await page.locator('header button').last().click()
   await expect(aboutTitle).toHaveText(before ?? '')
 })
@@ -45,12 +42,10 @@ test('maker section switches to rack mode and shows the legend', async ({ page }
   await page.goto('/?ui=classic')
   await page.locator('[data-section="maker"]').scrollIntoViewIfNeeded()
 
-  // Wait for the lazily loaded maker canvas, then toggle the camera mode
   const toggle = page.locator('[data-section="maker"] button').first()
   await expect(toggle).toBeVisible()
   await toggle.click()
 
-  // Legend labels appear once the camera lands on the rack
   await expect(page.locator('[data-section="maker"] svg line').first()).toBeAttached()
 
   expect(errors).toEqual([])

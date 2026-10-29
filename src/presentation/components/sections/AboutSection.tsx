@@ -7,7 +7,6 @@ export default function AboutSection() {
 
   return (
     <section id="about" className="section bg-transparent section-padding" data-section="about">
-      {/* Content */}
       <div className="section-content flex flex-col justify-center items-center h-full">
         <div className="section-header w-full reveal">
           <h2 className="text-[var(--color-terminal-green)] mb-2">{t('about.title')}</h2>
@@ -15,7 +14,6 @@ export default function AboutSection() {
         </div>
 
         <div className="flex flex-col gap-3 w-full max-w-[600px] xl:max-w-[800px] 2xl:max-w-[1000px]">
-          {/* Behaviors */}
           {resumeData.behaviors && resumeData.behaviors.length > 0 && (
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2 justify-center">
@@ -39,10 +37,8 @@ export default function AboutSection() {
             </div>
           )}
 
-          {/* Strengths and Improvement Areas */}
           {((resumeData.strengths && resumeData.strengths.length > 0) || (resumeData.improvementAreas && resumeData.improvementAreas.length > 0)) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Strengths */}
               {resumeData.strengths && resumeData.strengths.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-white/90 text-center">{t('about.strengths.title')}</h3>
@@ -62,7 +58,6 @@ export default function AboutSection() {
                 </div>
               )}
 
-              {/* Improvement Areas */}
               {resumeData.improvementAreas && resumeData.improvementAreas.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-white/90 text-center">{t('about.improvementAreas.title')}</h3>
@@ -80,7 +75,6 @@ export default function AboutSection() {
             </div>
           )}
 
-          {/* Footnote */}
           <div className="text-center mt-4">
             <p className="text-xs text-white/50">
               {t('about.footnote.prefix')}

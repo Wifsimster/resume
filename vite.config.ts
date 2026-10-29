@@ -21,7 +21,6 @@ export default defineConfig({
     target: 'es2022',
     rollupOptions: {
       output: {
-        // Rolldown (Vite 8) only accepts the function form
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (/[\\/](three|@react-three)[\\/]/.test(id)) return 'three-vendor'
@@ -35,7 +34,6 @@ export default defineConfig({
     include: ['three', '@react-three/fiber', '@react-three/drei']
   },
   server: {
-    // Local dev with the chat backend: `npm run build:server && npm run chat`
     proxy: {
       '/api': 'http://localhost:8787'
     }

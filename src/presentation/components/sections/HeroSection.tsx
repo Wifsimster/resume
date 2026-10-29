@@ -3,8 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useScrollSection } from '@application/hooks/useScrollSection'
 import './HeroSection.css'
 
-// Code-split: HeroCanvas pulls in the whole three.js vendor chunk, so it
-// loads async and never blocks the first paint of the hero text.
 const HeroCanvas = lazy(() => import('@presentation/components/three/HeroCanvas'))
 
 export default function HeroSection() {
@@ -32,10 +30,7 @@ export default function HeroSection() {
 
   return (
     <section id="hero" className="hero-section section bg-transparent section-padding" data-section="hero">
-      {/* 3D Canvas */}
       <div className="section-canvas">
-        {/* Transparent clear: the solar system floats on the shared aurora
-             backdrop instead of its own opaque black plate. */}
         {isMounted && (
           <Suspense fallback={null}>
             <HeroCanvas onReady={handleCanvasReady} />
@@ -43,12 +38,10 @@ export default function HeroSection() {
         )}
       </div>
 
-      {/* Update Date */}
       <div className="absolute top-3 left-3 z-10 opacity-0 animate-fadeIn [animation-delay:1.5s]">
         <span className="font-(--font-code) text-xs text-white/40">{t('hero.lastUpdate')} {currentDate}</span>
       </div>
 
-      {/* Content Overlay */}
       <div className="section-content flex flex-col justify-center items-center text-center min-h-svh px-2 py-8 pb-20 sm:px-0 md:pt-12 md:pb-16">
         <div className="max-w-[800px] xl:max-w-[1000px] 2xl:max-w-[1200px]">
           <p className="font-(--font-code) text-sm sm:text-base text-[var(--color-terminal-green)] mb-2 opacity-0 animate-fadeInUp [animation-delay:0.2s]">{t('hero.greeting')}</p>

@@ -20,13 +20,10 @@ const VISIT_DAYS_STORAGE_KEY = 'wifsimster_visit_days'
 export default function App() {
   const { currentAchievement, showAchievement, dismissAchievement } = useAchievements()
 
-  // Initialize easter eggs listener
   const { fpsEnabled } = useEasterEggs()
 
-  // FPS display ref
   const fpsDisplayRef = useRef<FPSDisplayHandle>(null)
 
-  // Watch for FPS enable/disable
   useEffect(() => {
     if (!fpsDisplayRef.current) return
     if (fpsEnabled) {
@@ -36,8 +33,6 @@ export default function App() {
     }
   }, [fpsEnabled])
 
-  // Hash navigation: scroll to the section targeted by #hash — on load and on
-  // every hash change. The site has a single page, so no router is involved.
   useEffect(() => {
     const scrollToHash = () => {
       const hash = window.location.hash
@@ -54,17 +49,12 @@ export default function App() {
   useEffect(() => {
     const { unlock, isUnlocked } = useAchievementsStore.getState()
 
-    // Guard the FPS target: the monitor auto-degrades quality (high → low →
-    // minimal) whenever sustained FPS falls below 70% of the target, so the
-    // higher desktop DPR/texture budget can never lock the page under 60fps.
     startFPSMonitoring()
 
-    // Auto-enable FPS display in development
     if (import.meta.env.DEV && fpsDisplayRef.current) {
       fpsDisplayRef.current.start()
     }
 
-    // Check visit-related achievements
     const visitCount = parseInt(localStorage.getItem(VISIT_STORAGE_KEY) || '0', 10)
     if (visitCount === 0) {
       unlock('firstVisit')
@@ -73,45 +63,36 @@ export default function App() {
     }
     localStorage.setItem(VISIT_STORAGE_KEY, String(visitCount + 1))
 
-    // Check time-based achievements
     const hour = new Date().getHours()
     const day = new Date().getDay()
 
-    // Early bird: 5AM - 8AM
     if (hour >= 5 && hour < 8) {
       unlock('earlyBird')
     }
 
-    // Night owl: 10PM - 5AM
     if (hour >= 22 || hour < 5) {
       unlock('nightOwl')
     }
 
-    // Night explorer: midnight - 3AM
     if (hour >= 0 && hour < 4) {
       unlock('nightExplorer')
     }
 
-    // Weekend warrior: Saturday (6) or Sunday (0)
     if (day === 0 || day === 6) {
       unlock('weekendWarrior')
     }
 
-    // Check 3D load completion for patience achievement: unlock after page
-    // fully loads (including 3D)
     const handleLoad = () => {
       setTimeout(() => {
         unlock('patience')
-      }, 3000) // Wait 3 seconds after full load
+      }, 3000)
     }
     window.addEventListener('load', handleLoad, { once: true })
 
-    // Check device type
     if (navigator.maxTouchPoints > 0 && window.innerWidth < 768) {
       unlock('mobileScout')
     }
 
-    // Track unique visit days for frequent flyer
     const today = new Date().toISOString().split('T')[0]
     const savedDays = JSON.parse(localStorage.getItem(VISIT_DAYS_STORAGE_KEY) || '[]') as string[]
     if (!savedDays.includes(today)) {
@@ -122,16 +103,14 @@ export default function App() {
       unlock('frequentFlyer')
     }
 
-    // Listen for print attempts
     const handleBeforePrint = () => {
       unlock('printReady')
     }
     window.addEventListener('beforeprint', handleBeforePrint)
 
-    // Track time spent
     const startTime = Date.now()
     const timeSpentInterval = setInterval(() => {
-      const elapsed = (Date.now() - startTime) / 1000 / 60 // minutes
+      const elapsed = (Date.now() - startTime) / 1000 / 60
       if (elapsed >= 5 && !isUnlocked('timeSpent')) {
         unlock('timeSpent')
       }
@@ -141,9 +120,8 @@ export default function App() {
       if (isUnlocked('timeSpent') && isUnlocked('devotedReader')) {
         clearInterval(timeSpentInterval)
       }
-    }, 10000) // Check every 10 seconds
+    }, 10000)
 
-    // Track clicks
     let clickCount = 0
     const handleClick = () => {
       clickCount++
@@ -152,7 +130,6 @@ export default function App() {
       }
     }
 
-    // Track scroll distance
     let totalScrolled = 0
     let lastScrollY = window.scrollY
     let reachedBottom = false
@@ -166,7 +143,6 @@ export default function App() {
         unlock('scrollMaster')
       }
 
-      // Boomerang: scrolled to bottom then back to top
       const scrollHeight = document.documentElement.scrollHeight
       const clientHeight = document.documentElement.clientHeight
       const scrollPercent = currentScrollY / (scrollHeight - clientHeight)
@@ -179,7 +155,6 @@ export default function App() {
       }
     }
 
-    // Track Tab key presses
     let tabKeyCount = 0
     const handleKeyboardTracking = (e: KeyboardEvent) => {
       if (e.key === 'Tab') {
@@ -190,12 +165,10 @@ export default function App() {
       }
     }
 
-    // Buffer keystrokes and detect secret words
     let secretBuffer = ''
     const handleSecretWord = (e: KeyboardEvent) => {
       if (e.key.length === 1) {
         secretBuffer += e.key.toLowerCase()
-        // Keep buffer manageable
         if (secretBuffer.length > 20) {
           secretBuffer = secretBuffer.slice(-20)
         }
@@ -224,10 +197,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-(--color-bg-primary)">
-      {/* Modern aurora-mesh backdrop behind everything */}
       <AppBackground />
 
-      {/* Fixed UI Elements */}
       <header className="fixed top-4 right-4 z-100 flex gap-3 items-center sm:top-2 sm:right-2 sm:gap-2">
         <a
           href="/"
@@ -240,19 +211,14 @@ export default function App() {
         <LanguageSwitcher />
       </header>
 
-      {/* Table of Contents (Desktop only) */}
       <TableOfContents />
 
-      {/* Custom scroll rail (touch devices only) */}
       <MobileScrollRail />
 
-      {/* Main Content */}
       <HomeView />
 
-      {/* Three.js space companion cruising across every section */}
       <CompanionOverlay />
 
-      {/* Achievement Toast */}
       {showAchievement && currentAchievement && (
         <AchievementToast
           achievement={currentAchievement}
@@ -260,7 +226,6 @@ export default function App() {
         />
       )}
 
-      {/* FPS Display */}
       <FPSDisplay ref={fpsDisplayRef} />
     </div>
   )

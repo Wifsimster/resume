@@ -12,7 +12,6 @@ export default function ExperienceSection() {
 
   return (
     <section id="experience" className="section bg-transparent section-padding" data-section="experience">
-      {/* Content */}
       <div className="section-content">
         <div className="section-header reveal">
           <h2 className="text-[var(--color-terminal-green)] mb-2">{t('experience.title')}</h2>

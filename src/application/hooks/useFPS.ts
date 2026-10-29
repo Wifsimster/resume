@@ -16,7 +16,6 @@ export function useFPS() {
     const currentTime = performance.now()
     const delta = currentTime - lastTimeRef.current
 
-    // Update FPS every second
     if (delta >= 1000) {
       setFps(Math.round((frameCountRef.current * 1000) / delta))
       frameCountRef.current = 0
@@ -46,7 +45,6 @@ export function useFPS() {
     setFps(0)
   }, [])
 
-  // Stop the loop when the owning component unmounts
   useEffect(() => {
     return () => {
       enabledRef.current = false

@@ -1,19 +1,5 @@
 import { useEffect } from 'react'
 
-// Mobile viewport plumbing for the full-height chat shell.
-//
-// Two problems the CSS viewport units cannot solve on their own:
-//  - the app is `position: fixed; inset: 0`, so its bottom edge lands under
-//    the browser's own navigation toolbar — the composer and the native
-//    chrome end up docked on top of each other;
-//  - opening the virtual keyboard shrinks the *visual* viewport only, so a
-//    fixed composer stays behind the keyboard instead of riding above it.
-//
-// The visualViewport API gives both numbers. They are published as custom
-// properties on <html> and consumed by alpha.css: the shell lifts its bottom
-// edge above the keyboard, and the composer keeps its safe-area breathing
-// room while the keyboard is closed.
-
 const KEYBOARD_THRESHOLD_PX = 120
 
 export function useViewportFit() {
@@ -22,8 +8,6 @@ export function useViewportFit() {
     const root = document.documentElement
 
     const apply = () => {
-      // What the keyboard (or any other overlay) hides at the bottom of the
-      // layout viewport. Rounded down: sub-pixel noise would jitter the shell.
       const hidden = viewport
         ? Math.max(0, Math.floor(window.innerHeight - viewport.height - viewport.offsetTop))
         : 0

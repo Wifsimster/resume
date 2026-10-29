@@ -7,7 +7,6 @@ export default function TableOfContents() {
   const { sections, currentSectionIndex, scrollToSection } = useScrollSection()
   const { t } = useTranslation()
 
-  // Track current hash (state for rendering + ref for effect reads)
   const [currentHash, setCurrentHash] = useState(window.location.hash)
   const currentHashRef = useRef(currentHash)
   const updateHash = (hash: string) => {
@@ -17,22 +16,17 @@ export default function TableOfContents() {
 
   const tocListRef = useRef<HTMLUListElement | null>(null)
   const navRef = useRef<HTMLElement | null>(null)
-  const [itemHeight, setItemHeight] = useState(32) // Will be measured
-  // Measurement tick: template refs are not reactive in React, so bump a
-  // counter after each measurement pass to recompute sidebarTransform.
+  const [itemHeight, setItemHeight] = useState(32)
   const [, setMeasureTick] = useState(0)
 
-  // Determine active section index based on URL hash or scroll position
   const activeSectionIndex = (() => {
-    // If there's a hash in the URL, use it to find the section
     if (currentHash) {
-      const hashSectionId = currentHash.slice(1) // Remove the #
+      const hashSectionId = currentHash.slice(1)
       const hashIndex = sections.findIndex(s => s.id === hashSectionId)
       if (hashIndex !== -1) {
         return hashIndex
       }
     }
-    // Otherwise, use the scroll-based currentSectionIndex
     return currentSectionIndex
   })()
 
@@ -52,10 +46,6 @@ export default function TableOfContents() {
   }
 
   const handleSectionClick = (sectionId: string) => {
-    // replaceState instead of assigning location.hash: a hash assignment fires
-    // router navigation + hashchange, each of which triggers ANOTHER smooth
-    // scroll on top of the explicit one below — the fighting scrolls made nav
-    // clicks stutter. replaceState updates the URL silently.
     window.history.replaceState(null, '', `#${sectionId}`)
     updateHash(`#${sectionId}`)
     scrollToSection(sectionId)
@@ -75,60 +65,46 @@ export default function TableOfContents() {
         setItemHeight(secondRect.top - firstRect.top)
       } else if (firstItem) {
         const rect = firstItem.getBoundingClientRect()
-        setItemHeight(rect.height + 6) // height + gap (0.375rem ≈ 6px)
+        setItemHeight(rect.height + 6)
       }
     }
     setMeasureTick(tick => tick + 1)
   }
 
-  // Calculate transform to center the active item
   const sidebarTransform = (() => {
     if (sections.length === 0 || !navRef.current) return 'translateY(-50%)'
 
-    // Mobile dot rail: stay simply centered, no active-item tracking.
     if (window.matchMedia('(max-width: 1023px)').matches) return 'translateY(-50%)'
 
     const viewportHeight = window.innerHeight
 
-    // Calculate the position of the active item relative to the list top
     const activeItemTop = activeSectionIndex * itemHeight
 
-    // Get the total height of the sidebar
     const sidebarHeight = tocListRef.current?.offsetHeight || 0
 
-    // Base offset to center the entire nav (nav is at top: 50%, so move up by half its height)
     const baseOffset = -sidebarHeight / 2
 
-    // Additional offset to center the active item
-    // Active item is at (viewportHeight/2 + activeItemTop) from viewport top
-    // To center it, we need to move up by activeItemTop
     let offset = baseOffset - activeItemTop
 
-    // Clamp the offset to keep sidebar within viewport bounds
-    const minOffset = -sidebarHeight / 2 + 20 // Minimum margin from top
-    const maxOffset = viewportHeight - sidebarHeight / 2 - 20 // Minimum margin from bottom
+    const minOffset = -sidebarHeight / 2 + 20
+    const maxOffset = viewportHeight - sidebarHeight / 2 - 20
 
     offset = Math.max(minOffset, Math.min(maxOffset, offset))
 
     return `translateY(${offset}px)`
   })()
 
-  // Sync URL hash when currentSectionIndex changes during scroll
   useEffect(() => {
     const sectionId = sections[currentSectionIndex]?.id
     if (sectionId && currentHashRef.current !== `#${sectionId}`) {
-      // Update hash without triggering navigation
       window.history.replaceState(null, '', `#${sectionId}`)
       updateHash(`#${sectionId}`)
     }
-    // Re-measure items if needed (effects run after the DOM commit,
-    // equivalent to Vue's nextTick here)
     measureItems()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSectionIndex])
 
   useEffect(() => {
-    // Watch for hash changes (browser back/forward or direct navigation)
     const handleHashChange = () => {
       updateHash(window.location.hash)
       const sectionId = window.location.hash.slice(1)
@@ -139,16 +115,13 @@ export default function TableOfContents() {
 
     measureItems()
 
-    // Re-measure on window resize
     const resizeHandler = () => {
       measureItems()
     }
     window.addEventListener('resize', resizeHandler)
 
-    // Listen for hash changes
     window.addEventListener('hashchange', handleHashChange)
 
-    // Handle initial hash if present
     if (window.location.hash) {
       handleHashChange()
     }
@@ -161,9 +134,6 @@ export default function TableOfContents() {
   }, [])
 
   return (
-    /* Desktop (≥ lg) only: full labelled rail. Below lg the right-hand scroll
-       minimap (MobileScrollRail) carries the section dots instead — the two
-       rails are merged there, AI-chat outline style. */
     <nav
       ref={navRef}
       className="table-of-contents hidden lg:block fixed left-1 lg:left-6 top-1/2 z-50 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"

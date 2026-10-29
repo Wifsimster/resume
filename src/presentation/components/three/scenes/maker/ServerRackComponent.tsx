@@ -31,7 +31,6 @@ interface Props {
     onRackRef?: (ref: Object3D) => void
 }
 
-// Component mapper for dynamic rendering
 const unitComponents: Record<ServerUnitType, any> = {
     'freebox': FreeboxUnit,
     'patch-panel': PatchPanelUnit,
@@ -51,17 +50,12 @@ const getUnitComponent = (unitType: ServerUnitType) => {
     return unitComponents[unitType]
 }
 
-// Equivalent of Vue's `v-for="x in n"`: [1..n]
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i + 1)
 
 export default function ServerRackComponent({ visibleRackUnits, hoveredUnitId, anim, colors, onUnitRef, onRackRef }: Props) {
-    // Direct Three.js refs for animation (bypasses React reactivity)
     const fanGroupRefs = useRef<any[]>([])
     const ledMeshRefs = useRef<any[]>([])
 
-    // Cooling fans spin (alternating direction) and rear port LEDs blink.
-    // Runs on the R3F render loop and mutates Three objects directly, so no
-    // React re-render is triggered per frame.
     useFrame(({ clock }) => {
         const elapsed = clock.elapsedTime
         const fanRotation = elapsed * 8
@@ -96,30 +90,22 @@ export default function ServerRackComponent({ visibleRackUnits, hoveredUnitId, a
 
     return (
         <group position={[1.372, -1.7735, 0.5]} ref={(el) => { handleRackRef(el) }}>
-            {/* Rack frame - Simple black box with open front */}
-            {/* Using shared materials for better GPU batching */}
-            {/* Top */}
             <mesh position={[0, 3.3, 0]} material={sharedMaterials.darkMetal}>
                 <boxGeometry args={[1.086, 0.05, 1.35]} />
             </mesh>
-            {/* Bottom */}
             <mesh position={[0, 0, 0]} material={sharedMaterials.darkMetal}>
                 <boxGeometry args={[1.086, 0.05, 1.35]} />
             </mesh>
-            {/* Left side */}
             <mesh position={[-0.518, 1.65, 0]} material={sharedMaterials.darkMetal}>
                 <boxGeometry args={[0.05, 3.3, 1.35]} />
             </mesh>
-            {/* Right side */}
             <mesh position={[0.518, 1.65, 0]} material={sharedMaterials.darkMetal}>
                 <boxGeometry args={[0.05, 3.3, 1.35]} />
             </mesh>
-            {/* Back */}
             <mesh position={[0, 1.65, -0.675]} material={sharedMaterials.darkMetal}>
                 <boxGeometry args={[1.086, 3.3, 0.05]} />
             </mesh>
 
-            {/* Rack rails */}
             <mesh position={[-0.54, 1.65, 0.3]} material={sharedMaterials.darkMetal2}>
                 <boxGeometry args={[0.04, 3.1, 0.04]} />
             </mesh>
@@ -127,9 +113,6 @@ export default function ServerRackComponent({ visibleRackUnits, hoveredUnitId, a
                 <boxGeometry args={[0.04, 3.1, 0.04]} />
             </mesh>
 
-            {/* Vertical LED strips along the front rails: emissive basic
-                material — the server-room accent light look at zero light-source
-                cost (they only appear to illuminate) */}
             <mesh position={[-0.512, 1.65, 0.32]}>
                 <boxGeometry args={[0.012, 3.05, 0.012]} />
                 <meshBasicMaterial color="#35C4E8" />
@@ -139,14 +122,11 @@ export default function ServerRackComponent({ visibleRackUnits, hoveredUnitId, a
                 <meshBasicMaterial color="#35C4E8" />
             </mesh>
 
-            {/* Faint interior glow plane in front of the back panel so the
-                cabinet cavity reads as depth, not a black hole */}
             <mesh position={[0, 1.65, -0.6]}>
                 <planeGeometry args={[1.02, 3.2]} />
                 <meshBasicMaterial color="#0D2534" transparent opacity={0.85} />
             </mesh>
 
-            {/* Server units - Actual equipment (inside the rack) */}
             {visibleRackUnits.map((unit) => {
                 const UnitComponent = getUnitComponent(unit.type)
                 return (
@@ -158,12 +138,10 @@ export default function ServerRackComponent({ visibleRackUnits, hoveredUnitId, a
                 )
             })}
 
-            {/* Top cooling unit (inside the rack, at the top) */}
             <group position={[0, 3.15, 0]}>
                 <mesh material={sharedMaterials.darkMetal2}>
                     <boxGeometry args={[0.965, 0.15, 0.7875]} />
                 </mesh>
-                {/* Fans - animated via useFrame, not React reactivity */}
                 {range(2).map((fan) => (
                     <group key={`top-fan-${fan}`} position={[-0.241 + fan * 0.482, 0.08, 0]}
                         rotation={[-Math.PI / 2, 0, 0]}
@@ -175,7 +153,6 @@ export default function ServerRackComponent({ visibleRackUnits, hoveredUnitId, a
                             <ringGeometry args={[0.05, 0.22, 12]} />
                             <meshBasicMaterial color="#37474F" />
                         </mesh>
-                        {/* Fan blades */}
                         {range(5).map((blade) => (
                             <mesh key={`blade-${fan}-${blade}`}
                                 rotation={[0, 0, blade * (Math.PI * 2 / 5)]}>
@@ -187,7 +164,6 @@ export default function ServerRackComponent({ visibleRackUnits, hoveredUnitId, a
                 ))}
             </group>
 
-            {/* Rear network ports glow - animated via useFrame, not React reactivity */}
             <group position={[0, 1.65, -0.675]}>
                 {range(4).map((port) => (
                     <mesh key={`net-port-${port}`} position={[-0.241 + port * 0.151, 0, 0.03]}

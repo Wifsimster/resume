@@ -9,9 +9,6 @@ import {
   type ColorRepresentation
 } from 'three'
 
-// Shared soft-dot sprite so every particle renders as a round, feathered glow
-// instead of the default hard square. Created lazily once and NEVER disposed —
-// all fields reference the same texture.
 let softSprite: CanvasTexture | null = null
 function getSoftSprite(): CanvasTexture {
   if (!softSprite) {
@@ -36,21 +33,9 @@ export interface ParticleFieldOptions {
   size: number
   opacity?: number
   additive?: boolean
-  /**
-   * Fills `out` (length 3) with an (x, y, z) position for particle `i`.
-   * Called once per particle at build time only — never per frame.
-   */
   position: (i: number, out: Float32Array) => void
 }
 
-/**
- * Builds a single-draw-call `Points` particle field.
- *
- * Replaces the duplicated "allocate Float32Array, fill in a loop, build a
- * BufferGeometry + PointsMaterial" blocks that were copy-pasted across scenes.
- * Animation is expected to be done cheaply by rotating the whole `Points`
- * object, not by touching the position buffer every frame.
- */
 export function createParticleField(opts: ParticleFieldOptions): Points {
   const positions = new Float32Array(opts.count * 3)
   const scratch = new Float32Array(3)
@@ -78,7 +63,6 @@ export function createParticleField(opts: ParticleFieldOptions): Points {
   return new Points(geometry, material)
 }
 
-/** Disposes a `Points` field's GPU resources. Safe to call with null. */
 export function disposeParticleField(points: Points | null) {
   if (!points) return
   points.geometry.dispose()

@@ -11,14 +11,11 @@ interface Props {
     colors: typeof makerColors
 }
 
-// Equivalent of Vue's `v-for="x in n"`: [1..n]
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i + 1)
 
 export default function EnclosureUnit({ unit, isHovered, colors }: Props) {
-    // Direct Three.js refs for LED animation
     const ledRefs = useRef<any[]>([])
 
-    // Indicator blink — mutates materials directly on the render loop
     useFrame(({ clock }) => {
         const elapsed = clock.elapsedTime
         for (let i = 0; i < ledRefs.current.length; i++) {
@@ -32,7 +29,6 @@ export default function EnclosureUnit({ unit, isHovered, colors }: Props) {
 
     return (
         <BaseServerUnit unit={unit} isHovered={isHovered} colors={colors}>
-            {/* Blue indicator lights in two rows - animated via useFrame */}
             {range(8).map((led) => (
                 <mesh key={`enclosure-led-${led}`}
                     position={[-0.241 + (led % 4) * 0.151, 0.1 - Math.floor(led / 4) * 0.2, 0.38]}

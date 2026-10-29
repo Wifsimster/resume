@@ -3,13 +3,10 @@ import { create } from 'zustand'
 import { i18n } from '@application/i18n'
 import { useAchievementsStore } from '@application/stores/achievements'
 
-// Konami Code: ↑ ↑ ↓ ↓ ← → ← → B A
 const KONAMI_CODE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA']
 
-// Mobile Konami Code: Swipe Up, Up, Down, Down, Left, Right, Left, Right, Tap, Tap
 const MOBILE_KONAMI_CODE = ['swipeUp', 'swipeUp', 'swipeDown', 'swipeDown', 'swipeLeft', 'swipeRight', 'swipeLeft', 'swipeRight', 'tap', 'tap']
 
-// Secret color themes
 export type SecretTheme = 'default' | 'matrix' | 'retro' | 'cyberpunk'
 
 interface EasterEggsState {
@@ -66,7 +63,6 @@ const createMatrixEffect = () => {
 
   const interval = setInterval(draw, 50)
 
-  // Remove after 10 seconds
   setTimeout(() => {
     clearInterval(interval)
     canvas.remove()
@@ -80,7 +76,6 @@ export const useEasterEggsStore = create<EasterEggsState>((set, get) => ({
   fpsEnabled: false,
 
   setTheme: (theme) => {
-    // Remove all theme classes
     document.documentElement.classList.remove('theme-matrix', 'theme-retro', 'theme-cyberpunk')
 
     if (theme !== 'default') {
@@ -95,10 +90,8 @@ export const useEasterEggsStore = create<EasterEggsState>((set, get) => ({
     set({ konamiActivated: true, currentTheme: 'matrix', fpsEnabled: true })
     useAchievementsStore.getState().unlock('codeHunter')
 
-    // Apply matrix theme
     document.documentElement.classList.add('theme-matrix')
 
-    // Create matrix rain effect
     createMatrixEffect()
 
     console.log('🎮 Konami Code activated! Welcome, gamer.')
@@ -108,7 +101,6 @@ export const useEasterEggsStore = create<EasterEggsState>((set, get) => ({
 const setupConsoleEasterEgg = () => {
   const t = (key: string) => i18n.t(key)
 
-  // Add a welcome message to console
   const styles = [
     'color: #00FF41',
     'font-size: 16px',
@@ -120,7 +112,6 @@ const setupConsoleEasterEgg = () => {
   console.log(`%c${t('console.found')}`, 'color: #00FF41; font-family: monospace')
   console.log(`%c${t('console.hint')}`, 'color: #888; font-family: monospace; font-style: italic')
 
-  // Add a global function that can be called from console
   ;(window as unknown as { resume?: () => void }).resume = () => {
     const { unlock, isUnlocked } = useAchievementsStore.getState()
     if (!isUnlocked('consoleExplorer')) {
@@ -131,7 +122,6 @@ const setupConsoleEasterEgg = () => {
     console.log(`%c💡 ${t('console.tip')}`, 'color: #888; font-family: monospace')
     console.log(`%c${t('console.konamiCode')}`, 'color: #00FF41; font-family: monospace; font-size: 12px')
 
-    // Add some fun ASCII art
     const title = t('console.asciiTitle')
     const subtitle = t('console.asciiSubtitle')
     console.log(`
@@ -147,8 +137,6 @@ const setupConsoleEasterEgg = () => {
   }
 }
 
-// Installs the global listeners (Konami code, touch gestures, console easter
-// egg). Call once at the app root; returns the reactive easter-egg state.
 export function useEasterEggs() {
   const currentTheme = useEasterEggsStore(s => s.currentTheme)
   const konamiActivated = useEasterEggsStore(s => s.konamiActivated)
@@ -159,24 +147,21 @@ export function useEasterEggs() {
     const keySequence: string[] = []
     const touchSequence: string[] = []
 
-    // Touch gesture tracking
     let touchStartX = 0
     let touchStartY = 0
     let touchStartTime = 0
     let touchSequenceTimeout: ReturnType<typeof setTimeout> | null = null
-    const SWIPE_THRESHOLD = 50 // Minimum distance for a swipe
-    const TAP_MAX_DURATION = 300 // Maximum duration for a tap (ms)
-    const SEQUENCE_TIMEOUT = 2000 // Reset sequence after 2 seconds of inactivity
+    const SWIPE_THRESHOLD = 50
+    const TAP_MAX_DURATION = 300
+    const SEQUENCE_TIMEOUT = 2000
 
     const handleKeyDown = (event: KeyboardEvent) => {
       keySequence.push(event.code)
 
-      // Keep only last N keys (N = KONAMI_CODE length)
       if (keySequence.length > KONAMI_CODE.length) {
         keySequence.shift()
       }
 
-      // Check if sequence matches Konami code
       if (keySequence.length === KONAMI_CODE.length) {
         const matches = keySequence.every((key, index) => key === KONAMI_CODE[index])
         if (matches) {
@@ -194,18 +179,15 @@ export function useEasterEggs() {
     }
 
     const checkMobileKonamiCode = () => {
-      // Reset timeout
       if (touchSequenceTimeout) {
         clearTimeout(touchSequenceTimeout)
       }
       touchSequenceTimeout = setTimeout(resetTouchSequence, SEQUENCE_TIMEOUT)
 
-      // Keep only last N gestures (N = MOBILE_KONAMI_CODE length)
       if (touchSequence.length > MOBILE_KONAMI_CODE.length) {
         touchSequence.shift()
       }
 
-      // Check if sequence matches mobile Konami code
       if (touchSequence.length === MOBILE_KONAMI_CODE.length) {
         const matches = touchSequence.every((gesture, index) => gesture === MOBILE_KONAMI_CODE[index])
         if (matches) {
@@ -221,17 +203,13 @@ export function useEasterEggs() {
       const absDeltaX = Math.abs(deltaX)
       const absDeltaY = Math.abs(deltaY)
 
-      // Check if movement is significant enough to be a swipe
       if (absDeltaX < SWIPE_THRESHOLD && absDeltaY < SWIPE_THRESHOLD) {
-        return null // Too small to be a swipe
+        return null
       }
 
-      // Determine primary direction
       if (absDeltaY > absDeltaX) {
-        // Vertical swipe
         return deltaY < 0 ? 'swipeUp' : 'swipeDown'
       } else {
-        // Horizontal swipe
         return deltaX < 0 ? 'swipeLeft' : 'swipeRight'
       }
     }
@@ -255,23 +233,19 @@ export function useEasterEggs() {
         const swipeDirection = detectSwipeDirection(touchStartX, touchStartY, endX, endY)
 
         if (swipeDirection) {
-          // It's a swipe
           touchSequence.push(swipeDirection)
           checkMobileKonamiCode()
         } else if (duration < TAP_MAX_DURATION) {
-          // It's a tap (short duration, small movement)
           touchSequence.push('tap')
           checkMobileKonamiCode()
         }
 
-        // Reset touch tracking
         touchStartTime = 0
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
 
-    // Mobile touch events
     window.addEventListener('touchstart', handleTouchStart, { passive: true })
     window.addEventListener('touchend', handleTouchEnd, { passive: true })
 
@@ -282,12 +256,10 @@ export function useEasterEggs() {
       window.removeEventListener('touchstart', handleTouchStart)
       window.removeEventListener('touchend', handleTouchEnd)
 
-      // Clean up timeouts
       if (touchSequenceTimeout) {
         clearTimeout(touchSequenceTimeout)
       }
 
-      // Clean up the global function
       delete (window as unknown as { resume?: () => void }).resume
     }
   }, [])

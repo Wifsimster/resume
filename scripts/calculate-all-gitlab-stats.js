@@ -1,10 +1,3 @@
-/**
- * Script pour calculer les statistiques GitLab depuis tous les projets
- * 
- * Ce script doit être exécuté avec les outils MCP GitLab pour récupérer
- * les commits de 2025 depuis tous les projets listés.
- */
-
 const PROJECTS = [
   'apvhn/resume',
   'apvhn/user-portal-monorepo',
@@ -17,27 +10,11 @@ const PROJECTS = [
   'apvhn/presentation',
   'apvhn/hexamdp',
   'apvhn/uniface-source-code',
-  // Si les projets sont sous un autre namespace, ajoutez-les ici :
-  // 'dedalus/user-portal-monorepo',
-  // etc.
 ]
 
 const USERNAME = 'apvhn'
 const YEAR = 2025
 
-/**
- * Calcule les statistiques depuis tous les projets GitLab
- * 
- * Pour chaque projet, utilisez l'API MCP GitLab :
- * mcp_gitlab-mcp_list_commits({
- *   project_id: projectId,
- *   author: USERNAME,
- *   since: `${YEAR}-01-01T00:00:00Z`,
- *   until: `${YEAR}-12-31T23:59:59Z`,
- *   with_stats: true,
- *   all: true
- * })
- */
 function calculateStats(commitsByProject) {
   let totalLines = 0
   let totalCommits = 0
@@ -64,7 +41,6 @@ function calculateStats(commitsByProject) {
   }
 }
 
-// Résultats connus pour le projet resume
 const knownResults = {
   'apvhn/resume': {
     commits: 20,

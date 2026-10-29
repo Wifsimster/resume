@@ -1,10 +1,5 @@
 import type { CardKind } from './cards'
 
-// Scripted knowledge base of the conversational alpha. Every answer names the
-// "tool" it pretends to call, a short reasoning line, the streamed text and
-// the generative card to render — in both locales. Copy lives here (not in
-// the global locale files) so the whole alpha stays one self-contained module.
-
 export type IntentId = 'welcome' | 'experience' | 'skills' | 'projects' | 'maker' | 'stats' | 'contact' | 'books' | 'fallback'
 
 export interface Answer {

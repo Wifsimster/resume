@@ -18,7 +18,6 @@ interface Props {
 export default function UdmProUnit({ unit, isHovered, colors }: Props) {
     return (
         <BaseServerUnit unit={unit} isHovered={isHovered} colors={colors}>
-            {/* Small display area */}
             <mesh position={[-0.181, 0, 0.37]} material={sharedMaterials.darkMetal}>
                 <planeGeometry args={[0.4, 0.15]} />
             </mesh>

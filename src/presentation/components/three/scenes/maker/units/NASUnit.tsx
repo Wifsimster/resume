@@ -11,14 +11,11 @@ interface Props {
     colors: typeof makerColors
 }
 
-// Equivalent of Vue's `v-for="x in n"`: [1..n]
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i + 1)
 
 export default function NASUnit({ unit, isHovered, colors }: Props) {
-    // Direct Three.js refs for LED animation (bypasses React reactivity)
     const ledRefs = useRef<any[]>([])
 
-    // Drive activity blink — mutates materials directly on the render loop
     useFrame(({ clock }) => {
         const elapsed = clock.elapsedTime
         for (let i = 0; i < ledRefs.current.length; i++) {
@@ -32,12 +29,10 @@ export default function NASUnit({ unit, isHovered, colors }: Props) {
 
     return (
         <BaseServerUnit unit={unit} isHovered={isHovered} colors={colors}>
-            {/* SilverStone logo area */}
             <mesh position={[0.302, 0, 0.37]}>
                 <planeGeometry args={[0.2, 0.1]} />
                 <meshBasicMaterial color="#2D2D2D" />
             </mesh>
-            {/* Blue LED indicators - animated via useFrame */}
             {range(4).map((led) => (
                 <mesh key={`nas-led-${led}`} position={[-0.302 + led * 0.151, 0.15, 0.38]}
                     geometry={sharedGeometries.smallLED}
@@ -45,7 +40,6 @@ export default function NASUnit({ unit, isHovered, colors }: Props) {
                     <meshBasicMaterial color={colors.serverBlue} opacity={0.9} transparent />
                 </mesh>
             ))}
-            {/* Drive bays */}
             {range(4).map((bay) => (
                 <mesh key={`nas-bay-${bay}`} position={[-0.302 + bay * 0.151, -0.15, 0.37]}
                     material={sharedMaterials.darkMetal3}>

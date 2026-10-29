@@ -1,7 +1,5 @@
 import { defineConfig } from '@playwright/test'
 
-// CHROMIUM_PATH lets sandboxed environments point at a system Chromium
-// (with software-GL flags) instead of the Playwright-managed download.
 const executablePath = process.env.CHROMIUM_PATH
 
 export default defineConfig({

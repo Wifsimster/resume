@@ -1,14 +1,10 @@
 #!/usr/bin/env node
-// Refreshes src/domain/data/githubStats.json from the public GitHub API.
-// Run manually (or in CI) with: npm run refresh:stats
-// The JSON is committed so builds never depend on network access.
 
 import { writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
 const USERNAME = 'Wifsimster'
-// resume.ts project id → GitHub repo name
 const PROJECT_REPOS = {
   ondes: 'ondes',
   elan: 'elan',

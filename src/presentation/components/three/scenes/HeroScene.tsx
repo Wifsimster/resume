@@ -16,11 +16,6 @@ interface Props {
   quality: QualityLevel
 }
 
-// "Système Solaire" — a stylized low-poly solar system. An emissive sun is the
-// single real light source; seven flat-shaded planets ride individually tilted
-// orbital planes at Kepler-scaled speeds (outer = slower), with thin orbit
-// guides, an asteroid belt, one ringed planet and one moon. The whole system
-// slowly precesses for parallax depth against a distant starfield.
 const themeColors = {
   sun: '#FDB813',
   sunGlow: '#FF9E4A',
@@ -38,15 +33,12 @@ interface PlanetDef {
   spin: number
   hasRing?: boolean
   hasMoon?: boolean
-  /** Procedural surface (high quality only): rocky splotches or gas bands. */
   kind: 'rocky' | 'gas'
   shadow?: string
   highlight?: string
   bands?: string[]
 }
 
-// Orbit radii compressed to the camera frustum; speeds follow Kepler's third
-// law (ω ∝ r^-1.5) so inner planets visibly outrun outer ones.
 const planets: PlanetDef[] = [
   { color: '#A78BFA', size: 0.13, orbit: 1.6, inclination: 0.06, node: 0.0, phase: 0.0, spin: 0.9,
     kind: 'rocky', shadow: '#6D51C8', highlight: '#D6C6FF' },
@@ -67,7 +59,6 @@ const planets: PlanetDef[] = [
 const KEPLER_K = 1.15
 const orbitalSpeeds = planets.map((p) => KEPLER_K / Math.pow(p.orbit, 1.5))
 
-// --- Asteroid belt between the 4th and 5th orbits (single Points draw call) ---
 const BELT_INNER = 3.7
 const BELT_OUTER = 4.05
 
@@ -83,13 +74,10 @@ export default function HeroScene({ quality }: Props) {
 
   const isMinimal = quality === 'minimal'
 
-  // Geometry detail scales with quality. High tier renders smooth, textured
-  // spheres; low/minimal keep the cheaper stylized flat-shaded look.
   const sunSegments = quality === 'high' ? 48 : quality === 'low' ? 20 : 12
   const planetSegments = quality === 'high' ? 32 : quality === 'low' ? 12 : 8
   const guideSegments = quality === 'high' ? 96 : quality === 'low' ? 48 : 24
 
-  // --- Procedural surface textures (high quality only, generated once) ---
   const maps = useMemo(() => {
     if (quality !== 'high') {
       return {
@@ -112,10 +100,6 @@ export default function HeroScene({ quality }: Props) {
   }, [quality])
   const { planetMaps, sunMap, ringMap, moonMap } = maps
 
-  // Dispose the previous GPU textures only AFTER React has re-patched the
-  // materials (effect cleanups run post-commit) — disposing synchronously
-  // leaves materials sampling a dead texture for a frame (renders as white
-  // artifacts).
   useEffect(() => {
     const created = [...maps.planetMaps, maps.sunMap, maps.ringMap, maps.moonMap].filter(
       (t): t is CanvasTexture => t !== null
@@ -125,11 +109,8 @@ export default function HeroScene({ quality }: Props) {
     }
   }, [maps])
 
-  // --- Background starfield (single Points draw call) ---
   const starField = useMemo(() => {
     if (quality === 'minimal') return null
-    // Star size stays comfortably above one on-screen pixel — sub-pixel point
-    // sprites twinkle hard at real frame rates, which reads as flickering.
     const count = quality === 'high' ? 700 : 200
     return createParticleField({
       count,
@@ -167,9 +148,6 @@ export default function HeroScene({ quality }: Props) {
   }, [quality])
   useEffect(() => () => disposeParticleField(belt), [belt])
 
-  // --- Pointer parallax: the camera eases toward the cursor so the whole
-  // system tilts subtly under the mouse. Passive listener, no per-move work
-  // beyond two normalized floats; the easing runs in the render update. ---
   const camera = useThree((state) => state.camera)
   const pointer = useRef({ x: 0, y: 0 }).current
 
@@ -183,7 +161,6 @@ export default function HeroScene({ quality }: Props) {
   }, [pointer])
 
   const update = (elapsed: number, delta: number) => {
-    // Camera parallax (frame-rate independent easing, ~4% per 60Hz frame)
     const cam = camera
     if (cam) {
       const s = 1 - Math.exp(-delta * 0.0026)
@@ -192,7 +169,6 @@ export default function HeroScene({ quality }: Props) {
       cam.lookAt(0, 0, 0)
     }
 
-    // Sun: slow roll + gentle breathing pulse; corona counter-rotates.
     if (sunRef.current) {
       sunRef.current.rotation.y = elapsed * 0.05
       const pulse = 1 + Math.sin(elapsed * 0.8) * 0.025
@@ -200,12 +176,8 @@ export default function HeroScene({ quality }: Props) {
     }
     if (coronaRef.current) coronaRef.current.rotation.y = -elapsed * 0.03
 
-    // Whole system precesses slowly for parallax depth.
     if (systemRef.current) systemRef.current.rotation.y = elapsed * 0.02
 
-    // Planets: Kepler-scaled circular motion inside each tilted orbital plane
-    // (local y stays 0 — the plane group carries inclination and node, and the
-    // orbit guide shares the exact same transform so paths always align).
     for (let i = 0; i < planets.length; i++) {
       const p = planets[i]
       const planet = planetRefs.current[i]
@@ -219,13 +191,10 @@ export default function HeroScene({ quality }: Props) {
       if (moonPivot) moonPivot.rotation.y = elapsed * 1.1
     }
 
-    // Belt drifts on top of the system precession; stars barely move.
     if (belt) belt.rotation.y = elapsed * 0.015
     if (starField) starField.rotation.y = elapsed * 0.004
   }
 
-  // Latest resources for the unmount cleanup below (the per-resource effect
-  // cleanups above already handle disposal on quality changes).
   const resources = useRef<{
     starField: Points | null
     belt: Points | null
@@ -242,22 +211,17 @@ export default function HeroScene({ quality }: Props) {
 
   return (
     <>
-      {/* fov 45 = TresJS default perspective camera fov, kept explicit here */}
       <SceneCamera position={[0, 4.2, 9.8]} fov={45} lookAt={[0, 0, 0]} />
 
-      {/* The sun is the light source: warm point light at the center. */}
       <ambientLight intensity={0.25} />
       <pointLight position={[0, 0, 0]} intensity={4} color="#FFD9A0" distance={26} decay={1} />
       {!isMinimal && (
         <pointLight position={[8, 5, 6]} intensity={0.4} color={themeColors.fill} distance={25} />
       )}
 
-      {/* Sun: emissive core + additive corona shells */}
       <group>
         <mesh ref={sunRef}>
           <sphereGeometry args={[0.8, sunSegments, sunSegments]} />
-          {/* key forces a fresh material when the texture set flips (shader
-              program must be rebuilt when a map is added/removed) */}
           <meshBasicMaterial
             key={sunMap ? 'sun-tex' : 'sun-flat'}
             map={sunMap}
@@ -288,15 +252,9 @@ export default function HeroScene({ quality }: Props) {
         )}
       </group>
 
-      {/* Planetary system: orbital planes carry inclination + node so the guide
-          ring and the moving planet always share the exact same transform. */}
       <group ref={systemRef}>
-        {/* Inclination is a small X tilt; the ascending node rotates about Y so
-            the planes stay near-planar like a real ecliptic. */}
         {planets.map((p, i) => (
           <group key={`plane-${i}`} rotation={[p.inclination, p.node, 0]}>
-            {/* Orbit guide. Tube kept above ~1.5 device pixels: hairline tubes
-                break into dashes and crawl/flicker as the system precesses. */}
             <mesh rotation={[Math.PI / 2, 0, 0]}>
               <torusGeometry args={[p.orbit, 0.02, 6, guideSegments]} />
               <meshBasicMaterial
@@ -307,15 +265,12 @@ export default function HeroScene({ quality }: Props) {
               />
             </mesh>
 
-            {/* Planet (position driven per frame) */}
             <group
               ref={(el) => {
                 planetRefs.current[i] = el
               }}
               position={[p.orbit, 0, 0]}
             >
-              {/* Textured smooth sphere on high quality; stylized flat-shaded
-                  solid colour on low/minimal. */}
               <mesh
                 ref={(el) => {
                   spinRefs.current[i] = el
@@ -334,7 +289,6 @@ export default function HeroScene({ quality }: Props) {
                 />
               </mesh>
 
-              {/* Saturn-like ring */}
               {p.hasRing && (
                 <mesh rotation={[Math.PI / 2 - 0.35, 0, 0]}>
                   <ringGeometry args={[p.size * 1.45, p.size * 2.1, guideSegments]} />
@@ -350,7 +304,6 @@ export default function HeroScene({ quality }: Props) {
                 </mesh>
               )}
 
-              {/* Moon on its own pivot */}
               {p.hasMoon && (
                 <group
                   ref={(el) => {
@@ -375,11 +328,9 @@ export default function HeroScene({ quality }: Props) {
           </group>
         ))}
 
-        {/* Asteroid belt (single Points draw call) */}
         {belt && <primitive object={belt} />}
       </group>
 
-      {/* Distant starfield (single Points draw call) */}
       {starField && <primitive object={starField} />}
     </>
   )

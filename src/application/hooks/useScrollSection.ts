@@ -36,13 +36,9 @@ const useScrollSectionStore = create<ScrollSectionState>(() => ({
   sectionVisibility: new Map()
 }))
 
-// Singleton pattern to ensure scroll listener is only registered once,
-// ref-counted across the components that use this hook.
 let scrollListenerRefCount = 0
 let startTime: number | null = null
 
-// Cached section elements — the section list is static after mount, so the
-// scroll handler never needs to re-query the DOM.
 let cachedSectionElements: HTMLElement[] = []
 
 const getSectionElements = (): HTMLElement[] => {
@@ -61,33 +57,28 @@ const markSectionVisited = (sectionId: string) => {
   const sections = state.sections.map(s => (s.id === sectionId ? { ...s, visited: true } : s))
   useScrollSectionStore.setState({ visitedSections, sections })
 
-  // Check if all sections visited
   if (visitedSections.size === sections.length) {
     useAchievementsStore.getState().unlock('explorer')
   }
 }
 
 const updateScrollState = () => {
-  // Calculate overall scroll progress
   const scrollTop = window.scrollY
   const docHeight = document.documentElement.scrollHeight - window.innerHeight
   const scrollProgress = (scrollTop / docHeight) * 100
   useScrollSectionStore.setState({ scrollProgress })
 
-  // Determine current section based on scroll position
   const sectionElements = getSectionElements()
   if (sectionElements.length === 0) return
 
   const viewportMiddle = window.innerHeight / 2
   let bestMatch: { index: number; distance: number } | null = null
 
-  // Find the section closest to the viewport center
   sectionElements.forEach((el, index) => {
     const rect = el.getBoundingClientRect()
     const sectionCenter = rect.top + rect.height / 2
     const distance = Math.abs(viewportMiddle - sectionCenter)
 
-    // Also check if section is significantly visible (at least 30% in viewport)
     const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)
     const visibilityRatio = visibleHeight / rect.height
 
@@ -98,7 +89,6 @@ const updateScrollState = () => {
     }
   })
 
-  // If no section is significantly visible, find the one closest to viewport center
   if (!bestMatch) {
     let closest: { index: number; distance: number } | null = null
     sectionElements.forEach((el, index) => {
@@ -126,7 +116,6 @@ const updateScrollState = () => {
     }
   }
 
-  // Check for speed runner achievement
   if (startTime && scrollProgress >= 99) {
     const elapsed = (Date.now() - startTime) / 1000
     if (elapsed < 30) {
@@ -135,8 +124,6 @@ const updateScrollState = () => {
   }
 }
 
-// Coalesce scroll events into at most one state update per animation frame,
-// so the handler's layout reads never run more than once per rendered frame.
 let scrollRafId: number | null = null
 const handleScroll = () => {
   if (scrollRafId !== null) return
@@ -152,7 +139,7 @@ const acquireScrollListener = () => {
 
   startTime = Date.now()
   window.addEventListener('scroll', handleScroll, { passive: true })
-  updateScrollState() // Initial check
+  updateScrollState()
 }
 
 const releaseScrollListener = () => {
@@ -167,8 +154,6 @@ const releaseScrollListener = () => {
   cachedSectionElements = []
 }
 
-// IntersectionObserver for section visibility tracking — shared singleton,
-// ref-counted alongside the scroll listener.
 let intersectionObserver: IntersectionObserver | null = null
 
 const setupVisibilityObserver = () => {
@@ -183,22 +168,20 @@ const setupVisibilityObserver = () => {
       entries.forEach((entry) => {
         const sectionId = entry.target.getAttribute('data-section')
         if (sectionId) {
-          // Section is visible if more than 10% is in viewport
           sectionVisibility.set(sectionId, entry.intersectionRatio >= 0.1)
         }
       })
       useScrollSectionStore.setState({ sectionVisibility })
     },
     {
-      threshold: [0, 0.1, 0.5, 1.0], // Multiple thresholds for better tracking
-      rootMargin: '50px' // Start tracking slightly before fully visible
+      threshold: [0, 0.1, 0.5, 1.0],
+      rootMargin: '50px'
     }
   )
 
   const sectionVisibility = new Map(useScrollSectionStore.getState().sectionVisibility)
   sectionElements.forEach((el) => {
     intersectionObserver?.observe(el)
-    // Initialize visibility state
     const sectionId = el.getAttribute('data-section')
     if (sectionId) {
       sectionVisibility.set(sectionId, false)
@@ -224,7 +207,6 @@ export function useScrollSection() {
   useEffect(() => {
     acquireScrollListener()
 
-    // Setup visibility observer after a short delay to ensure DOM is ready
     const timeout = setTimeout(() => {
       setupVisibilityObserver()
     }, 100)

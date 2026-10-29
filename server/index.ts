@@ -9,17 +9,6 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
 import { SYSTEM_PROMPT, isCardKind } from './context'
 
-// Chat backend of the conversational resume (Vercel AI SDK). Holds the LLM
-// credentials server-side and relays the answer as a small SSE protocol the
-// frontend understands: card-intent → text deltas → done. Provider is picked
-// from the environment:
-//   CHAT_API_BASE_URL (+ CHAT_API_KEY, CHAT_MODEL) → any OpenAI-compatible
-//     endpoint: Ollama (http://host:11434/v1), LM Studio, HuggingFace router,
-//     OpenRouter…
-//   GEMINI_API_KEY (+ GEMINI_MODEL) → Google AI Studio (free tier friendly)
-// With neither set the endpoint reports live:false and the frontend keeps its
-// scripted engine — the site never breaks.
-
 const PORT = Number(process.env.CHAT_PORT ?? 8787)
 
 function resolveModel(): { model: LanguageModel, label: string } | null {
@@ -44,10 +33,6 @@ function resolveModel(): { model: LanguageModel, label: string } | null {
 
 const configured = resolveModel()
 
-// ---- Conversation logs: one JSONL file per day in CHAT_LOG_DIR -------------
-// Every visitor turn and assistant answer is appended with the conversation
-// id, ip and user-agent. Read them back through GET /api/chat/logs, guarded
-// by CHAT_ADMIN_TOKEN (endpoint answers 404 unless both env vars are set).
 const LOG_DIR = process.env.CHAT_LOG_DIR ?? ''
 const ADMIN_TOKEN = process.env.CHAT_ADMIN_TOKEN ?? ''
 if (LOG_DIR) {
@@ -63,7 +48,6 @@ function logTurn(entry: Record<string, unknown>) {
     .catch(err => console.error('[chat] log write failed:', err instanceof Error ? err.message : err))
 }
 
-// ---- Abuse guards: the endpoint is public and the upstream quota is small --
 const MAX_MESSAGES = 16
 const MAX_MESSAGE_CHARS = 1000
 const MAX_BODY_BYTES = 32 * 1024
@@ -100,7 +84,6 @@ function clientIp(req: IncomingMessage): string {
   return first || req.socket.remoteAddress || 'unknown'
 }
 
-// ---- Helpers ---------------------------------------------------------------
 function sendJson(res: ServerResponse, status: number, body: unknown) {
   const payload = JSON.stringify(body)
   res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store' })
@@ -156,16 +139,9 @@ type ChatEvent =
   | { type: 'done' }
   | { type: 'error', message: string }
 
-// The model is asked to open with a "[card:kind]" line naming the visual card
-// to render. This works with any model — including small local ones that are
-// unreliable at function calling. The parser buffers the head of the stream
-// until that first line is settled, then passes everything through.
 function createDirectiveParser(emit: (event: ChatEvent) => void) {
   let head = ''
   let resolved = false
-  // Tolerant: models drift on the exact format ("[skills]", "[card: skills]",
-  // mixed case…), so accept any bracketed variant — but only swallow the line
-  // when the word is a known card kind (or "none"), never arbitrary text.
   const parseDirective = (line: string): string | null => {
     const match = /^\[\s*(?:card\s*:\s*)?([a-z]+)\s*\]$/i.exec(line.trim())
     if (!match) return null
@@ -195,7 +171,6 @@ function createDirectiveParser(emit: (event: ChatEvent) => void) {
       if (newline !== -1) {
         resolveHead(head.slice(0, newline), head.slice(newline + 1))
       } else if (head.length > 48) {
-        // Too long to be a directive: it's just text
         resolveHead('', head)
       }
     },
@@ -206,7 +181,6 @@ function createDirectiveParser(emit: (event: ChatEvent) => void) {
   }
 }
 
-// ---- Routes ----------------------------------------------------------------
 async function handleChat(req: IncomingMessage, res: ServerResponse) {
   if (!configured) {
     sendJson(res, 503, { error: 'not-configured' })
@@ -265,9 +239,6 @@ async function handleChat(req: IncomingMessage, res: ServerResponse) {
   )
 
   const parser = createDirectiveParser(send)
-  // streamText never throws: upstream failures surface through onError and
-  // the stream simply ends, so track them and tell the client explicitly —
-  // it falls back to the scripted engine when no text arrived.
   let failed = false
   try {
     const result = streamText({
@@ -312,7 +283,6 @@ async function handleChat(req: IncomingMessage, res: ServerResponse) {
   res.end()
 }
 
-// Thumbs up/down from the interface — appended to the conversation logs
 async function handleFeedback(req: IncomingMessage, res: ServerResponse) {
   if (!allowRequest(clientIp(req))) {
     sendJson(res, 429, { error: 'rate-limited' })
@@ -349,8 +319,6 @@ async function handleFeedback(req: IncomingMessage, res: ServerResponse) {
   res.writeHead(204).end()
 }
 
-// Protected log reader: GET /api/chat/logs?date=YYYY-MM-DD&limit=200
-// Auth: Authorization: Bearer <CHAT_ADMIN_TOKEN> or ?token=<CHAT_ADMIN_TOKEN>
 async function handleLogs(req: IncomingMessage, res: ServerResponse) {
   if (!ADMIN_TOKEN || !LOG_DIR) {
     sendJson(res, 404, { error: 'not-found' })
@@ -372,11 +340,11 @@ async function handleLogs(req: IncomingMessage, res: ServerResponse) {
     entries = rawLog.trim().split('\n').slice(-limit)
       .map(line => { try { return JSON.parse(line) as unknown } catch { return null } })
       .filter(Boolean)
-  } catch { /* no log file for that day */ }
+  } catch { }
   let days: string[] = []
   try {
     days = (await readdir(LOG_DIR)).filter(f => f.endsWith('.jsonl')).map(f => f.replace('.jsonl', '')).sort()
-  } catch { /* dir unreadable */ }
+  } catch { }
   sendJson(res, 200, { date, days, count: entries.length, entries })
 }
 

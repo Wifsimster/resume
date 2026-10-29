@@ -1,10 +1,5 @@
 import type { ReactNode } from 'react'
 
-// Minimal markdown renderer for chat messages — covers what the LLM is asked
-// to produce (bold, italic, inline code, links, bullet/numbered lists) plus a
-// heading fallback. Renders straight to React elements: no innerHTML, so the
-// model's output can never inject markup.
-
 const INLINE_RE = /(`[^`\n]+`)|(\*\*[^*\n]+\*\*)|(\*[^*\n]+\*)|(_[^_\n]+_)|(\[[^\]\n]+\]\(https?:\/\/[^)\s]+\))/g
 const LINK_RE = /^\[([^\]\n]+)\]\((https?:\/\/[^)\s]+)\)$/
 
@@ -52,7 +47,6 @@ function toBlocks(text: string): Block[] {
   for (const rawLine of text.split('\n')) {
     const line = rawLine.trimEnd()
     if (!line.trim()) {
-      // Blank line closes the current block
       if (blocks[blocks.length - 1]?.lines.length) blocks.push({ type: 'p', lines: [] })
       continue
     }
