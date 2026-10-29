@@ -2,16 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CardKind } from './cards'
 import { answerFor, matchIntent, WELCOME } from './answers'
 
-// Chat state + the streaming orchestrator, mirroring the shape of the AI
-// SDK's useChat (messages with typed parts, a status, send/stop/retry).
-// Two engines share the same message store:
-//  - live: streams real LLM answers from /api/chat (SSE relayed by the chat
-//    backend, Vercel AI SDK server-side) when the health endpoint says a
-//    provider is configured;
-//  - scripted: the original client-side intent engine, used for the welcome
-//    message and as an automatic fallback whenever the API is absent or fails.
-// The conversation persists in localStorage and survives a page reload.
-
 export type MessagePart =
   | { type: 'status', stage: 'thinking' }
   | { type: 'reasoning', text: string, streaming: boolean }
@@ -37,7 +27,6 @@ const STORAGE_KEY = 'wifsimster_chat_v1'
 const CARD_KINDS: readonly CardKind[] = ['profile', 'experience', 'skills', 'projects', 'maker', 'stats', 'contact', 'books']
 const isCardKind = (value: string): value is CardKind => (CARD_KINDS as readonly string[]).includes(value)
 
-// Names shown in the visible tool part when the live model picks a card
 const TOOL_NAMES: Record<CardKind, string> = {
   profile: 'resume.getProfile',
   experience: 'resume.getExperience',
@@ -55,10 +44,6 @@ type ServerEvent =
   | { type: 'done' }
   | { type: 'error', message?: string }
 
-// The live model closes each answer with a "[suggest: q1 | q2 | q3]" line
-// carrying contextual follow-up questions. It is parsed out here and never
-// displayed; while streaming, any trailing (possibly partial) directive is
-// withheld from the rendered text.
 const SUGGEST_ALL_RE = /\[suggest:[^\]]*\]/gi
 const stripSuggestTail = (text: string) => text.replace(/\s*\[sugg[^\]]*\]?\s*$/i, '')
 const stripSuggest = (text: string) => text.replace(SUGGEST_ALL_RE, '').replace(/\s+$/, '')
@@ -72,8 +57,6 @@ function parseSuggest(text: string): string[] | null {
 const newConversationId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `conv-${Math.random().toString(36).slice(2, 12)}`
 
-// Restore a saved conversation: sanitize transient state (streaming flags,
-// running tools, thinking markers) so a reload always lands on a settled view
 function restoreConversation(): { conversationId: string, messages: ChatMessage[], suggestions: string[] } | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -120,7 +103,6 @@ export function useAlphaChat(lang: 'fr' | 'en') {
   langRef.current = lang
   const messagesRef = useRef<ChatMessage[]>([])
   useEffect(() => { messagesRef.current = messages }, [messages])
-  // Stable id for the whole visit — groups the turns in the server logs
   const conversationIdRef = useRef<string>(newConversationId())
 
   const patchLast = useCallback((patch: (parts: MessagePart[]) => MessagePart[]) => {
@@ -133,7 +115,6 @@ export function useAlphaChat(lang: 'fr' | 'en') {
 
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-  // Probe the chat backend once: live answers only when a provider is up
   useEffect(() => {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 4000)
@@ -145,7 +126,7 @@ export function useAlphaChat(lang: 'fr' | 'en') {
           setLive(true)
         }
       })
-      .catch(() => { /* no backend: scripted mode */ })
+      .catch(() => { })
       .finally(() => clearTimeout(timer))
     return () => {
       clearTimeout(timer)
@@ -153,8 +134,6 @@ export function useAlphaChat(lang: 'fr' | 'en') {
     }
   }, [])
 
-  // Stream one scripted answer: reasoning → tool call → text → card.
-  // A stop request fast-forwards to the complete answer (it is scripted).
   const playAnswer = useCallback(async (intent: Parameters<typeof answerFor>[0]) => {
     const answer = answerFor(intent, langRef.current)
     const instant = REDUCED_MOTION()
@@ -164,7 +143,6 @@ export function useAlphaChat(lang: 'fr' | 'en') {
 
     setMessages(prev => [...prev, { id: nextId(), role: 'assistant', parts: [] }])
 
-    // 1. Reasoning streams in
     patchLast(() => [{ type: 'reasoning', text: instant ? answer.reasoning : '', streaming: !instant }])
     if (!instant) {
       for (let i = 0; i < answer.reasoning.length; i += 4) {
@@ -177,13 +155,11 @@ export function useAlphaChat(lang: 'fr' | 'en') {
     }
     patchLast(parts => parts.map(p => (p.type === 'reasoning' ? { ...p, text: answer.reasoning, streaming: false } : p)))
 
-    // 2. Tool call runs
     patchLast(parts => [...parts, { type: 'tool', name: answer.tool.name, args: answer.tool.args, status: 'running' }])
     if (!instant && !stopRef.current) await sleep(550)
     if (cancelledRef.current) return
     patchLast(parts => parts.map(p => (p.type === 'tool' ? { ...p, status: 'done' as const } : p)))
 
-    // 3. Answer text streams in
     patchLast(parts => [...parts, { type: 'text', text: instant ? answer.text : '', streaming: !instant }])
     if (!instant) {
       for (let i = 0; i < answer.text.length; i += 3) {
@@ -196,7 +172,6 @@ export function useAlphaChat(lang: 'fr' | 'en') {
     }
     patchLast(parts => parts.map(p => (p.type === 'text' ? { ...p, text: answer.text, streaming: false } : p)))
 
-    // 4. Generative card appears
     if (answer.card) {
       if (!instant && !stopRef.current) await sleep(200)
       if (cancelledRef.current) return
@@ -207,13 +182,10 @@ export function useAlphaChat(lang: 'fr' | 'en') {
     setStatus('ready')
   }, [patchLast])
 
-  // Stream one live answer from the chat backend. On failure before any text
-  // arrived, falls back to the scripted engine so the UX never breaks.
   const playLive = useCallback(async (history: { role: 'user' | 'assistant', text: string }[], userText: string) => {
     stopRef.current = false
     setStatus('streaming')
     setSuggestions([])
-    // Open the turn with a "Thinking…" marker until the first token arrives
     setMessages(prev => [...prev, { id: nextId(), role: 'assistant', parts: [{ type: 'status', stage: 'thinking' }] }])
 
     let gotText = false
@@ -307,7 +279,6 @@ export function useAlphaChat(lang: 'fr' | 'en') {
     } catch {
       if (cancelledRef.current) return
       if (stopRef.current) {
-        // Visitor pressed stop: keep the partial answer, never fall back
         if (gotText) {
           finalize()
         } else {
@@ -318,12 +289,9 @@ export function useAlphaChat(lang: 'fr' | 'en') {
         return
       }
       if (gotText) {
-        // Partial answer already visible: close it cleanly
         finalize()
         return
       }
-      // Nothing arrived: drop the empty live message, replay through the
-      // scripted engine so the visitor still gets an answer
       dropEmptyTurn()
       void playAnswer(matchIntent(userText))
     } finally {
@@ -342,7 +310,6 @@ export function useAlphaChat(lang: 'fr' | 'en') {
     if (status === 'streaming') return
     const trimmed = text.trim()
     if (!trimmed) return
-    // History for the model: previous text parts + the new user turn
     const history = [...toTurns(messagesRef.current), { role: 'user' as const, text: trimmed }].slice(-12)
     setMessages(prev => [...prev, { id: nextId(), role: 'user', parts: [{ type: 'text', text: trimmed, streaming: false }] }])
     if (liveRef.current) {
@@ -352,7 +319,6 @@ export function useAlphaChat(lang: 'fr' | 'en') {
     }
   }, [playAnswer, playLive, status])
 
-  // Drop the last assistant answer and replay the question that produced it
   const retry = useCallback(() => {
     if (status === 'streaming') return
     const msgs = messagesRef.current
@@ -377,17 +343,14 @@ export function useAlphaChat(lang: 'fr' | 'en') {
     }
   }, [playAnswer, playLive, status])
 
-  // Interrupt the current answer: aborts the live stream, fast-forwards the
-  // scripted one
   const stop = useCallback(() => {
     stopRef.current = true
     liveAbortRef.current?.abort()
   }, [])
 
-  // Wipe the thread and start a fresh conversation (new id in the logs)
   const reset = useCallback(() => {
     if (status === 'streaming') return
-    try { localStorage.removeItem(STORAGE_KEY) } catch { /* private mode */ }
+    try { localStorage.removeItem(STORAGE_KEY) } catch { }
     conversationIdRef.current = newConversationId()
     setSuggestions([])
     setMessages([])
@@ -395,7 +358,6 @@ export function useAlphaChat(lang: 'fr' | 'en') {
     void playAnswer('welcome')
   }, [playAnswer, status])
 
-  // Thumbs up/down on an answer — fire-and-forget into the server logs
   const sendFeedback = useCallback((messageId: string, rating: 'up' | 'down') => {
     const message = messagesRef.current.find(m => m.id === messageId)
     const text = message?.parts.filter(p => p.type === 'text').map(p => p.text).join('\n').slice(0, 600) ?? ''
@@ -403,10 +365,9 @@ export function useAlphaChat(lang: 'fr' | 'en') {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ conversationId: conversationIdRef.current, rating, text })
-    }).catch(() => { /* logging is best-effort */ })
+    }).catch(() => { })
   }, [])
 
-  // First mount: restore the saved conversation, or play the scripted welcome
   const startedRef = useRef(false)
   useEffect(() => {
     if (startedRef.current) return
@@ -425,7 +386,6 @@ export function useAlphaChat(lang: 'fr' | 'en') {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Persist the settled conversation so a reload picks it back up
   useEffect(() => {
     if (status !== 'ready' || messages.length === 0) return
     try {
@@ -434,7 +394,7 @@ export function useAlphaChat(lang: 'fr' | 'en') {
         messages,
         suggestions
       }))
-    } catch { /* quota or private mode */ }
+    } catch { }
   }, [messages, suggestions, status])
 
   return { messages, status, suggestions, send, retry, stop, reset, sendFeedback, live, welcome: WELCOME[lang] }

@@ -3,11 +3,6 @@ import { createRoot } from 'react-dom/client'
 import '@application/i18n'
 import './presentation/styles/main.css'
 
-// The conversational AI resume is the official default experience. The
-// classic 3D site stays reachable at ?ui=classic — and legacy section links
-// (#maker, #hero…) keep opening it so old bookmarks still land somewhere
-// meaningful. Both trees are lazy chunks: each visitor only downloads the
-// experience they actually open.
 const ChatApp = lazy(() => import('@presentation/alpha/AlphaApp'))
 const ClassicApp = lazy(() => import('./App'))
 

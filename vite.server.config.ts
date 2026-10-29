@@ -1,11 +1,6 @@
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 
-// Build config of the chat backend (server/index.ts). SSR build so the server
-// can import resumeData + locales through the same aliases as the frontend;
-// noExternal bundles the AI SDK in, producing a self-contained dist-server/
-// that runs on a bare node:24-alpine image without node_modules.
-
 export default defineConfig({
   resolve: {
     alias: {

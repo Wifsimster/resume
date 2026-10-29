@@ -1,13 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import './CompanionOverlay.css'
 
-// Fixed, fully transparent Three.js overlay hosting the space companion.
-// Always rendered: it is decoration the site's identity is built around, and
-// the OS-level reduced-motion setting was silently hiding it on desktops.
-// Interaction safety is handled in CSS (CompanionOverlay.css).
-
-// Code-split AND idle-deferred: the companion is decoration, so its canvas
-// only mounts once the browser has a quiet moment after startup.
 const CompanionCanvas = lazy(() => import('@presentation/components/three/CompanionCanvas'))
 
 export default function CompanionOverlay() {

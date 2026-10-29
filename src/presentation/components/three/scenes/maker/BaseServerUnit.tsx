@@ -12,8 +12,6 @@ interface Props {
 export default function BaseServerUnit({ unit, isHovered, children }: Props) {
     return (
         <>
-            {/* Unit chassis with hover effect */}
-            {/* Freebox has custom dimensions: 180 x 45 x 190 mm, depth scaled proportionally */}
             {unit.type === 'freebox' ? (
                 <mesh>
                     <boxGeometry args={[0.9045, unit.height, 0.495]} />
@@ -31,7 +29,6 @@ export default function BaseServerUnit({ unit, isHovered, children }: Props) {
                 </mesh>
             )}
 
-            {/* Unit front plate */}
             <mesh position={[0, 0, 0.405]}>
                 <boxGeometry args={[0.87435, Math.max(unit.height - 0.02, 0.04), 0.02]} />
                 <meshStandardMaterial
@@ -39,7 +36,6 @@ export default function BaseServerUnit({ unit, isHovered, children }: Props) {
                     roughness={0.25} metalness={0.8} />
             </mesh>
 
-            {/* Slot for unit-specific details */}
             {children}
         </>
     )

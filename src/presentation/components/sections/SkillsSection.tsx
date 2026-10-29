@@ -6,19 +6,17 @@ import { resumeData } from '@domain/data/resume'
 export default function SkillsSection() {
   const { t } = useTranslation()
 
-  // Group skills by category, preserving the intentional order from the data file
   const skillsByCategory = useMemo(() => {
     const categories = ['hardskills', 'soft'] as const
     return categories.map(cat => ({
       id: cat,
       name: t(`skills.${cat}`),
-      skills: resumeData.skills.filter(s => s.category === cat) // filter preserves order
+      skills: resumeData.skills.filter(s => s.category === cat)
     }))
   }, [t])
 
   return (
     <section id="skills" className="section bg-transparent section-padding" data-section="skills">
-      {/* Content */}
       <div className="section-content">
         <div className="section-header reveal">
           <h2 className="text-[var(--color-growth-yellow)] mb-2">{t('skills.title')}</h2>

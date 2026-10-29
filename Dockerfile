@@ -1,27 +1,19 @@
-# Build args
 ARG VERSION=0.0.0
 ARG BUILD_DATE
 ARG VCS_REF
 
-# Build stage
 FROM node:24-alpine AS build
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
 
-# Install dependencies
 RUN npm ci
 
-# Copy source code
 COPY . .
 
-# Build the application (static site + chat backend)
 RUN npm run build && npm run build:server
 
-# Chat backend stage — self-contained bundle, no node_modules needed.
-# Build with: docker build --target chat -t wifsimster/resume-chat .
 FROM node:24-alpine AS chat
 
 ENV NODE_ENV=production
@@ -37,10 +29,8 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 CMD ["node", "dist-server/index.js"]
 
-# Production stage (default target: the nginx static site)
 FROM nginx:alpine
 
-# OCI metadata labels
 LABEL org.opencontainers.image.title="wifsimster-resume" \
       org.opencontainers.image.description="Immersive WebGL resume for Damien Battistella" \
       org.opencontainers.image.version="${VERSION}" \
@@ -48,19 +38,14 @@ LABEL org.opencontainers.image.title="wifsimster-resume" \
       org.opencontainers.image.revision="${VCS_REF}" \
       org.opencontainers.image.source="https://github.com/Wifsimster/resume"
 
-# Copy built assets
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Expose port 80
 EXPOSE 80
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
 
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
 

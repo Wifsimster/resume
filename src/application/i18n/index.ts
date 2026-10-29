@@ -3,13 +3,10 @@ import { initReactI18next } from 'react-i18next'
 import fr from '@/locales/fr'
 import en from '@/locales/en'
 
-// Detect browser language
 const detectLanguage = (): 'fr' | 'en' => {
-  // Check localStorage first
   const saved = localStorage.getItem('locale')
   if (saved === 'fr' || saved === 'en') return saved
 
-  // Detect from browser
   const browserLang = navigator.language.split('-')[0]
   return browserLang === 'en' ? 'en' : 'fr'
 }
@@ -22,7 +19,6 @@ i18next.use(initReactI18next).init({
   lng: detectLanguage(),
   fallbackLng: 'fr',
   interpolation: {
-    // React already escapes rendered strings
     escapeValue: false
   }
 })

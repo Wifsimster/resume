@@ -8,15 +8,12 @@ export default function BooksSection() {
   const { t } = useTranslation()
   const { unlock } = useAchievements()
 
-  // One config drives all shelf columns (they only ever differed by status
-  // key, border tint and emoji).
   const shelves = useMemo(() => [
     { key: 'read', label: t('books.read'), emoji: '📗', border: '', books: resumeData.books.filter(b => b.status === 'read') },
     { key: 'toRead', label: t('books.toRead'), emoji: '📕', border: 'border-purple-400/30', books: resumeData.books.filter(b => b.status === 'toRead') },
     { key: 'toBuy', label: t('books.toBuy'), emoji: '📘', border: 'border-[color-mix(in_srgb,var(--color-accent-cool)_30%,transparent)]', books: resumeData.books.filter(b => b.status === 'toBuy') }
   ], [t])
 
-  // Rows are real <a> links; the handler only tracks achievements.
   const trackBook = (status?: string) => {
     unlock('bookworm')
     if (status === 'toBuy') {
@@ -26,7 +23,6 @@ export default function BooksSection() {
 
   return (
     <section id="books" className="section bg-transparent section-padding" data-section="books">
-      {/* Content */}
       <div className="section-content mx-auto">
         <div className="section-header reveal">
           <h2 className="text-[var(--color-book-amber)] mb-2">{t('books.title')}</h2>

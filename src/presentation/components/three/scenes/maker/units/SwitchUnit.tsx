@@ -11,14 +11,11 @@ interface Props {
     colors: typeof makerColors
 }
 
-// Equivalent of Vue's `v-for="x in n"`: [1..n]
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i + 1)
 
 export default function SwitchUnit({ unit, isHovered, colors }: Props) {
-    // Direct Three.js refs for LED animation (bypasses React reactivity)
     const ledRefs = useRef<any[]>([])
 
-    // Port activity blink — mutates materials directly on the render loop
     useFrame(({ clock }) => {
         const elapsed = clock.elapsedTime
         for (let i = 0; i < ledRefs.current.length; i++) {
@@ -32,7 +29,6 @@ export default function SwitchUnit({ unit, isHovered, colors }: Props) {
 
     return (
         <BaseServerUnit unit={unit} isHovered={isHovered} colors={colors}>
-            {/* Ethernet ports with indicator lights */}
             {range(12).map((port) => (
                 <mesh key={`port-${port}`}
                     position={[-0.362 + (port % 6) * 0.121, -0.15 + Math.floor(port / 6) * 0.3, 0.37]}
@@ -40,7 +36,6 @@ export default function SwitchUnit({ unit, isHovered, colors }: Props) {
                     <boxGeometry args={[0.08, 0.06, 0.02]} />
                 </mesh>
             ))}
-            {/* Port indicator lights - animated via useFrame */}
             {range(12).map((led) => (
                 <mesh key={`switch-led-${led}`}
                     position={[-0.362 + (led % 6) * 0.121, -0.12 + Math.floor(led / 6) * 0.3, 0.38]}

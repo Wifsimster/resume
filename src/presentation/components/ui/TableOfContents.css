@@ -1,18 +1,12 @@
-/* Layout styles kept in CSS for complex positioning and responsive display */
-
 .table-of-contents .toc-link {
-  /* Padding, font-size, and colors handled by Tailwind utilities */
 }
 
 .table-of-contents .toc-dot {
-  /* Width, height, border-radius, background, transition, flex-shrink, opacity handled by Tailwind utilities */
 }
 
 .table-of-contents .toc-label {
-  /* Opacity, transition, white-space, font-weight handled by Tailwind utilities */
 }
 
-/* Connector line between items (desktop rail only) */
 @media (max-width: 1023px) {
   .table-of-contents .toc-item:not(:last-child)::after {
     display: none;

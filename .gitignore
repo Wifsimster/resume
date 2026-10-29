@@ -1,15 +1,12 @@
-# Dependencies
 node_modules
 .pnp
 .pnp.js
 
-# Build output
 dist
 dist-server
 dist-ssr
 *.local
 
-# IDE
 .idea
 .vscode/*
 !.vscode/extensions.json
@@ -21,33 +18,26 @@ dist-ssr
 *.sln
 *.sw?
 
-# OS
 .DS_Store
 Thumbs.db
 *.log
 
-# Environment
 .env
 .env.local
 .env.*.local
 
-# Test coverage
 coverage
 *.lcov
 
-# TypeScript
 *.tsbuildinfo
 
-# Vite
 vite.config.ts.timestamp-*
 
-# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
 
-# Playwright
 test-results/
 playwright-report/

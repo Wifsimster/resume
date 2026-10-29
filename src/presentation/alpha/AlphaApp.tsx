@@ -10,15 +10,6 @@ import { useViewportFit } from './useViewportFit'
 import type { ChatMessage } from './useAlphaChat'
 import './alpha.css'
 
-// The conversational resume: an AI chat interface (design language modelled
-// on shadcn/ui + Vercel AI Elements, dark zinc theme). This is the official
-// default experience — the classic 3D site lives at ?ui=classic. Live LLM
-// answers when the chat backend has a provider, scripted engine otherwise.
-//
-// Chatting is the default, never the toll gate: a visitor who only wants to
-// scan the background opens the summary drawer from the header and reads the
-// whole resume without typing a word.
-
 const copy = {
   fr: {
     title: 'CV conversationnel',
@@ -48,7 +39,6 @@ const copy = {
   }
 }
 
-// An assistant message is settled once nothing in it is still streaming
 const isSettled = (message: ChatMessage) =>
   message.role === 'assistant'
   && message.parts.some(p => p.type === 'text')
@@ -75,7 +65,6 @@ export default function AlphaApp() {
   const lang: 'fr' | 'en' = i18n.language === 'en' ? 'en' : 'fr'
   const text = copy[lang]
 
-  // Keeps the shell above the mobile browser chrome and the virtual keyboard
   useViewportFit()
 
   const { messages, status, suggestions, send, retry, stop, reset, sendFeedback } = useAlphaChat(lang)
@@ -90,15 +79,12 @@ export default function AlphaApp() {
   const openSummary = useCallback(() => setSummaryOpen(true), [])
   const closeSummary = useCallback(() => setSummaryOpen(false), [])
 
-  // "Ask a question instead" from inside the drawer: back to the thread with
-  // the composer ready
   const askInstead = useCallback(() => {
     setSummaryOpen(false)
     promptRef.current?.focus()
   }, [])
 
   const handlePick = (suggestion: string) => {
-    // The one navigation suggestion leaves the chat for the classic 3D site
     if (/classi/i.test(suggestion)) {
       backToClassic()
       return
@@ -116,12 +102,9 @@ export default function AlphaApp() {
 
   return (
     <div className="alpha-app fixed inset-0 flex flex-col bg-[var(--alpha-bg)]">
-      {/* Header */}
       <header className="shrink-0 flex items-center justify-between gap-3 px-4 py-3 border-b border-[var(--alpha-border)] bg-[var(--alpha-bg)]/95 backdrop-blur">
         <span className="min-w-0 truncate text-sm font-medium tracking-tight text-[var(--alpha-text)]">{text.title}</span>
         <div className="flex items-center gap-1.5">
-          {/* The scannable way out of the conversation, labelled so a visitor
-              in a hurry finds it without hunting for an icon */}
           <button
             onClick={openSummary}
             aria-haspopup="dialog"
@@ -148,7 +131,6 @@ export default function AlphaApp() {
         </div>
       </header>
 
-      {/* Thread */}
       <Conversation busy={status === 'streaming'}>
         {messages.map(message => (
           <Message key={message.id} from={message.role}>
@@ -180,7 +162,6 @@ export default function AlphaApp() {
         ))}
       </Conversation>
 
-      {/* Composer */}
       <div className="alpha-composer shrink-0 border-t border-[var(--alpha-border)] bg-[var(--alpha-bg)]/95 backdrop-blur px-4 pt-3">
         <div className="mx-auto w-full max-w-3xl flex flex-col gap-3">
           <Suggestions

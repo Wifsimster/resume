@@ -17,7 +17,6 @@ interface Props {
 export default function Silver1UUnit({ unit, isHovered, colors }: Props) {
     return (
         <BaseServerUnit unit={unit} isHovered={isHovered} colors={colors}>
-            {/* Status LEDs */}
             <mesh position={[0.302, 0.08, 0.38]}>
                 <sphereGeometry args={[0.02, 6, 6]} />
                 <meshBasicMaterial color={colors.serverGreen} opacity={0.9} transparent />

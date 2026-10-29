@@ -2,12 +2,6 @@ import { resumeData } from '@domain/data/resume'
 import fr from '../src/locales/fr'
 import { EXTRA_FACTS } from './knowledge'
 
-// System instruction for the live chat — compiled from the exact same
-// resumeData + locale content the UI renders, so the model never drifts from
-// the displayed resume. Built once at startup. Everything the site knows
-// about Damien is in here: identity, career, skills, personality assessment,
-// motivations, projects, homelab, books, stats, site features.
-
 export const CARD_KINDS = ['profile', 'experience', 'skills', 'projects', 'maker', 'stats', 'contact', 'books'] as const
 export type ChatCardKind = (typeof CARD_KINDS)[number]
 

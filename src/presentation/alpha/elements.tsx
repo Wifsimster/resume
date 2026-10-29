@@ -2,21 +2,6 @@ import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { FormEvent, ReactNode, Ref } from 'react'
 import { Markdown } from './markdown'
 
-// AI-chat UI primitives for the alpha resume, modelled on Vercel AI Elements'
-// component vocabulary (Conversation, Message, Response, Reasoning, Tool,
-// Suggestions, PromptInput) so a future swap to the real library — and a real
-// LLM backend — is a rename-free operation. Implemented natively on the
-// site's Tailwind tokens: no shadcn/Next dependency in a static Vite build.
-
-/* ========================= Conversation ========================= */
-
-// Message scroller behaviours modelled on shadcn/ui's Message Scroller:
-// - a new turn (user message) anchors near the top of the viewport, keeping a
-//   peek of the previous content; the streamed answer grows below it and the
-//   reader is never moved against their intent
-// - while at the live edge the view follows the stream; scrolling away
-//   (wheel, touch, keys, scrollbar) releases it
-// - a floating button re-engages following when content waits below
 
 const LIVE_EDGE_PX = 48
 const ANCHOR_PEEK_PX = 64
@@ -57,7 +42,6 @@ export function Conversation({ children, busy }: { children: ReactNode, busy?: b
     const observer = new MutationObserver(() => {
       const userRows = el.querySelectorAll<HTMLElement>('[data-role="user"]')
       if (userRows.length > userRowCountRef.current) {
-        // New turn: anchor it near the top with a peek of the previous item
         userRowCountRef.current = userRows.length
         const row = userRows[userRows.length - 1]
         const top = row.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop
@@ -103,11 +87,6 @@ export function Conversation({ children, busy }: { children: ReactNode, busy?: b
   )
 }
 
-/* ========================= Message ========================= */
-
-// Bubble variants modelled on shadcn/ui's Bubble: the user gets a tinted
-// end-aligned bubble (max 80% width), the assistant is the ghost variant —
-// full-width unframed content next to its avatar.
 
 export function Message({ from, children }: { from: 'user' | 'assistant', children: ReactNode }) {
   if (from === 'user') {
@@ -131,10 +110,6 @@ export function Message({ from, children }: { from: 'user' | 'assistant', childr
   )
 }
 
-/* ========================= MessageActions ========================= */
-
-// shadcn MessageFooter: ghost icon actions under a settled assistant answer —
-// copy, retry (last answer only), thumbs up/down (logged server-side)
 
 const ICONS = {
   copy: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>,
@@ -166,7 +141,7 @@ export function MessageActions({ text, canRetry, onRetry, feedback, onFeedback, 
       await navigator.clipboard.writeText(text)
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
-    } catch { /* clipboard unavailable */ }
+    } catch { }
   }
   const buttonClass = 'w-7 h-7 rounded-md flex items-center justify-center transition-colors cursor-pointer hover:bg-white/5'
   return (
@@ -193,10 +168,6 @@ export function MessageActions({ text, canRetry, onRetry, feedback, onFeedback, 
   )
 }
 
-/* ========================= Marker ========================= */
-
-// Inline conversation indicator (shadcn Marker): status lines like
-// "Thinking…" while waiting for the first streamed token.
 
 export function Marker({ children }: { children: ReactNode }) {
   return (
@@ -207,8 +178,6 @@ export function Marker({ children }: { children: ReactNode }) {
   )
 }
 
-/* ========================= Response (streaming text) ========================= */
-
 export function Response({ children, streaming }: { children: string, streaming?: boolean }) {
   return (
     <div className="alpha-prose text-[var(--alpha-body)]">
@@ -217,10 +186,7 @@ export function Response({ children, streaming }: { children: string, streaming?
   )
 }
 
-/* ========================= Reasoning ========================= */
-
 export function Reasoning({ children, streaming, label }: { children: string, streaming?: boolean, label: string }) {
-  // Open while streaming, collapsed once done — the AI Elements behaviour
   const [manuallyOpen, setManuallyOpen] = useState<boolean | null>(null)
   const open = manuallyOpen ?? Boolean(streaming)
 
@@ -243,8 +209,6 @@ export function Reasoning({ children, streaming, label }: { children: string, st
     </div>
   )
 }
-
-/* ========================= Tool ========================= */
 
 export interface ToolCall {
   name: string
@@ -270,14 +234,6 @@ export function Tool({ call, resultLabel }: { call: ToolCall, resultLabel: strin
   )
 }
 
-/* ========================= Suggestions ========================= */
-
-// Prompt chips. On a narrow viewport they are the first thing to give up
-// vertical space: a single slim row that scrolls sideways instead of wrapping
-// into three stacked lines, and — once the visitor has asked something and no
-// longer needs the on-ramp — a quick-access toggle that keeps them one tap
-// away without standing between the thread and the composer. From `sm` up
-// there is room to spare, so they wrap and stay open as before.
 
 export function Suggestions({ items, onPick, disabled, collapsible, label }: {
   items: string[]
@@ -288,8 +244,6 @@ export function Suggestions({ items, onPick, disabled, collapsible, label }: {
 }) {
   const [open, setOpen] = useState(false)
 
-  // A fresh set of suggestions collapses again: the row never re-appears
-  // uninvited over the composer
   useEffect(() => { setOpen(false) }, [items])
 
   if (items.length === 0) return null
@@ -325,8 +279,6 @@ export function Suggestions({ items, onPick, disabled, collapsible, label }: {
   )
 }
 
-/* ========================= PromptInput ========================= */
-
 export interface PromptInputHandle {
   focus: () => void
 }
@@ -344,7 +296,6 @@ export function PromptInput({ ref, onSubmit, onStop, placeholder, busy, stopLabe
 
   useImperativeHandle(ref, () => ({ focus: () => areaRef.current?.focus() }), [])
 
-  // Auto-grow up to ~5 lines, then scroll inside the field
   useEffect(() => {
     const el = areaRef.current
     if (!el) return
@@ -352,8 +303,6 @@ export function PromptInput({ ref, onSubmit, onStop, placeholder, busy, stopLabe
     el.style.height = `${Math.min(el.scrollHeight, 140)}px`
   }, [text])
 
-  // Desktop nicety: the field is ready to type on load (never on touch — it
-  // would pop the keyboard over the welcome message)
   useEffect(() => {
     if (window.matchMedia('(pointer: fine)').matches) areaRef.current?.focus()
   }, [])
@@ -367,9 +316,6 @@ export function PromptInput({ ref, onSubmit, onStop, placeholder, busy, stopLabe
   }
 
   return (
-    // shadcn InputGroup: the frame carries the border/ring, the textarea is
-    // borderless and the button is a flex sibling — it can never overflow the
-    // field, whatever the device font scale
     <form
       onSubmit={submit}
       className="flex items-end gap-2 rounded-xl border border-[var(--alpha-border)] bg-[var(--alpha-surface)] p-1.5 pl-4 focus-within:border-[var(--alpha-accent)]/50 focus-within:ring-[3px] focus-within:ring-[var(--alpha-accent)]/20 transition-[box-shadow,border-color]"

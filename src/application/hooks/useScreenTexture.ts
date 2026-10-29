@@ -15,7 +15,6 @@ export function useScreenTexture(props: ScreenTextureProps) {
   const lastPropsHashRef = useRef('')
   const initializedRef = useRef(false)
 
-  // Create a hash of props to detect actual changes
   const getPropsHash = () => {
     return JSON.stringify({
       title: props.title,
@@ -25,9 +24,6 @@ export function useScreenTexture(props: ScreenTextureProps) {
     })
   }
 
-  // The screen plane covers only a few hundred on-screen pixels, so the layout
-  // is deliberately LARGE: big type and roomy rows read clearly at that size,
-  // where the previous dense 26-32px layout blurred into noise.
   const createScreenTexture = () => {
     const canvas = document.createElement('canvas')
     const width = 1920
@@ -37,19 +33,16 @@ export function useScreenTexture(props: ScreenTextureProps) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return null
 
-    // Background with a subtle top accent bar
     ctx.fillStyle = '#0D1117'
     ctx.fillRect(0, 0, width, height)
     ctx.fillStyle = '#B87333'
     ctx.fillRect(0, 0, width, 10)
 
-    // Title
     ctx.fillStyle = '#B87333'
     ctx.font = 'bold 104px sans-serif'
     ctx.textAlign = 'center'
     ctx.fillText(props.title || 'Maker', width / 2, 138)
 
-    // Subtitle (max 2 lines, large)
     ctx.fillStyle = '#FFFFFF'
     ctx.font = '46px sans-serif'
     ctx.globalAlpha = 0.75
@@ -60,7 +53,6 @@ export function useScreenTexture(props: ScreenTextureProps) {
     })
     ctx.globalAlpha = 1
 
-    // Projects section
     ctx.fillStyle = '#B87333'
     ctx.font = 'bold 58px sans-serif'
     ctx.textAlign = 'left'
@@ -71,7 +63,6 @@ export function useScreenTexture(props: ScreenTextureProps) {
       const x = 60 + (idx % 2) * 920
       const y = 500 + Math.floor(idx / 2) * 160
 
-      // Project card background
       ctx.fillStyle = '#B87333'
       ctx.globalAlpha = 0.16
       ctx.beginPath()
@@ -79,16 +70,13 @@ export function useScreenTexture(props: ScreenTextureProps) {
       ctx.fill()
       ctx.globalAlpha = 1
 
-      // Icon
       ctx.font = '56px sans-serif'
       ctx.fillText(project.icon, x + 28, y + 4)
 
-      // Label
       ctx.fillStyle = '#F5E6D3'
       ctx.font = 'bold 46px sans-serif'
       ctx.fillText(project.label, x + 110, y - 6)
 
-      // Year
       ctx.fillStyle = '#FFFFFF'
       ctx.globalAlpha = 0.45
       ctx.font = '38px sans-serif'
@@ -96,7 +84,6 @@ export function useScreenTexture(props: ScreenTextureProps) {
       ctx.globalAlpha = 1
     })
 
-    // Tech stack: one row of large badges along the bottom
     const techStack = (props.techStack || []).slice(0, 6)
     techStack.forEach((tech, idx) => {
       const x = 60 + idx * 305
@@ -120,37 +107,30 @@ export function useScreenTexture(props: ScreenTextureProps) {
     })
 
     const texture = new CanvasTexture(canvas)
-    // sRGB tag keeps the colours true (untagged canvas textures render washed
-    // out), and anisotropy keeps the text crisp at the camera's oblique angle.
     texture.colorSpace = SRGBColorSpace
     texture.anisotropy = 8
     texture.needsUpdate = true
     return texture
   }
 
-  // Update texture when props actually change (with debouncing)
   const updateTexture = () => {
     const currentHash = getPropsHash()
 
-    // Only recreate if props actually changed
     if (currentHash === lastPropsHashRef.current) {
       return
     }
 
     lastPropsHashRef.current = currentHash
 
-    // Dispose of old texture
     if (screenTextureRef.current) {
       screenTextureRef.current.dispose()
     }
 
-    // Create new texture
     const texture = createScreenTexture()
     screenTextureRef.current = texture
     setScreenTexture(texture)
   }
 
-  // Debounced update function
   const debouncedUpdate = () => {
     if (debounceTimerRef.current !== null) {
       clearTimeout(debounceTimerRef.current)
@@ -158,10 +138,9 @@ export function useScreenTexture(props: ScreenTextureProps) {
     debounceTimerRef.current = window.setTimeout(() => {
       updateTexture()
       debounceTimerRef.current = null
-    }, 100) // 100ms debounce
+    }, 100)
   }
 
-  // Create on mount, then debounce updates when props actually change
   useEffect(() => {
     if (!initializedRef.current) {
       initializedRef.current = true
@@ -175,7 +154,6 @@ export function useScreenTexture(props: ScreenTextureProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.title, props.subtitle, props.projects, props.techStack])
 
-  // Cleanup on unmount (reset so a StrictMode remount recreates the texture)
   useEffect(() => {
     return () => {
       if (debounceTimerRef.current !== null) {

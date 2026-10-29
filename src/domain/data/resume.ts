@@ -1,7 +1,6 @@
 import type { ResumeData } from '../types/resume'
 import githubStats from './githubStats.json'
 
-// Live GitHub numbers — refresh with `npm run refresh:stats`
 const projectStars: Record<string, number> = githubStats.stars
 
 export const resumeData: ResumeData = {
@@ -129,15 +128,10 @@ export const resumeData: ResumeData = {
   ],
 
   skills: [
-    // Hard Skills — AI-era durable skills: design → build → quality → ops → domain
-    // Languages & frameworks are intentionally absent: AI tooling commoditized them,
-    // what remains valuable is judgment, architecture and domain expertise
     { id: 'systemdesign', name: 'System Design', category: 'hardskills', icon: '📐' },
     { id: 'softwarearchitecture', name: 'Software Architecture', category: 'hardskills', icon: '🏗️' },
     { id: 'apidesign', name: 'API Design', category: 'hardskills', icon: '🔌' },
     { id: 'datamodeling', name: 'Data Modeling', category: 'hardskills', icon: '🗄️' },
-    // Absorbs the former IA tools column (Copilot, Cursor, Claude, Gemini, MCP…):
-    // the durable skill is orchestrating them, not any single tool
     { id: 'aiorchestration', name: 'AI Orchestration', category: 'hardskills', icon: '🤖', url: 'https://modelcontextprotocol.io/' },
     { id: 'codereview', name: 'Code Review & Quality', category: 'hardskills', icon: '🔍' },
     { id: 'testingstrategy', name: 'Testing Strategy', category: 'hardskills', icon: '🧪' },
@@ -145,7 +139,6 @@ export const resumeData: ResumeData = {
     { id: 'legacymodernization', name: 'Legacy Modernization', category: 'hardskills', icon: '♻️' },
     { id: 'healthcareinterop', name: 'Healthcare Interoperability', category: 'hardskills', icon: '🏥', url: 'https://www.hl7.org/' },
 
-    // Soft Skills
     { id: 'leadership', name: 'Leadership', category: 'soft', icon: '👑' },
     { id: 'communication', name: 'Communication', category: 'soft', icon: '💬' },
     { id: 'decisionmaking', name: 'Decision Making', category: 'soft', icon: '🧭' },
@@ -156,7 +149,6 @@ export const resumeData: ResumeData = {
   ],
 
   projects: [
-    // Latest active open-source projects — github.com/Wifsimster, summer 2026
     {
       id: 'ondes',
       stars: projectStars.ondes,
@@ -316,13 +308,13 @@ export const resumeData: ResumeData = {
   },
 
   statistics: {
-    yearsOfExperience: 9, // Depuis 2016
-    totalProjects: 11, // Nombre de projets GitLab où j'ai participé
-    developersRecruited: 6, // Depuis les expériences
-    presentations: 12, // Présentations mensuelles estimées
-    linesOfCode2025: 16905, // Calculé depuis GitLab (apvhn/resume uniquement - autres projets sans commits en 2025)
-    totalCommits2025: 20, // Calculé depuis GitLab (apvhn/resume uniquement - autres projets sans commits en 2025)
-    issuesClosed2025: 21 // Issues fermées par apvhn en 2025 (tous projets GitLab)
+    yearsOfExperience: 9,
+    totalProjects: 11,
+    developersRecruited: 6,
+    presentations: 12,
+    linesOfCode2025: 16905,
+    totalCommits2025: 20,
+    issuesClosed2025: 21
   }
 }
 

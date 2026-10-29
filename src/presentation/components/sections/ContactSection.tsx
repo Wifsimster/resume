@@ -6,7 +6,6 @@ import { useAchievements } from '@application/hooks/useAchievements'
 const linkedInUrl = 'https://www.linkedin.com/in/damien-battistella-%F0%9F%92%BB-67964115/'
 const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(linkedInUrl)}&bgcolor=FFFFFF&color=000000`
 
-// Achievements that should show hints when locked
 const achievementsWithHints = [
   'codeHunter',
   'speedRunner',
@@ -35,12 +34,10 @@ export default function ContactSection() {
     unlock('networker')
   }
 
-  // Get 3 random locked achievements with hints
   const lockedAchievementsPreview = achievements
     .filter(a => !a.unlocked && hasHint(a.id))
     .slice(0, 3)
 
-  // Unlock contact achievement when section becomes visible
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -67,14 +64,12 @@ export default function ContactSection() {
 
   return (
     <section id="contact" className="section bg-transparent min-h-svh section-padding" data-section="contact">
-      {/* Content */}
       <div className="section-content flex flex-col justify-center items-center h-full">
         <div className="section-header reveal">
           <h2 className="text-[var(--color-terminal-green)] mb-2">{t('contact.title')}</h2>
           <p className="section-subtitle">{t('contact.subtitle')}</p>
         </div>
 
-        {/* Real button for keyboard access; sizes are mobile-first */}
         <button
           type="button"
           className="glass reveal max-w-[400px] xl:max-w-[500px] 2xl:max-w-[600px] mx-2 sm:mx-auto mb-8 sm:mb-12 p-6 sm:p-8 flex flex-col items-center gap-6 cursor-pointer transition-[border-color,box-shadow,transform] duration-150 border-2 border-transparent hover:border-[var(--color-terminal-green)] hover:-translate-y-1 hover:shadow-[var(--shadow-glow-green)] active:translate-y-0 active:scale-[0.99]"
@@ -93,7 +88,6 @@ export default function ContactSection() {
           </div>
         </button>
 
-        {/* Locked Achievements Preview */}
         {lockedAchievementsPreview.length > 0 && (
           <div className="w-full max-w-[600px] xl:max-w-[800px] 2xl:max-w-[1000px] mx-auto mb-8 px-4 reveal" style={{ '--reveal-i': 1 } as CSSProperties}>
             <div className="glass p-4 sm:p-6 rounded-xl border border-white/10">
@@ -118,7 +112,6 @@ export default function ContactSection() {
           </div>
         )}
 
-        {/* Footer */}
         <footer className="text-center py-6 px-2 sm:py-8 border-t border-white/10 mt-8">
           <p className="text-base text-white/70 mb-2">
             {t('footer.madeWith')} 💚 {t('footer.and')} {t('footer.passion')}

@@ -1,7 +1,3 @@
-/* Unified scroll minimap — coarse pointers and narrow screens (< lg). The
-   landmark dots stay faintly visible at all times (they replace the old left
-   TOC dot rail); the trail and rocket thumb only appear while scrolling. */
-
 .mobile-scroll-rail {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 24px);
@@ -38,7 +34,6 @@
   transition: opacity 0.4s ease;
 }
 
-/* Landmark dots: always softly visible, tappable (generous hit area) */
 .msr-dot {
   position: absolute;
   right: 0;
@@ -90,8 +85,6 @@
   transition: opacity 0.15s ease;
 }
 
-/* The 🚀 glyph points up-right (45°): +135° aims it down the rail while
-   scrolling down, -45° flips it upward when the visitor scrolls back up */
 .msr-rocket {
   font-size: 15px;
   line-height: 1;
@@ -123,7 +116,6 @@
   color: color-mix(in srgb, var(--color-paper-cream) 55%, transparent);
 }
 
-/* Hide the native overlay scrollbar on touch devices — the rail replaces it */
 @media (pointer: coarse) {
   html {
     scrollbar-width: none;

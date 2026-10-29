@@ -2,10 +2,6 @@ import { useTranslation } from 'react-i18next'
 import { toggleLocale } from '@application/i18n'
 import { useAchievements } from '@application/hooks/useAchievements'
 
-// Locale switch as text labels (FR | EN) rather than flags: a flag names a
-// country, not a language, and reads poorly for screen readers and for
-// visitors whose locale doesn't match the flag they're shown.
-
 export default function LanguageSwitcher() {
   const { i18n } = useTranslation()
   const { unlock } = useAchievements()

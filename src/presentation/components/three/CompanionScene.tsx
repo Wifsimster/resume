@@ -13,12 +13,6 @@ import {
   type MeshBasicMaterial
 } from 'three'
 
-// The space companions, in real Three.js: a rocket with a live flickering
-// exhaust flame and a UFO with an animated abduction ray take turns cruising
-// the viewport. Swaps are eased in/out, and every few swaps the two meet for
-// a short choreographed dogfight (chase + laser bolts + tractor-beam capture)
-// before the winner resumes the patrol. Zero per-frame allocations.
-
 const CAMERA_Z = 12
 const FOV_RAD = (45 * Math.PI) / 180
 const TRAIL_LENGTH = 14
@@ -27,12 +21,10 @@ const LEGS_PER_SWAP = 5
 const SWAPS_PER_FIGHT = 2
 const SWAP_OUT_S = 0.45
 const SWAP_IN_S = 0.6
-// Fight timeline (seconds): chase w/ lasers → beam capture → break free + resolve
 const FIGHT_CHASE_END = 3.5
 const FIGHT_BEAM_END = 6.0
 const FIGHT_END = 8.5
 
-// --- Motion state: one body per companion (both simulated during fights) ---
 interface Body {
   pos: { x: number; y: number }
   vel: { x: number; y: number }
@@ -75,10 +67,7 @@ export default function CompanionScene() {
   const beamDotRefs = useRef<(Mesh | null)[]>([null, null, null])
   const boltRefs = useRef<(Mesh | null)[]>([null, null, null])
 
-  // The whole simulation (state + closures) is built once per component
-  // instance — the direct React equivalent of Vue's run-once script setup.
   const world = useMemo(() => {
-    // --- Trail: single Points draw call, ring buffer of recent positions ---
     const trailPositions = new Float32Array(TRAIL_LENGTH * 3)
     const trailGeometry = new BufferGeometry()
     trailGeometry.setAttribute('position', new BufferAttribute(trailPositions, 3))
@@ -95,8 +84,8 @@ export default function CompanionScene() {
     trailPoints.frustumCulled = false
 
     const bodies: [Body, Body] = [
-      { pos: { x: 0, y: 2 }, vel: { x: 0.5, y: 0.1 }, target: { x: 0, y: 0 }, scale: 1 }, // rocket
-      { pos: { x: -2, y: -1.5 }, vel: { x: -0.4, y: 0.2 }, target: { x: 0, y: 0 }, scale: 0 } // ufo
+      { pos: { x: 0, y: 2 }, vel: { x: 0.5, y: 0.1 }, target: { x: 0, y: 0 }, scale: 1 },
+      { pos: { x: -2, y: -1.5 }, vel: { x: -0.4, y: 0.2 }, target: { x: 0, y: 0 }, scale: 0 }
     ]
 
     let mode: Mode = 'cruise'
@@ -111,14 +100,12 @@ export default function CompanionScene() {
     let trailWrite = 0
     let trailAccumulator = 0
 
-    // Laser bolts (pooled, active only during fights)
     const bolts = [
       { active: false, x: 0, y: 0, vx: 0, vy: 0, life: 0 },
       { active: false, x: 0, y: 0, vx: 0, vy: 0, life: 0 },
       { active: false, x: 0, y: 0, vx: 0, vy: 0, life: 0 }
     ]
 
-    // Visible world extents at z=0 for the current viewport.
     const extents = { x: 5, y: 5 }
     const updateExtents = () => {
       extents.y = CAMERA_Z * Math.tan(FOV_RAD / 2)
@@ -143,9 +130,6 @@ export default function CompanionScene() {
       boost = 1
     }
 
-    // --- Pointer/touch awareness: the companion is shy up close and curious
-    // from afar. Cursor proximity makes it dodge away with a nervous wiggle;
-    // a click/tap far from it makes it fly over to investigate. ---
     const cursor = { x: 0, y: 0, active: false }
     let dodge = 0
 
@@ -165,11 +149,9 @@ export default function CompanionScene() {
       const b = bodies[activeIndex]
       const d = Math.hypot(b.pos.x - cursor.x, b.pos.y - cursor.y)
       if (d > 2.2) {
-        // Curious: fly over to where the visitor pointed
         b.target.x = cursor.x
         b.target.y = cursor.y
       } else {
-        // Startled: afterburner kick + wiggle
         boost = 1
         dodge = 1
       }
@@ -179,7 +161,6 @@ export default function CompanionScene() {
       mode = 'fight'
       modeTime = 0
       fightWinner = Math.random() < 0.5 ? 0 : 1
-      // The idle companion warps in from the opposite side of the screen.
       const idle = bodies[1 - activeIndex]
       const act = bodies[activeIndex]
       idle.pos.x = -Math.sign(act.pos.x || 1) * extents.x * 0.7
@@ -199,7 +180,6 @@ export default function CompanionScene() {
       const active = bodies[activeIndex]
       const idle = bodies[1 - activeIndex]
 
-      // ---------------- State machine ----------------
       if (mode === 'cruise') {
         const dist = steer(active, dt, SPEEDS[activeIndex] * (1 + boost * 1.8))
         if (dist < 0.8) pickTarget(active, true)
@@ -213,7 +193,6 @@ export default function CompanionScene() {
       } else if (mode === 'swapOut') {
         const t = Math.min(modeTime / SWAP_OUT_S, 1)
         active.scale = Math.max(0, 1 - easeInBack(t))
-        // Outgoing spins on itself while shrinking
         if (t >= 1) {
           swapsDone += 1
           activeIndex = 1 - activeIndex
@@ -239,17 +218,12 @@ export default function CompanionScene() {
           modeTime = 0
         }
       } else {
-        // ---------------- Fight choreography ----------------
-        // Scales only restore during the active phases — the resolve phase owns
-        // the loser's scale (restoring it there previously fought the warp-out
-        // shrink to a standstill and locked the whole state machine).
         if (modeTime < FIGHT_END) {
           rocket.scale += (1 - rocket.scale) * (1 - Math.exp(-dt * 6))
           ufo.scale += (1 - ufo.scale) * (1 - Math.exp(-dt * 6))
         }
 
         if (modeTime < FIGHT_CHASE_END) {
-          // Chase: UFO flees between quick waypoints, rocket pursues it and fires.
           const fleeDist = Math.hypot(ufo.target.x - ufo.pos.x, ufo.target.y - ufo.pos.y)
           if (fleeDist < 1.2) pickTarget(ufo, false)
           steer(ufo, dt, 2.2)
@@ -272,23 +246,19 @@ export default function CompanionScene() {
             }
           }
         } else if (modeTime < FIGHT_BEAM_END) {
-          // Counter-attack: the UFO hovers above the rocket and catches it in the
-          // tractor beam; the rocket shakes, half-pulled upward.
           ufo.target.x = rocket.pos.x
           ufo.target.y = Math.min(rocket.pos.y + 2.1, extents.y * 0.8)
           steer(ufo, dt, 2.8)
           rocket.vel.x *= Math.exp(-dt * 3)
           rocket.vel.y *= Math.exp(-dt * 3)
           rocket.pos.x += rocket.vel.x * dt
-          rocket.pos.y += rocket.vel.y * dt + dt * 0.35 // dragged up by the beam
+          rocket.pos.y += rocket.vel.y * dt + dt * 0.35
         } else if (modeTime < FIGHT_END) {
-          // Break free: rocket boosts away in a loop, UFO wobbles after it.
           rocket.target.x = -ufo.pos.x * 0.8
           rocket.target.y = -ufo.pos.y * 0.8
           steer(rocket, dt, 3.2)
           steer(ufo, dt, 1.6)
         } else {
-          // Resolve: winner keeps cruising immediately, loser warps out.
           activeIndex = fightWinner
           const winnerBody = bodies[fightWinner]
           const wDist = steer(winnerBody, dt, SPEEDS[fightWinner])
@@ -296,7 +266,6 @@ export default function CompanionScene() {
           const loser = bodies[1 - fightWinner]
           loser.scale = Math.max(0, loser.scale - dt / SWAP_OUT_S)
           if (loser.scale <= 0 || modeTime > FIGHT_END + 3) {
-            // (time guard = belt-and-braces so a fight can never lock up again)
             loser.scale = 0
             mode = 'cruise'
             modeTime = 0
@@ -306,7 +275,6 @@ export default function CompanionScene() {
         }
       }
 
-      // ---------------- Cursor evasion (cruise only — fights own the stage) ----
       if (cursor.active && (mode === 'cruise' || mode === 'swapIn')) {
         const b = bodies[activeIndex]
         const ex = b.pos.x - cursor.x
@@ -321,7 +289,6 @@ export default function CompanionScene() {
       }
       dodge *= Math.exp(-dt * 2)
 
-      // ---------------- Bolt simulation ----------------
       for (let i = 0; i < bolts.length; i++) {
         const b = bolts[i]
         if (b.active) {
@@ -337,14 +304,11 @@ export default function CompanionScene() {
         }
       }
 
-      // ---------------- Beam strength ----------------
       const inBeamPhase = mode === 'fight' && modeTime >= FIGHT_CHASE_END && modeTime < FIGHT_BEAM_END
-      // In cruise the UFO shows off its ray on a slow duty cycle.
       const cruiseBeamOn = mode === 'cruise' && activeIndex === 1 && Math.sin(elapsed * 0.45) > 0.35
       const beamTarget = inBeamPhase || cruiseBeamOn ? 1 : 0
       beamStrength += (beamTarget - beamStrength) * (1 - Math.exp(-dt * 4))
 
-      // ---------------- Draw ----------------
       const bobR = Math.sin(elapsed * 1.8) * 0.12
       const bobU = Math.sin(elapsed * 1.6 + 1.3) * 0.14
 
@@ -357,14 +321,12 @@ export default function CompanionScene() {
           (mode === 'swapOut' && activeIndex === 0) ||
           (mode === 'fight' && modeTime >= FIGHT_END && fightWinner !== 0)
         if (rocketSpinningOut) {
-          rocketObj.rotation.z += dt * 14 // exit pirouette
+          rocketObj.rotation.z += dt * 14
         } else {
           rocketObj.rotation.z = Math.atan2(rocket.vel.y, rocket.vel.x) - Math.PI / 2
-          // Nervous wiggle when the cursor spooks it
           rocketObj.rotation.z += dodge * Math.sin(elapsed * 22) * 0.28
         }
         if (inBeamPhase) {
-          // Caught in the beam: shake + point down helplessly
           rocketObj.position.x += Math.sin(elapsed * 42) * 0.05
           rocketObj.rotation.z += Math.sin(elapsed * 31) * 0.25
         }
@@ -372,7 +334,6 @@ export default function CompanionScene() {
         rocketObj.rotation.y = Math.sin(elapsed * 0.9) * 0.35
       }
 
-      // Flame: layered cones flicker fast; longer under boost or while fighting
       const flick = 0.5 + 0.35 * Math.sin(elapsed * 34) + 0.15 * Math.sin(elapsed * 61 + 2)
       const flameLen =
         0.85 + flick * 0.5 + boost * 0.9 + dodge * 0.5 + (mode === 'fight' ? 0.45 : 0)
@@ -404,7 +365,6 @@ export default function CompanionScene() {
         }
       }
 
-      // Tractor beam: pulsing opacity, breathing width, rising abduction dots
       const beam = beamRef.current ?? undefined
       if (beam) {
         beam.visible = beamStrength > 0.02
@@ -421,7 +381,6 @@ export default function CompanionScene() {
         ;(dot.material as MeshBasicMaterial).opacity = Math.sin(t * Math.PI) * beamStrength * 0.9
       }
 
-      // ---------------- Trail (follows the star of the moment) ----------------
       const followed = mode === 'fight' ? rocket : active
       trailAccumulator += dt
       if (trailAccumulator > 0.06) {
@@ -458,7 +417,6 @@ export default function CompanionScene() {
   })
 
   useEffect(() => {
-    // Debug hook used by the browser test harness (and curious devs).
     ;(window as unknown as Record<string, unknown>).__companionFight = world.startFight
 
     world.updateExtents()
@@ -491,7 +449,6 @@ export default function CompanionScene() {
       <ambientLight intensity={0.7} />
       <directionalLight position={[4, 6, 8]} intensity={1.6} />
 
-      {/* 🚀 Rocket: hull + nose + fins + layered animated exhaust flame */}
       <group ref={rocketRef}>
         <mesh>
           <cylinderGeometry args={[0.16, 0.2, 0.62, 12]} />
@@ -506,8 +463,6 @@ export default function CompanionScene() {
           <meshStandardMaterial color="#4B5563" roughness={0.5} metalness={0.8} />
         </mesh>
 
-        {/* Exhaust flame: outer orange sheath + inner white-hot core, both
-            flickering in scale/opacity every frame (cone apex points down) */}
         <mesh ref={flameOuterRef} position={[0, -0.62, 0]} rotation={[Math.PI, 0, 0]}>
           <coneGeometry args={[0.13, 0.55, 12, 1, true]} />
           <meshBasicMaterial
@@ -543,7 +498,6 @@ export default function CompanionScene() {
         ))}
       </group>
 
-      {/* 🛸 UFO: saucer + dome + belt lights + animated abduction ray */}
       <group ref={ufoRef}>
         <mesh scale={[1, 0.32, 1]}>
           <sphereGeometry args={[0.42, 20, 12]} />
@@ -563,7 +517,6 @@ export default function CompanionScene() {
           </mesh>
         ))}
 
-        {/* Abduction ray: open cyan cone flaring downward + rising capture dots */}
         <mesh ref={beamRef} position={[0, -0.62, 0]}>
           <cylinderGeometry args={[0.09, 0.42, 0.95, 16, 1, true]} />
           <meshBasicMaterial
@@ -588,7 +541,6 @@ export default function CompanionScene() {
         ))}
       </group>
 
-      {/* Laser bolts (pooled, visible only during fights) */}
       {[0, 1, 2].map((bi) => (
         <mesh
           key={`bolt-${bi}`}
@@ -602,7 +554,6 @@ export default function CompanionScene() {
         </mesh>
       ))}
 
-      {/* Glowing trail (single Points draw call) */}
       <primitive object={world.trailPoints} />
     </>
   )

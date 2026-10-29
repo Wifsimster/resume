@@ -26,11 +26,6 @@ interface DeviceCapabilities {
 
 const STORAGE_KEY = 'wifsimster_quality'
 
-// Detect GPU capabilities via WebGL.
-// IMPORTANT: creates a WebGL probe context — must only ever run ONCE (see the
-// deviceCapabilities cache below). Browsers cap live WebGL contexts (~16) and
-// evict the OLDEST when exceeded, which kills the actual scene canvases and
-// makes every scene flicker through Context Lost/Restored cycles.
 const detectGPU = (): { renderer: string, tier: 'low' | 'medium' | 'high' } => {
   try {
     const canvas = document.createElement('canvas')
@@ -45,14 +40,10 @@ const detectGPU = (): { renderer: string, tier: 'low' | 'medium' | 'high' } => {
       ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
       : 'unknown'
 
-    // Release the probe context immediately so it never counts against the
-    // browser's live-context limit.
     gl.getExtension('WEBGL_lose_context')?.loseContext()
 
-    // Detect GPU tier based on renderer string
     const rendererLower = renderer.toLowerCase()
 
-    // Low-end GPUs (integrated, mobile, old)
     const lowEndPatterns = [
       'intel hd graphics',
       'intel uhd graphics',
@@ -70,7 +61,6 @@ const detectGPU = (): { renderer: string, tier: 'low' | 'medium' | 'high' } => {
       'software'
     ]
 
-    // High-end GPUs
     const highEndPatterns = [
       'nvidia geforce rtx',
       'nvidia geforce gtx 10',
@@ -104,18 +94,15 @@ const detectGPU = (): { renderer: string, tier: 'low' | 'medium' | 'high' } => {
   }
 }
 
-// Detect device capabilities — memoized. Hardware doesn't change mid-session
-// and detectGPU() opens a WebGL probe context, so this must only run once no
-// matter how often callers (renderSettings, FPS monitor) ask for it.
 let cachedCapabilities: DeviceCapabilities | null = null
 const detectDeviceCapabilities = (): DeviceCapabilities => {
   if (cachedCapabilities) return cachedCapabilities
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
   const gpuInfo = detectGPU()
-  const deviceMemory = (navigator as unknown as { deviceMemory?: number }).deviceMemory || 4 // Default to 4GB if not available
+  const deviceMemory = (navigator as unknown as { deviceMemory?: number }).deviceMemory || 4
   const hardwareConcurrency = navigator.hardwareConcurrency || 4
-  const nativeDpr = Math.min(window.devicePixelRatio || 1, 3) // Cap at 3
+  const nativeDpr = Math.min(window.devicePixelRatio || 1, 3)
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   cachedCapabilities = {
@@ -131,53 +118,40 @@ const detectDeviceCapabilities = (): DeviceCapabilities => {
   return cachedCapabilities
 }
 
-// Determine quality based on device capabilities
 const detectQuality = (): QualityLevel => {
-  // Check localStorage first
   const saved = localStorage.getItem(STORAGE_KEY) as QualityLevel | null
   if (saved === 'minimal' || saved === 'low' || saved === 'high') return saved
 
   const caps = detectDeviceCapabilities()
 
-  // Force minimal for reduced motion preference
   if (caps.prefersReducedMotion) {
     return 'minimal'
   }
 
-  // Score-based detection
   let score = 0
 
-  // GPU tier contribution (0-3)
   if (caps.gpuTier === 'high') score += 3
   else if (caps.gpuTier === 'medium') score += 2
   else score += 0
 
-  // CPU cores contribution (0-2)
   if (caps.hardwareConcurrency >= 8) score += 2
   else if (caps.hardwareConcurrency >= 4) score += 1
 
-  // Memory contribution (0-2)
   if (caps.deviceMemory >= 8) score += 2
   else if (caps.deviceMemory >= 4) score += 1
 
-  // Mobile penalty (more aggressive)
   if (caps.isMobile) {
-    score -= 3 // Increased penalty for mobile
-    // Additional penalty for low-end mobile GPUs
+    score -= 3
     if (caps.gpuTier === 'low') score -= 1
   }
 
-  // High DPR penalty (more pixels to render)
   if (caps.nativeDpr > 2) score -= 1
 
-  // Determine quality level
   if (score >= 5) return 'high'
   if (score >= 2) return 'low'
   return 'minimal'
 }
 
-// Get render settings for a quality level
-// Performance-optimized: Capped DPR to 1.5 max to prevent GPU bottleneck
 export const getRenderSettings = (level: QualityLevel): RenderSettings => {
   const caps = detectDeviceCapabilities()
   const isMobile = caps.isMobile
@@ -206,16 +180,12 @@ export const getRenderSettings = (level: QualityLevel): RenderSettings => {
     case 'high':
     default:
       return {
-        // Desktop renders up to DPR 2 for crisp definition — the FPS
-        // auto-degradation monitor drops quality if 60fps can't be held.
-        // Mobile stays capped at 1.5 where the extra pixels cost too much.
         dpr: Math.min(caps.nativeDpr, isMobile ? 1.5 : 2),
         antialias: !isMobile,
         powerPreference: 'high-performance',
         particleMultiplier: isMobile ? 0.5 : 1,
         segmentMultiplier: 1,
         targetFPS: 60,
-        // More lights for better illumination
         lightCount: isMobile ? 4 : 6
       }
   }
@@ -228,9 +198,6 @@ interface QualityState {
   degradeOneStep: () => void
 }
 
-// Persist only EXPLICIT user choices (setQuality/cycleQuality). Auto-degraded
-// levels stay session-only: one janky visit (battery saver, busy machine)
-// must not permanently lock the user out of high quality.
 const persistQuality = (level: QualityLevel) => {
   localStorage.setItem(STORAGE_KEY, level)
 }
@@ -256,20 +223,13 @@ export const useQualityStore = create<QualityState>((set, get) => ({
   }
 }))
 
-// FPS monitoring for auto-degradation
 let fpsHistory: number[] = []
 let lastFrameTime = performance.now()
 let fpsMonitorEnabled = false
 let animationFrameId: number | null = null
 let lastDegradeTime = 0
 
-// RAF pauses while the tab is hidden, so the first sample after returning is
-// a multi-second delta (≈0.5 FPS). Feeding those into the history used to
-// trip the degradation checks on EVERY tab switch, rebuilding all scenes with
-// a visible flash. Outlier deltas are discarded instead.
 const MAX_SAMPLE_DELTA = 250
-// Grace period after a degradation so one hitch can't cascade straight from
-// high to minimal before the cheaper tier has had a chance to stabilise.
 const DEGRADE_COOLDOWN_MS = 3000
 
 const degradeOneStep = (now: number) => {
@@ -289,24 +249,19 @@ const measureFPS = () => {
     const fps = 1000 / delta
     fpsHistory.push(fps)
 
-    // Keep last 60 frames
     if (fpsHistory.length > 60) {
       fpsHistory.shift()
     }
 
-    // Check for auto-degradation after collecting enough samples
     if (fpsHistory.length >= 30 && now - lastDegradeTime > DEGRADE_COOLDOWN_MS) {
       const avgFPS = fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length
 
       const quality = useQualityStore.getState().quality
-      // Auto-degrade if FPS is consistently low (cheap lookup — this branch
-      // runs every frame, getRenderSettings reads only cached capabilities)
-      const threshold = getRenderSettings(quality).targetFPS * 0.7 // below 70% of target
+      const threshold = getRenderSettings(quality).targetFPS * 0.7
 
       if (avgFPS < threshold && quality !== 'minimal') {
         degradeOneStep(now)
       } else {
-        // Thermal throttling detection - if FPS drops suddenly and stays low
         const recentFPS = fpsHistory.slice(-10)
         const recentAvg = recentFPS.reduce((a, b) => a + b, 0) / recentFPS.length
         const earlierFPS = fpsHistory.slice(-30, -10)
@@ -347,8 +302,6 @@ export const getAverageFPS = () => {
 
 export const deviceCapabilities = detectDeviceCapabilities()
 
-// Compat hook mirroring the old Vue composable API: reactive quality +
-// derived render settings, plus the module-level monitor controls.
 export function useQuality() {
   const quality = useQualityStore(s => s.quality)
   const setQuality = useQualityStore(s => s.setQuality)

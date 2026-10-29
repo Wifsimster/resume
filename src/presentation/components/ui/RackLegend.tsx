@@ -22,14 +22,10 @@ const getTranslationKey = (unitId: string): string => {
   return keyMap[unitId] || unitId
 }
 
-// Rack group world position (matches ServerRackComponent position)
 const RACK_POS = { x: 1.372, y: -1.7735, z: 0.5 }
 const UNIT_Z_OFFSET = 0.4
-// Right edge of rack frame (half width = 0.543)
 const RACK_RIGHT_EDGE_X = RACK_POS.x + 0.6
-// Horizontal gap between the rack edge and the label column
 const LABEL_COLUMN_GAP = 56
-// Minimum vertical gap between stacked labels
 const LABEL_MIN_GAP = 4
 
 export default function RackLegend({ visible, rackUnits, camera }: Props) {
@@ -41,12 +37,6 @@ export default function RackLegend({ visible, rackUnits, camera }: Props) {
 
   const sortedUnits = [...rackUnits].sort((a, b) => b.y - a.y)
 
-  // Live label layout. The desk→rack camera transition ANIMATES for ~1.5s and
-  // the camera keeps drifting with the pointer afterwards, so a one-shot
-  // projection (the previous behaviour) pinned every label at a mid-transition
-  // position. Instead: project every frame while visible and write styles to
-  // the DOM directly — a dozen Vector3 projections per frame, no React
-  // re-render involved.
   useEffect(() => {
     if (!visible || !camera) return
 
@@ -60,7 +50,6 @@ export default function RackLegend({ visible, rackUnits, camera }: Props) {
       const { width, height } = container.getBoundingClientRect()
       if (width === 0 || height === 0) return
 
-      // Project each unit's visual centre and the rack's right edge
       const rows = sortedUnits.map(unit => {
         const unitCenterY = RACK_POS.y + unit.y + unit.height / 2
         worldPos.set(RACK_POS.x, unitCenterY, RACK_POS.z + UNIT_Z_OFFSET).project(camera)
@@ -72,12 +61,8 @@ export default function RackLegend({ visible, rackUnits, camera }: Props) {
         return { unit, unitY, edgeX, h, labelY: unitY }
       })
 
-      // All labels share one column so the list reads as a legend
       const columnX = Math.max(...rows.map(r => r.edgeX)) + LABEL_COLUMN_GAP
 
-      // Collision pass: push overlapping labels down, then clamp the overflow
-      // back up from the bottom — keeps every label readable however thin the
-      // units are
       for (let i = 1; i < rows.length; i++) {
         const minY = rows[i - 1].labelY + rows[i - 1].h / 2 + rows[i].h / 2 + LABEL_MIN_GAP
         if (rows[i].labelY < minY) rows[i].labelY = minY
@@ -115,7 +100,6 @@ export default function RackLegend({ visible, rackUnits, camera }: Props) {
 
   return (
     <div ref={containerRef} className="absolute inset-0 pointer-events-none z-40 overflow-hidden">
-      {/* Leader lines from each unit to its label */}
       <svg className="absolute inset-0 w-full h-full">
         {sortedUnits.map(unit => (
           <line

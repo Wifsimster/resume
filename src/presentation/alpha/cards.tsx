@@ -2,11 +2,6 @@ import type { KeyboardEvent, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { resumeData } from '@domain/data/resume'
 
-// Generative-UI blocks the assistant renders inside its messages — each one
-// fed by the real resumeData, never duplicated copy. Cards are interactive:
-// clicking a skill, project, book, rack unit or experience asks the chat
-// about it (external links stay reachable through a small ↗ anchor).
-
 export type CardKind = 'profile' | 'experience' | 'skills' | 'projects' | 'maker' | 'stats' | 'contact' | 'books'
 
 type Ask = (question: string) => void
@@ -18,8 +13,6 @@ const useLang = () => {
   return { t, fr: i18n.language !== 'en' }
 }
 
-// Accessible clickable row that may contain a real <a> inside (so it cannot
-// be a <button>): div with button semantics, Enter/Space activation
 function AskRow({ onAsk, question, className, children }: { onAsk: Ask, question: string, className: string, children: ReactNode }) {
   const activate = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -42,9 +35,6 @@ const EXTERNAL_ICON = (
   </svg>
 )
 
-// The identity block that opens the thread. It is a message in the stream —
-// never a floating overlay — so it has a single, unambiguous focal point and
-// scrolls away with the rest of the conversation once the visitor engages.
 export function ProfileCard({ onOpenSummary }: { onOpenSummary?: () => void }) {
   const { t, fr } = useLang()
   const stats = resumeData.statistics

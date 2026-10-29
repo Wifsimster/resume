@@ -1,5 +1,3 @@
-/* Same TresJS inline touch-action: none — allow vertical scroll from the
-   hero canvas surface. */
 .hero-section .section-canvas canvas {
   touch-action: pan-y !important;
 }

@@ -11,7 +11,6 @@ export interface Achievement {
 
 const STORAGE_KEY = 'wifsimster_achievements'
 
-// Default achievements
 const defaultAchievements: Achievement[] = [
   { id: 'explorer', name: 'Explorer', description: 'Visited all sections', icon: '🗺️', unlocked: false },
   { id: 'bookworm', name: 'Bookworm', description: 'Viewed all books', icon: '📚', unlocked: false },
@@ -45,13 +44,11 @@ const defaultAchievements: Achievement[] = [
   { id: 'secretWhisper', name: 'Secret Whisper', description: 'Typed the secret word', icon: '🤫', unlocked: false }
 ]
 
-// Load from localStorage
 const loadAchievements = (): Achievement[] => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       const parsed = JSON.parse(saved) as Achievement[]
-      // Merge with defaults to ensure new achievements are included
       return defaultAchievements.map(def => {
         const stored = parsed.find(a => a.id === def.id)
         return stored ? { ...def, ...stored } : def
@@ -90,15 +87,12 @@ export const useAchievementsStore = create<AchievementsState>((set, get) => ({
     const achievements = get().achievements.map(a => (a.id === id ? unlocked : a))
     persist(achievements)
 
-    // Show toast
     set({ achievements, currentAchievement: unlocked, showAchievement: true })
 
-    // Auto-hide after 5 seconds
     setTimeout(() => {
       set({ showAchievement: false })
     }, 5000)
 
-    // Check for completionist: all non-completionist achievements unlocked
     const nonCompletionist = achievements.filter(a => a.id !== 'completionist')
     if (nonCompletionist.every(a => a.unlocked)) {
       get().unlock('completionist')
@@ -121,7 +115,6 @@ export const useAchievementsStore = create<AchievementsState>((set, get) => ({
   }
 }))
 
-// Compat hook mirroring the old Vue composable API.
 export function useAchievements() {
   const achievements = useAchievementsStore(s => s.achievements)
   const currentAchievement = useAchievementsStore(s => s.currentAchievement)

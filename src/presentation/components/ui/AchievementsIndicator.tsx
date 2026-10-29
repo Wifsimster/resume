@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useAchievements } from '@application/hooks/useAchievements'
 
-// Achievements that should show hints when locked
 const achievementsWithHints = [
   'codeHunter',
   'speedRunner',
@@ -41,7 +40,6 @@ const hasHint = (id: string) => {
   return achievementsWithHints.includes(id)
 }
 
-// Duration of the `.panel-*` transition defined in main.css
 const PANEL_TRANSITION_MS = 300
 
 export default function AchievementsIndicator() {
@@ -50,8 +48,6 @@ export default function AchievementsIndicator() {
 
   const [isOpen, setIsOpen] = useState(false)
 
-  // Vue <Transition name="panel"> equivalent: keep the panel mounted during the
-  // leave transition and apply the same `.panel-*` classes from main.css.
   const [shouldRender, setShouldRender] = useState(false)
   const [transitionClass, setTransitionClass] = useState('')
   const renderedRef = useRef(false)
@@ -64,7 +60,6 @@ export default function AchievementsIndicator() {
       renderedRef.current = true
       setShouldRender(true)
       setTransitionClass('panel-enter-active panel-enter-from')
-      // Double rAF: let the enter-from state paint before transitioning to it
       rafId = requestAnimationFrame(() => {
         rafId = requestAnimationFrame(() => {
           setTransitionClass('panel-enter-active panel-enter-to')
@@ -127,9 +122,6 @@ export default function AchievementsIndicator() {
             if (e.key === 'Escape') closePanel()
           }}
         >
-          {/* dvh tracks the real visible height on phones (vh can exceed it
-               while browser chrome is expanded); safe-area padding clears the
-               iOS home indicator. */}
           <div
             className="achievements-panel bg-gradient-to-br from-[var(--color-bg-tertiary)] to-[var(--color-bg-primary)] border-2 border-[var(--color-border)] rounded-xl sm:rounded-2xl w-full max-w-[420px] max-h-[85dvh] overflow-hidden flex flex-col pb-[env(safe-area-inset-bottom)] shadow-[0_0_60px_rgba(124,58,237,0.2),0_20px_60px_rgba(0,0,0,0.6)]"
             role="dialog"

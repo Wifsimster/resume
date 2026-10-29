@@ -1,17 +1,6 @@
 @import "tailwindcss";
 
-/* ============================================
-   Design Tokens - Cursor IDE Inspired Theme
-   ============================================ */
-
 :root {
-  /* ============================================
-     Core Palette — single source of truth.
-     Raw values live here only; everything else
-     references these via semantic tokens below.
-     ============================================ */
-
-  /* Neutrals (dark scale) */
   --palette-black: #0A0A0A;
   --palette-gray-950: #141414;
   --palette-gray-900: #1E1E1E;
@@ -20,18 +9,16 @@
   --palette-gray-700: #3F3F46;
   --palette-gray-600: #525252;
   --palette-gray-550: #3D3D3D;
-  --palette-gray-500: #8B8B96; /* lifted from #71717A: >=4.6:1 on near-black (WCAG AA) */
+  --palette-gray-500: #8B8B96;
   --palette-gray-400: #A1A1AA;
   --palette-gray-100: #E5E5E5;
   --palette-white: #FAFAFA;
 
-  /* Brand — Cursor-inspired purple/indigo + scene cyan */
   --palette-purple-400: #A855F7;
   --palette-purple-500: #7C3AED;
   --palette-indigo-500: #6366F1;
   --palette-cyan-400: #22D3EE;
 
-  /* Functional hues */
   --palette-orange: #F97316;
   --palette-amber: #FBBF24;
   --palette-amber-deep: #F59E0B;
@@ -39,63 +26,35 @@
   --palette-green: #22C55E;
   --palette-blue: #3B82F6;
 
-  /* ============================================
-     Semantic — Backgrounds & Surfaces
-     ============================================ */
   --color-bg-primary: var(--palette-black);
   --color-bg-secondary: var(--palette-gray-950);
   --color-bg-tertiary: var(--palette-gray-900);
   --color-bg-elevated: var(--palette-gray-850);
 
-  /* Translucent surfaces for floating controls & overlays.
-     Use these instead of hardcoded bg-[#1E1E1E]/80 arbitrary values. */
   --color-surface-overlay: rgba(30, 30, 30, 0.8);
   --color-surface-overlay-strong: rgba(30, 30, 30, 0.9);
   --color-surface-glass: rgba(20, 20, 20, 0.45);
 
-  /* ============================================
-     Semantic — Brand / Accent
-     ============================================ */
   --color-accent-primary: var(--palette-purple-500);
   --color-accent-secondary: var(--palette-purple-400);
   --color-accent-tertiary: var(--palette-indigo-500);
-  /* Cool accent: the cyan already carried by the aurora, hero fill light and
-     companion visor — now available to the DOM palette. */
   --color-accent-cool: var(--palette-cyan-400);
-  /* Text-safe accent for small type (violet-400 ~6.3:1 on bg-primary);
-     accent-primary at 3.5:1 is fills/borders only. */
   --color-accent-text: var(--palette-purple-400);
 
-  /* ============================================
-     Semantic — Feedback / Status
-     ============================================ */
   --color-success: var(--palette-green);
   --color-warning: var(--palette-amber);
   --color-danger: var(--palette-red);
   --color-info: var(--palette-blue);
 
-  /* ============================================
-     Semantic — Text
-     ============================================ */
   --color-text-primary: var(--palette-white);
   --color-text-secondary: var(--palette-gray-400);
   --color-text-muted: var(--palette-gray-500);
-  /* Lowest-emphasis text that still clears WCAG 4.5:1 on near-black.
-     Use instead of text-white/30–/50 utilities. */
   --color-text-faint: rgba(250, 250, 250, 0.62);
 
-  /* ============================================
-     Semantic — Borders
-     ============================================ */
   --color-border: var(--palette-gray-800);
   --color-border-hover: var(--palette-gray-700);
 
-  /* ============================================
-     Domain accents (per resume section)
-     ============================================ */
   --color-team-orange: var(--palette-orange);
-  /* Skills/Books headings join the cool cyan run (amber clashed between the
-     violet-headed neighbours); achievement gold stays the sole warm accent. */
   --color-growth-yellow: var(--color-accent-cool);
   --color-book-amber: var(--color-accent-cool);
   --color-paper-cream: var(--palette-gray-100);
@@ -104,12 +63,8 @@
   --color-led-blue: var(--palette-blue);
   --color-achievement-gold: var(--palette-amber);
 
-  /* Gradients */
   --color-xp-bar: linear-gradient(90deg, var(--palette-purple-500), var(--palette-purple-400));
 
-  /* ============================================
-     Shadows & Glows
-     ============================================ */
   --shadow-glow-accent: 0 0 20px rgba(124, 58, 237, 0.4);
   --shadow-glow-cool: 0 0 20px rgba(34, 211, 238, 0.3);
   --shadow-glow-indigo: 0 6px 20px rgba(99, 102, 241, 0.18);
@@ -117,15 +72,11 @@
   --shadow-glow-gold: 0 0 30px rgba(255, 215, 0, 0.3);
   --shadow-elevated: 0 10px 30px rgba(0, 0, 0, 0.5);
 
-  /* ============================================
-     Typography
-     ============================================ */
   --font-display: 'JetBrains Mono', monospace;
   --font-code: 'JetBrains Mono', monospace;
   --font-body: 'Nunito', sans-serif;
   --font-hand: 'Amatic SC', 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
 
-  /* Fluid type scale */
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -136,25 +87,15 @@
   --text-h2: clamp(2rem, 5vw, 4rem);
   --text-h1: clamp(3rem, 8vw, 6rem);
 
-  /* ============================================
-     Spacing
-     ============================================ */
   --spacing-unit: 4px;
-  /* Responsive section padding — replaces repeated p-3 sm:p-4 md:p-8 ... chains */
   --space-section: clamp(0.75rem, 4vw, 4rem);
 
-  /* ============================================
-     Radius scale
-     ============================================ */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-full: 9999px;
 
-  /* ============================================
-     Z-index scale — replaces magic 50/100/1000 values
-     ============================================ */
   --z-canvas: 1;
   --z-content: 10;
   --z-overlay: 50;
@@ -162,18 +103,11 @@
   --z-toast: 1000;
   --z-modal: 1100;
 
-  /* ============================================
-     Transitions
-     ============================================ */
   --transition-fast: 150ms ease;
   --transition-normal: 300ms ease;
   --transition-slow: 500ms ease;
   --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-  /* ============================================
-     Legacy aliases — kept for back-compat.
-     Prefer the semantic tokens above in new code.
-     ============================================ */
   --color-wood-dark: var(--color-bg-primary);
   --color-wood-medium: var(--color-bg-tertiary);
   --color-wood-light: var(--palette-gray-550);
@@ -187,18 +121,12 @@
   --shadow-glow-green: var(--shadow-glow-accent);
 }
 
-/* ============================================
-   Base Styles
-   ============================================ */
-
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* Keyboard focus feedback — applies to every interactive element site-wide.
-   Mouse/touch focus (:focus without :focus-visible) stays outline-free. */
 :where(a, button, [role='button'], [tabindex='0']):focus-visible {
   outline: 2px solid var(--color-accent-secondary);
   outline-offset: 2px;
@@ -211,12 +139,9 @@
 
 html {
   scroll-behavior: smooth;
-  /* proximity, not mandatory: mandatory snap traps sections taller than the
-     viewport (the experience timeline) and yanks against free scrolling. */
   scroll-snap-type: y proximity;
 }
 
-/* Disable scroll-snap on mobile for better UX */
 @media (max-width: 768px) {
   html {
     scroll-snap-type: none;
@@ -232,10 +157,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
-/* ============================================
-   Typography
-   ============================================ */
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
@@ -260,13 +181,7 @@ code, pre {
   font-family: var(--font-code);
 }
 
-/* ============================================
-   Section Layout
-   ============================================ */
-
 .section {
-  /* svh: sized to the small mobile viewport so nothing hides behind the
-     browser chrome; 100vh stays as the fallback line. */
   min-height: 100vh;
   min-height: 100svh;
   scroll-snap-align: start;
@@ -275,16 +190,9 @@ code, pre {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  /* clip, not hidden: overflow:hidden creates a scroll container which would
-     capture animation-timeline: view() of the reveal utility below. */
   overflow: clip;
-  /* Padding handled by Tailwind utilities: p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16 */
 }
 
-/* Below lg the header (achievements + language) is fixed top-right; give the
-   content wrapper clearance so section titles never slide under it. (On
-   .section-content, not .section — the section-padding utility would win the
-   cascade over .section.) */
 @media (max-width: 1023px) {
   .section-content {
     padding-top: 4rem;
@@ -298,7 +206,6 @@ code, pre {
   width: 100%;
 }
 
-/* Large screen optimizations */
 @media (min-width: 1440px) {
   .section-content {
     max-width: 1400px;
@@ -321,13 +228,10 @@ code, pre {
   position: absolute;
   inset: 0;
   z-index: var(--z-canvas);
-  /* GPU acceleration for canvas */
   transform: translateZ(0);
   will-change: contents;
 }
 
-/* Shared section header rhythm: identical structure (centered h2 + subtitle)
-   gets identical trailing space everywhere. */
 .section-header {
   text-align: center;
   margin-bottom: clamp(1.5rem, 4vh, 3rem);
@@ -339,11 +243,6 @@ code, pre {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* ============================================
-   Gaming UI Elements
-   ============================================ */
-
-/* XP Bar */
 .xp-bar {
   position: fixed;
   top: 0;
@@ -361,7 +260,6 @@ code, pre {
   box-shadow: var(--shadow-glow-green);
 }
 
-/* Achievement Toast */
 .achievement-toast {
   position: fixed;
   bottom: 2rem;
@@ -399,13 +297,10 @@ code, pre {
   to { transform: scale(1.1); }
 }
 
-/* Level Badge */
 .level-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  /* Padding handled by Tailwind utilities: px-2 py-1 */
-  /* Font-size handled by Tailwind utilities: text-xs */
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-accent-secondary);
   border-radius: var(--radius-sm);
@@ -413,17 +308,11 @@ code, pre {
   color: var(--color-accent-secondary);
 }
 
-/* ============================================
-   Buttons & Interactive Elements
-   ============================================ */
-
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  /* Padding handled by Tailwind utilities: px-6 py-3 */
-  /* Font-size handled by Tailwind utilities: text-base */
   font-family: var(--font-body);
   font-weight: 600;
   border: none;
@@ -453,10 +342,6 @@ code, pre {
   background: rgba(124, 58, 237, 0.1);
 }
 
-/* ============================================
-   Surfaces & Glass Effect
-   ============================================ */
-
 .glass {
   background: var(--color-surface-glass);
   backdrop-filter: blur(8px);
@@ -464,7 +349,6 @@ code, pre {
   border-radius: var(--radius-lg);
 }
 
-/* Floating control surface (toggles, badges, HUD elements) */
 .surface-overlay {
   background: var(--color-surface-overlay);
   backdrop-filter: blur(12px);
@@ -476,25 +360,14 @@ code, pre {
   border-color: var(--color-border-hover);
 }
 
-/* ============================================
-   Utilities
-   ============================================ */
-
-/* Consistent fluid section padding — replaces the repeated
-   p-3 sm:p-4 md:p-8 xl:p-12 2xl:p-16 utility chains. */
 .section-padding {
   padding: var(--space-section);
 }
 
-/* Hand-drawn label style used for physical-object annotations */
 .label-hand {
   font-family: var(--font-hand);
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
 }
-
-/* ============================================
-   Animations
-   ============================================ */
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
@@ -558,11 +431,10 @@ code, pre {
   to { box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
 }
 
-/* Animation classes with GPU acceleration and will-change hints */
 .animate-float {
   animation: float 3s ease-in-out infinite;
   will-change: transform;
-  transform: translateZ(0); /* Force GPU acceleration */
+  transform: translateZ(0);
 }
 
 .animate-pulse-glow {
@@ -573,13 +445,13 @@ code, pre {
 .animate-rotate {
   animation: rotate 10s linear infinite;
   will-change: transform;
-  transform: translateZ(0); /* Force GPU acceleration */
+  transform: translateZ(0);
 }
 
 .animate-fadeInUp {
   animation: fadeInUp 0.6s ease forwards;
   will-change: transform, opacity;
-  transform: translateZ(0); /* Force GPU acceleration */
+  transform: translateZ(0);
 }
 
 .animate-fadeIn {
@@ -590,19 +462,19 @@ code, pre {
 .animate-bounce {
   animation: bounce 1s ease infinite;
   will-change: transform;
-  transform: translateZ(0); /* Force GPU acceleration */
+  transform: translateZ(0);
 }
 
 .animate-scrollDot {
   animation: scrollDot 1.5s ease-in-out infinite;
   will-change: transform, opacity;
-  transform: translateZ(0); /* Force GPU acceleration */
+  transform: translateZ(0);
 }
 
 .animate-icon-bounce {
   animation: icon-bounce 0.5s ease infinite alternate;
   will-change: transform;
-  transform: translateZ(0); /* Force GPU acceleration */
+  transform: translateZ(0);
 }
 
 .animate-trophy-shine {
@@ -615,42 +487,32 @@ code, pre {
   will-change: box-shadow;
 }
 
-/* Mobile-specific animation optimizations */
 @media (max-width: 768px) {
   .animate-float {
-    animation-duration: 2.5s; /* Faster on mobile */
+    animation-duration: 2.5s;
   }
   
   .animate-pulse-glow {
-    animation-duration: 1.5s; /* Faster on mobile */
+    animation-duration: 1.5s;
   }
   
   .animate-rotate {
-    animation-duration: 8s; /* Faster on mobile */
+    animation-duration: 8s;
   }
   
   .animate-fadeInUp {
-    animation-duration: 0.5s; /* Faster on mobile */
+    animation-duration: 0.5s;
   }
   
   .animate-bounce {
-    animation-duration: 0.8s; /* Faster on mobile */
+    animation-duration: 0.8s;
   }
   
   .animate-scrollDot {
-    animation-duration: 1.2s; /* Faster on mobile */
+    animation-duration: 1.2s;
   }
 }
 
-/* ============================================
-   Scroll-driven reveals (2026 baseline)
-   ============================================
-   Content below the fold fades/slides in as it enters the viewport, entirely
-   on the compositor (animation-timeline: view(), zero JS, zero layout shift —
-   opacity + transform only). Doubly gated: browsers without support and
-   reduced-motion users get fully-visible static content because the hidden
-   `from` state only exists inside this block (fill-mode: both). Stagger by
-   setting --reveal-i per item in v-for. */
 @keyframes reveal-up {
   from {
     opacity: 0;
@@ -674,19 +536,16 @@ code, pre {
   }
 }
 
-/* Tactile press states: quick 80ms press vs 150ms release asymmetry */
 .btn:active {
   transform: translateY(0) scale(0.97);
   transition-duration: 80ms;
 }
 
-/* Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
-  /* Interaction transitions collapse to instant colour/border changes */
   *,
   *::before,
   *::after {
@@ -705,12 +564,11 @@ code, pre {
   
   .animate-fadeInUp,
   .animate-fadeIn {
-    animation-duration: 0.01ms !important; /* Instant for reduced motion */
-    animation-delay: 0s !important; /* delays would keep content invisible */
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
   }
 }
 
-/* Panel Transitions for Achievements */
 .panel-enter-active,
 .panel-leave-active {
   transition: opacity 0.3s ease;
@@ -721,7 +579,7 @@ code, pre {
 .panel-leave-active .achievements-panel {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
   will-change: transform, opacity;
-  transform: translateZ(0); /* Force GPU acceleration */
+  transform: translateZ(0);
 }
 
 .panel-enter-from,
@@ -734,10 +592,6 @@ code, pre {
   transform: scale(0.95) translateY(10px);
   opacity: 0;
 }
-
-/* ============================================
-   Scrollbar Styling
-   ============================================ */
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -756,21 +610,11 @@ code, pre {
   background: var(--color-accent-primary);
 }
 
-/* ============================================
-   Selection
-   ============================================ */
-
 ::selection {
   background: var(--color-accent-primary);
   color: white;
 }
 
-/* ============================================
-   Responsive
-   ============================================ */
-
-/* Touch-target floor keyed to touch capability (covers tablets at any width),
-   not viewport width. */
 @media (pointer: coarse) {
   .btn,
   button {
@@ -779,7 +623,6 @@ code, pre {
   }
 }
 
-/* Small mobile devices */
 @media (max-width: 480px) {
   h1 {
     font-size: clamp(2rem, 10vw, 3rem);
